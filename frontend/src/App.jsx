@@ -207,10 +207,10 @@ export default function App() {
   const cycleStatus = async (entry) => {
     let next = 0;
 
-    if (entry.status === 0) next = 2;       // grün (confirmed)
-    else if (entry.status === 2) next = 1;  // rot (crossed)
-    else if (entry.status === 1) next = 3;  // grau (maybe)
-    else next = 0;                          // zurück unknown
+    if (entry.status === 0) next = 2;       // grün (✓)
+    else if (entry.status === 2) next = 1;  // rot (X)
+    else if (entry.status === 1) next = 3;  // grau (?)
+    else next = 0;                          // zurück
 
     await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
       method: "PATCH",
@@ -286,6 +286,20 @@ export default function App() {
     return "#20140c";
   };
 
+  const getStatusSymbol = (status) => {
+    if (status === 2) return "✓";
+    if (status === 1) return "X";
+    if (status === 3) return "?";
+    return "";
+  };
+
+  const getStatusSymbolColor = (status) => {
+    if (status === 2) return "#0b6a1e";
+    if (status === 1) return "#b10000";
+    if (status === 3) return "#444444";
+    return "#20140c";
+  };
+
   return (
     <div style={styles.page}>
       <div style={styles.shell}>
@@ -350,10 +364,12 @@ export default function App() {
                       {e.label}
                     </div>
 
-                    <div style={styles.cell}>{e.status === 1 ? "X" : ""}</div>
-                    <div style={styles.cell}>{e.status === 1 ? "✓" : ""}</div>
-                    <div style={styles.cell}>{e.status === 2 ? "✓" : ""}</div>
+                    {/* ✅ NUR 1 Status-Spalte */}
+                    <div style={{ ...styles.statusCell, color: getStatusSymbolColor(e.status) }}>
+                      {getStatusSymbol(e.status)}
+                    </div>
 
+                    {/* i/m/s */}
                     <button onClick={() => toggleTag(e)} style={styles.tagBtn} title="i → m → s → leer">
                       {e.note_tag || "—"}
                     </button>
@@ -421,7 +437,7 @@ const styles = {
   },
   row: {
     display: "grid",
-    gridTemplateColumns: "1fr 40px 40px 40px 56px", // ✅ ohne ? Button
+    gridTemplateColumns: "1fr 46px 56px", // ✅ Name | Status | i/m/s
     gap: 8,
     padding: "10px 12px",
     alignItems: "center",
@@ -434,10 +450,10 @@ const styles = {
     color: "#20140c",
     fontWeight: 700,
   },
-  cell: {
+  statusCell: {
     textAlign: "center",
-    fontWeight: 1000,
-    color: "#20140c",
+    fontWeight: 1100,
+    fontSize: 18,
   },
   tagBtn: {
     padding: "8px 0",
