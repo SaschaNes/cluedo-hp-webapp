@@ -232,6 +232,8 @@ export default function App() {
     document.body.style.margin = "0";
     document.documentElement.style.padding = "0";
     document.body.style.padding = "0";
+    document.documentElement.style.background = "#2a1c12";
+    document.body.style.background = "#2a1c12";
   }, []);
 
   // ✅ Global CSS (NO HOVER on rows, NO paper edges)
@@ -377,6 +379,10 @@ export default function App() {
   if (!me) {
     return (
       <div style={styles.loginPage}>
+        <div style={styles.bgFixed} aria-hidden="true">
+          <div style={styles.bgMap} />
+          <div style={styles.bgInkVignette} />
+        </div>
         <div style={styles.candleGlowLayer} aria-hidden="true" />
         <div style={styles.loginCard}>
           <div style={styles.loginTitle}>Zauber-Detektiv Notizbogen</div>
@@ -474,6 +480,10 @@ export default function App() {
 
   return (
     <div style={styles.page}>
+      <div style={styles.bgFixed} aria-hidden="true">
+        <div style={styles.bgMap} />
+        <div style={styles.bgInkVignette} />
+      </div>
       <div style={styles.shell}>
         <div style={styles.topBar}>
           <div>
@@ -1056,4 +1066,68 @@ const styles = {
     fontWeight: 900,
     padding: 0,
   },
+
+  // Background
+  page: {
+    minHeight: "100dvh",
+    margin: 0,
+    padding: 0,
+    background: "transparent",
+    position: "relative",
+    zIndex: 1, // Inhalt über Background
+  },
+
+  loginPage: {
+    minHeight: "100dvh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+    overflow: "hidden",
+    padding: 20,
+    background: "transparent",
+    zIndex: 1,
+  },
+
+  // Background
+  bgFixed: {
+    position: "fixed",
+    inset: 0,
+    zIndex: 0,
+    pointerEvents: "none",
+  },
+
+  bgMap: {
+    position: "absolute",
+    inset: 0,
+    // >>> HIER dein Bildpfad (public/...)
+    backgroundImage: 'url("/marauders-map.jpg")',
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+
+    // Map weicher + “unter Pergament”
+    filter: "blur(7px) saturate(0.9) contrast(1.05)",
+    transform: "scale(1.05)", // verhindert Ränder durch Blur
+    opacity: 0.95,
+  },
+
+  bgInkVignette: {
+    position: "absolute",
+    inset: 0,
+    background: `
+      radial-gradient(circle at 50% 45%,
+        rgba(0,0,0,0.08) 0%,
+        rgba(0,0,0,0.18) 48%,
+        rgba(0,0,0,0.55) 78%,
+        rgba(0,0,0,0.72) 100%
+      ),
+      linear-gradient(180deg,
+        rgba(245, 226, 185, 0.42),
+        rgba(214, 180, 120, 0.32)
+      )
+    `,
+    mixBlendMode: "multiply",
+  },
+
 };
