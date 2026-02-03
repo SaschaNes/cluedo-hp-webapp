@@ -201,6 +201,15 @@ export default function App() {
 
   const [helpOpen, setHelpOpen] = useState(false);
 
+  // User dropdown + Passwort Modal
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const [pwOpen, setPwOpen] = useState(false);
+  const [pw1, setPw1] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [pwMsg, setPwMsg] = useState("");
+  const [pwSaving, setPwSaving] = useState(false);
+
   const load = async () => {
     const m = await api("/auth/me");
     setMe(m);
@@ -210,6 +219,18 @@ export default function App() {
 
     if (gs[0] && !gameId) setGameId(gs[0].id);
   };
+
+  // Usermanager
+  useEffect(() => {
+    const onDown = (e) => {
+      // wenn Dropdown offen & Klick ist NICHT in einem Element mit data-user-menu
+      const root = e.target?.closest?.("[data-user-menu]");
+      if (!root) setUserMenuOpen(false);
+    };
+
+    if (userMenuOpen) document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [userMenuOpen]);
 
   // Google Fonts
   useEffect(() => {
@@ -328,6 +349,52 @@ export default function App() {
     setGames([]);
     setGameId(null);
     setSheet(null);
+  };
+
+  // ===== Password change =====
+  const openPwModal = () => {
+    setPwMsg("");
+    setPw1("");
+    setPw2("");
+    setPwOpen(true);
+    setUserMenuOpen(false);
+  };
+
+  const closePwModal = () => {
+    setPwOpen(false);
+    setPwMsg("");
+    setPw1("");
+    setPw2("");
+  };
+
+  const savePassword = async () => {
+    setPwMsg("");
+
+    if (!pw1 || pw1.length < 8) {
+      setPwMsg("❌ Passwort muss mindestens 8 Zeichen haben.");
+      return;
+    }
+    if (pw1 !== pw2) {
+      setPwMsg("❌ Passwörter stimmen nicht überein.");
+      return;
+    }
+
+    setPwSaving(true);
+    try {
+      await api("/auth/password", {
+        method: "PATCH",
+        body: JSON.stringify({ password: pw1 }),
+      });
+
+      setPwMsg("✅ Passwort gespeichert.");
+      // Optional: nach kurzer Zeit automatisch schließen
+      setTimeout(() => closePwModal(), 650);
+    } catch (e) {
+      // dein api() wirft res.text() -> oft JSON Detail. Wir zeigen es einfach roh.
+      setPwMsg("❌ Fehler: " + (e?.message || "unknown"));
+    } finally {
+      setPwSaving(false);
+    }
   };
 
   const newGame = async () => {
@@ -568,10 +635,41 @@ export default function App() {
             <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>{me.role}</div>
           </div>
 
-          <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={doLogout} style={styles.secondaryBtn}>
-              Logout
-            </button>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }} data-user-menu>
+            <div style={{ position: "relative" }}>
+              <button
+                onClick={() => setUserMenuOpen((v) => !v)}
+                style={styles.userBtn}
+                title="User Menü"
+              >
+                <span style={{ fontSize: 16, lineHeight: 1 }}>👤</span>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", maxWidth: 170 }}>
+                  {me.email}
+                </span>
+                <span style={{ opacity: 0.8 }}>▾</span>
+              </button>
+
+              {userMenuOpen && (
+                <div style={styles.userDropdown}>
+                  <button onClick={openPwModal} style={styles.userDropdownItem}>
+                    Passwort setzen
+                  </button>
+
+                  <div style={styles.userDropdownDivider} />
+
+                  <button
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      doLogout();
+                    }}
+                    style={{ ...styles.userDropdownItem, color: "#ffb3b3" }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+
             <button onClick={newGame} style={styles.primaryBtn}>
               + Neues Spiel
             </button>
@@ -705,6 +803,52 @@ export default function App() {
                 <div style={styles.helpText}>
                   Tipp: Jeder Spieler sieht nur seine eigenen Notizen – andere Spieler können nicht in deinen
                   Zettel schauen.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {pwOpen && (
+          <div style={styles.modalOverlay} onMouseDown={closePwModal}>
+            <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <div style={{ fontWeight: 1000, color: stylesTokens.textGold }}>Passwort setzen</div>
+                <button onClick={closePwModal} style={styles.modalCloseBtn} aria-label="Schließen">
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+                <input
+                  value={pw1}
+                  onChange={(e) => setPw1(e.target.value)}
+                  placeholder="Neues Passwort"
+                  type="password"
+                  style={styles.input}
+                  autoFocus
+                />
+                <input
+                  value={pw2}
+                  onChange={(e) => setPw2(e.target.value)}
+                  placeholder="Neues Passwort wiederholen"
+                  type="password"
+                  style={styles.input}
+                />
+
+                {pwMsg && <div style={{ opacity: 0.92, color: stylesTokens.textMain }}>{pwMsg}</div>}
+
+                <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
+                  <button onClick={closePwModal} style={styles.secondaryBtn} disabled={pwSaving}>
+                    Abbrechen
+                  </button>
+                  <button onClick={savePassword} style={styles.primaryBtn} disabled={pwSaving}>
+                    {pwSaving ? "Speichern..." : "Speichern"}
+                  </button>
+                </div>
+
+                <div style={{ fontSize: 12, opacity: 0.75, color: stylesTokens.textDim }}>
+                  Hinweis: Mindestens 8 Zeichen empfohlen.
                 </div>
               </div>
             </div>
@@ -1262,4 +1406,50 @@ const styles = {
     cursor: "pointer",
     minWidth: 64,
   },
+
+  userBtn: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    padding: "10px 12px",
+    borderRadius: 12,
+    border: `1px solid rgba(233,216,166,0.18)`,
+    background: "rgba(255,255,255,0.05)",
+    color: stylesTokens.textMain,
+    fontWeight: 900,
+    cursor: "pointer",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
+    maxWidth: 260,
+  },
+
+  userDropdown: {
+    position: "absolute",
+    right: 0,
+    top: "calc(100% + 8px)",
+    minWidth: 220,
+    borderRadius: 14,
+    border: `1px solid rgba(233,216,166,0.18)`,
+    background: "linear-gradient(180deg, rgba(20,20,24,0.96), rgba(12,12,14,0.92))",
+    boxShadow: "0 18px 55px rgba(0,0,0,0.70)",
+    overflow: "hidden",
+    zIndex: 10000,
+    backdropFilter: "blur(8px)",
+  },
+
+  userDropdownItem: {
+    width: "100%",
+    textAlign: "left",
+    padding: "10px 12px",
+    border: "none",
+    background: "transparent",
+    color: stylesTokens.textMain,
+    fontWeight: 900,
+    cursor: "pointer",
+  },
+
+  userDropdownDivider: {
+    height: 1,
+    background: "rgba(233,216,166,0.12)",
+  },
+
 };
