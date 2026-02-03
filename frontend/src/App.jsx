@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 const API = "/api";
+const CHIP_LIST = ["AL", "JG", "JN", "SN", "TL"];
 
 async function api(path, opts = {}) {
   const res = await fetch(API + path, {
@@ -12,10 +13,22 @@ async function api(path, opts = {}) {
   return res.json();
 }
 
-function cycleTag(tag) {
-  if (!tag) return "i";
-  if (tag === "i") return "m";
-  if (tag === "m") return "s";
+function parseTag(tag) {
+  // erlaubt: null | "i" | "m" | "s" | "s.AL"
+  if (!tag) return { base: null, chip: null };
+  if (tag === "i") return { base: "i", chip: null };
+  if (tag === "m") return { base: "m", chip: null };
+  if (tag === "s") return { base: "s", chip: null };
+  if (tag.startsWith("s.")) return { base: "s", chip: tag.slice(2) || null };
+  return { base: tag, chip: null };
+}
+
+function nextBaseTag(tag) {
+  const { base } = parseTag(tag);
+  if (!base) return "i";
+  if (base === "i") return "m";
+  if (base === "m") return "s"; // hier öffnen wir dann das Popup
+  // wenn s (egal ob s oder s.XY), dann zurück auf leer
   return null;
 }
 
@@ -161,6 +174,9 @@ export default function App() {
   const [gameId, setGameId] = useState(null);
   const [sheet, setSheet] = useState(null);
   const [pulseId, setPulseId] = useState(null);
+
+  const [chipPickOpen, setChipPickOpen] = useState(false);
+  const [chipPickEntry, setChipPickEntry] = useState(null);
 
   const [helpOpen, setHelpOpen] = useState(false);
 
@@ -332,11 +348,38 @@ export default function App() {
   };
 
   const toggleTag = async (entry) => {
-    const next = cycleTag(entry.note_tag);
+    const next = nextBaseTag(entry.note_tag);
+
+    // Wenn wir bei "s" angekommen sind -> Popup öffnen statt sofort setzen
+    if (next === "s") {
+      setChipPickEntry(entry);
+      setChipPickOpen(true);
+      return;
+    }
+
+    // normal setzen (— / i / m)
     await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
       method: "PATCH",
       body: JSON.stringify({ note_tag: next }),
     });
+
+    await reloadSheet();
+  };
+
+  const closeChipPick = () => {
+    setChipPickOpen(false);
+    setChipPickEntry(null);
+  };
+
+  const chooseChip = async (chip) => {
+    if (!chipPickEntry) return;
+
+    await api(`/games/${gameId}/sheet/${chipPickEntry.entry_id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ note_tag: `s.${chip}` }),
+    });
+
+    closeChipPick();
     await reloadSheet();
   };
 
@@ -572,6 +615,47 @@ export default function App() {
             </div>
           </div>
         )}
+
+        {chipPickOpen && (
+          <div style={styles.modalOverlay} onMouseDown={closeChipPick}>
+            <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <div style={{ fontWeight: 1000, color: stylesTokens.textGold }}>
+                  Wer hat die Karte?
+                </div>
+                <button
+                  onClick={closeChipPick}
+                  style={styles.modalCloseBtn}
+                  aria-label="Schließen"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ marginTop: 12, color: stylesTokens.textMain, opacity: 0.9 }}>
+                Chip auswählen:
+              </div>
+
+              <div style={styles.chipGrid}>
+                {CHIP_LIST.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => chooseChip(c)}
+                    style={styles.chipBtn}
+                    title={`Setze s.${c}`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ marginTop: 10, fontSize: 12, color: stylesTokens.textDim }}>
+                Tipp: Wenn du wieder auf den Notiz-Button klickst, geht’s von <b>s.XX</b> zurück auf <b>—</b>.
+              </div>
+            </div>
+          </div>
+        )}
+
 
         <div style={{ marginTop: 14, display: "grid", gap: 14 }}>
           {sections.map((sec) => (
@@ -1071,4 +1155,23 @@ const styles = {
     /* kleines Dark-Wash, damit Schwarz/Gold lesbar ist */
     filter: "saturate(0.9) contrast(1.05) brightness(0.55)",
   },
+
+  chipGrid: {
+    marginTop: 12,
+    display: "grid",
+    gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+    gap: 8,
+  },
+
+  chipBtn: {
+    padding: "10px 0",
+    borderRadius: 12,
+    border: `1px solid rgba(233,216,166,0.22)`,
+    background: "rgba(255,255,255,0.06)",
+    color: stylesTokens.textGold,
+    fontWeight: 1100,
+    cursor: "pointer",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
+  },
+
 };
