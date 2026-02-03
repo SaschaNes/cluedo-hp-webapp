@@ -63,6 +63,14 @@ function clearChipLS(gameId, entryId) {
   } catch {}
 }
 
+function cycleTag(tag) {
+  if (!tag) return "i";
+  if (tag === "i") return "m";
+  if (tag === "m") return "s";
+  if (typeof tag === "string" && tag.startsWith("s.")) return null;
+  return null;
+}
+
 function AdminPanel() {
   const [users, setUsers] = useState([]);
 
