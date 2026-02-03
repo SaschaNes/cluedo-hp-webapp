@@ -21,6 +21,8 @@ function cycleTag(tag) {
 
 function AdminPanel() {
   const [users, setUsers] = useState([]);
+
+  const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
@@ -35,6 +37,12 @@ function AdminPanel() {
     loadUsers().catch(() => {});
   }, []);
 
+  const resetForm = () => {
+    setEmail("");
+    setPassword("");
+    setRole("user");
+  };
+
   const createUser = async () => {
     setMsg("");
     try {
@@ -42,44 +50,31 @@ function AdminPanel() {
         method: "POST",
         body: JSON.stringify({ email, password, role }),
       });
-      setEmail("");
-      setPassword("");
-      setRole("user");
       setMsg("✅ User erstellt.");
       await loadUsers();
+      resetForm();
+      setOpen(false);
     } catch (e) {
       setMsg("❌ Fehler: " + (e?.message || "unknown"));
     }
   };
 
+  const closeModal = () => {
+    setOpen(false);
+    setMsg("");
+    // optional: resetForm();  // wenn du beim Schließen leeren willst
+  };
+
   return (
     <div style={styles.adminWrap}>
-      <div style={styles.adminTitle}>Admin Dashboard</div>
-
-      <div style={styles.adminGrid}>
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          style={styles.input}
-        />
-        <input
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Initial Passwort"
-          type="password"
-          style={styles.input}
-        />
-        <select value={role} onChange={(e) => setRole(e.target.value)} style={styles.input}>
-          <option value="user">user</option>
-          <option value="admin">admin</option>
-        </select>
-        <button onClick={createUser} style={styles.primaryBtn}>User anlegen</button>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+        <div style={styles.adminTitle}>Admin Dashboard</div>
+        <button onClick={() => setOpen(true)} style={styles.primaryBtn}>
+          + User anlegen
+        </button>
       </div>
 
-      {msg && <div style={{ marginTop: 10, opacity: 0.9 }}>{msg}</div>}
-
-      <div style={{ marginTop: 14, fontWeight: 900, color: "#20140c" }}>Vorhandene User</div>
+      <div style={{ marginTop: 12, fontWeight: 900, color: "#20140c" }}>Vorhandene User</div>
       <div style={{ marginTop: 8, display: "grid", gap: 8 }}>
         {users.map((u) => (
           <div key={u.id} style={styles.userRow}>
@@ -91,9 +86,58 @@ function AdminPanel() {
           </div>
         ))}
       </div>
+
+      {/* Modal */}
+      {open && (
+        <div style={styles.modalOverlay} onMouseDown={closeModal}>
+          <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+              <div style={{ fontWeight: 1000, color: "#20140c" }}>Neuen User anlegen</div>
+              <button onClick={closeModal} style={styles.secondaryBtn}>Schließen</button>
+            </div>
+
+            <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                style={styles.input}
+                autoFocus
+              />
+              <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Initial Passwort"
+                type="password"
+                style={styles.input}
+              />
+              <select value={role} onChange={(e) => setRole(e.target.value)} style={styles.input}>
+                <option value="user">user</option>
+                <option value="admin">admin</option>
+              </select>
+
+              {msg && <div style={{ opacity: 0.9 }}>{msg}</div>}
+
+              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
+                <button onClick={() => { resetForm(); setMsg(""); }} style={styles.secondaryBtn}>
+                  Leeren
+                </button>
+                <button onClick={createUser} style={styles.primaryBtn}>
+                  User erstellen
+                </button>
+              </div>
+
+              <div style={{ fontSize: 12, opacity: 0.75 }}>
+                Tipp: Am Handy ist das Modal leichter zu bedienen als die Grid-Zeile.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
 export default function App() {
   const [me, setMe] = useState(null);
@@ -444,5 +488,25 @@ const styles = {
     borderRadius: 12,
     background: "rgba(255,255,255,0.55)",
     border: "1px solid rgba(0,0,0,0.10)",
+  },
+  modalOverlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,0.45)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+    zIndex: 9999,
+  },
+  modalCard: {
+    width: "100%",
+    maxWidth: 520,
+    borderRadius: 18,
+    border: "1px solid rgba(0,0,0,0.25)",
+    background: "linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.42))",
+    boxShadow: "0 18px 50px rgba(0,0,0,0.35)",
+    padding: 14,
+    backdropFilter: "blur(6px)",
   },
 };
