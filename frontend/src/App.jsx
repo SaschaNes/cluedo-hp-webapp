@@ -19,20 +19,6 @@ function cycleTag(tag) {
   return null;
 }
 
-/**
- * PaperCard: "Pergamentkarte" mit torn edges.
- * Wir legen die Edges bewusst über die Card, aber dezent.
- */
-function PaperCard({ children, style }) {
-  return (
-    <div className="hp-card" style={{ ...styles.paperCard, ...style }}>
-      <div style={styles.paperEdgeTop} aria-hidden="true" />
-      <div style={styles.paperInner}>{children}</div>
-      <div style={styles.paperEdgeBottom} aria-hidden="true" />
-    </div>
-  );
-}
-
 function AdminPanel() {
   const [users, setUsers] = useState([]);
 
@@ -190,7 +176,7 @@ export default function App() {
     if (gs[0] && !gameId) setGameId(gs[0].id);
   };
 
-  // ✅ Google Fonts laden (damit es auch am Handy klappt)
+  // ✅ Google Fonts laden
   useEffect(() => {
     if (document.getElementById("hp-fonts")) return;
 
@@ -216,7 +202,7 @@ export default function App() {
     document.head.appendChild(link);
   }, []);
 
-  // ✅ Keyframes / Animationen
+  // ✅ Keyframes
   useEffect(() => {
     if (document.getElementById("hp-anim-style")) return;
     const style = document.createElement("style");
@@ -237,46 +223,18 @@ export default function App() {
     document.head.appendChild(style);
   }, []);
 
-  // ✅ Hintergrund + ✅ Performance Fix für Mobile
+  // ✅ Background: Rumtreiberkarte (blurred) + Overlay (lesbar)
   useEffect(() => {
-    const bg = `radial-gradient(circle at 12% 18%, rgba(120,80,30,0.16), rgba(0,0,0,0) 38%),
-      radial-gradient(circle at 85% 22%, rgba(120,80,30,0.10), rgba(0,0,0,0) 42%),
-      radial-gradient(circle at 35% 82%, rgba(120,80,30,0.08), rgba(0,0,0,0) 45%),
-      radial-gradient(circle at 70% 75%, rgba(90,60,25,0.08), rgba(0,0,0,0) 40%),
-      repeating-linear-gradient(0deg,
-        rgba(255,255,255,0.02),
-        rgba(255,255,255,0.02) 4px,
-        rgba(0,0,0,0.02) 8px
-      ),
-      linear-gradient(180deg, #f1e2c2, #e3c996)`;
-
+    // html/body reset
     document.documentElement.style.height = "100%";
     document.body.style.height = "100%";
     document.documentElement.style.margin = "0";
     document.body.style.margin = "0";
     document.documentElement.style.padding = "0";
     document.body.style.padding = "0";
-
-    document.documentElement.style.background = bg;
-    document.body.style.background = bg;
-
-    const isTouch =
-      "ontouchstart" in window || (navigator && navigator.maxTouchPoints > 0);
-
-    if (isTouch) {
-      document.documentElement.style.backgroundAttachment = "scroll";
-      document.body.style.backgroundAttachment = "scroll";
-    }
-
-    const root = document.getElementById("root");
-    if (root) {
-      root.style.minHeight = "100dvh";
-      root.style.background = "transparent";
-      root.style.overflowX = "hidden";
-    }
   }, []);
 
-  // ✅ Global CSS Fixes + moderne Hover-UX
+  // ✅ Global CSS (NO HOVER on rows, NO paper edges)
   useEffect(() => {
     if (document.getElementById("hp-global-style")) return;
     const style = document.createElement("style");
@@ -284,24 +242,49 @@ export default function App() {
     style.innerHTML = `
       html, body {
         overscroll-behavior-y: none;
-        background: transparent;
         -webkit-text-size-adjust: 100%;
         text-rendering: optimizeLegibility;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        background: #1c140d;
       }
+
+      /* Rumtreiberkarte Layer (Image in /public/bg/marauders-map.jpg) */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        background-image: url("/bg/marauders-map.jpg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        filter: blur(8px) saturate(1.1) contrast(1.05) brightness(0.95);
+        transform: scale(1.05); /* Blur edges vermeiden */
+      }
+
+      /* Lesbarkeits-Overlay (warm parchment wash) */
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background:
+          radial-gradient(circle at 15% 20%, rgba(255,220,160,0.18), rgba(0,0,0,0) 40%),
+          radial-gradient(circle at 80% 30%, rgba(255,210,140,0.14), rgba(0,0,0,0) 42%),
+          linear-gradient(180deg, rgba(241,226,194,0.78), rgba(227,201,150,0.78));
+      }
+
       body {
         overflow-x: hidden;
         touch-action: pan-y;
         -webkit-overflow-scrolling: touch;
       }
+
       #root { background: transparent; }
 
-      /* Moderner Hover (perf: nur transform/opacity) */
-      .hp-card { transition: transform 160ms ease, box-shadow 160ms ease; }
-      .hp-card:hover { transform: translateY(-2px); box-shadow: 0 18px 40px rgba(0,0,0,0.18); }
-      .hp-row { transition: background 140ms ease; }
-      .hp-row:hover { background: rgba(255,255,255,0.34) !important; }
+      /* WICHTIG: Kein Row-Hover mehr */
+      .hp-row:hover { background: inherit !important; }
     `;
     document.head.appendChild(style);
   }, []);
@@ -395,7 +378,7 @@ export default function App() {
     return (
       <div style={styles.loginPage}>
         <div style={styles.candleGlowLayer} aria-hidden="true" />
-        <PaperCard style={styles.loginCard}>
+        <div style={styles.loginCard}>
           <div style={styles.loginTitle}>Zauber-Detektiv Notizbogen</div>
 
           <div style={styles.loginSubtitle}>
@@ -445,7 +428,7 @@ export default function App() {
             Deine Notizen bleiben privat – jeder Spieler sieht nur seinen eigenen
             Zettel.
           </div>
-        </PaperCard>
+        </div>
       </div>
     );
   }
@@ -463,7 +446,7 @@ export default function App() {
     if (status === 1) return "rgba(255, 0, 0, 0.055)";
     if (status === 2) return "rgba(0, 170, 60, 0.06)";
     if (status === 3) return "rgba(90, 90, 90, 0.10)";
-    return "rgba(255,255,255,0.18)";
+    return "rgba(255,255,255,0.16)";
   };
 
   const getNameColor = (status) => {
@@ -477,14 +460,14 @@ export default function App() {
     if (status === 2) return "✓";
     if (status === 1) return "✕";
     if (status === 3) return "?";
-    return "•";
+    return "–";
   };
 
-  const getStatusSymbolColor = (status) => {
-    if (status === 2) return "#0b6a1e";
-    if (status === 1) return "#b10000";
-    if (status === 3) return "#444444";
-    return "rgba(30,20,12,0.55)";
+  const getStatusBadge = (status) => {
+    if (status === 2) return { color: "#0b6a1e", background: "rgba(0,170,60,0.10)" };
+    if (status === 1) return { color: "#b10000", background: "rgba(255,0,0,0.10)" };
+    if (status === 3) return { color: "#444444", background: "rgba(120,120,120,0.12)" };
+    return { color: "rgba(30,20,12,0.60)", background: "rgba(255,255,255,0.26)" };
   };
 
   const closeHelp = () => setHelpOpen(false);
@@ -512,7 +495,7 @@ export default function App() {
 
         {/* Spiel + Hilfe */}
         <div style={{ marginTop: 14 }}>
-          <PaperCard>
+          <div style={styles.card}>
             <div style={styles.sectionHeader}>Spiel</div>
             <div style={styles.cardBody}>
               <select
@@ -536,7 +519,7 @@ export default function App() {
                 Hilfe
               </button>
             </div>
-          </PaperCard>
+          </div>
         </div>
 
         {/* Hilfe Modal */}
@@ -545,13 +528,19 @@ export default function App() {
             <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
               <div style={styles.modalHeader}>
                 <div style={{ fontWeight: 1000, color: "#20140c" }}>Hilfe</div>
-                <button onClick={closeHelp} style={styles.modalCloseBtn} aria-label="Schließen">
+                <button
+                  onClick={closeHelp}
+                  style={styles.modalCloseBtn}
+                  aria-label="Schließen"
+                >
                   ✕
                 </button>
               </div>
 
               <div style={styles.helpBody}>
-                <div style={styles.helpSectionTitle}>1) Namen anklicken (Status)</div>
+                <div style={styles.helpSectionTitle}>
+                  1) Namen anklicken (Status)
+                </div>
                 <div style={styles.helpText}>
                   Tippe auf einen Namen, um den Status zu wechseln. Reihenfolge:
                 </div>
@@ -561,33 +550,25 @@ export default function App() {
                     <span style={{ ...styles.helpBadge, background: "rgba(0,170,60,0.12)", color: "#0b6a1e" }}>
                       ✓
                     </span>
-                    <div>
-                      <b>Grün</b> = bestätigt / fix richtig
-                    </div>
+                    <div><b>Grün</b> = bestätigt / fix richtig</div>
                   </div>
                   <div style={styles.helpListRow}>
                     <span style={{ ...styles.helpBadge, background: "rgba(255,0,0,0.10)", color: "#b10000" }}>
                       ✕
                     </span>
-                    <div>
-                      <b>Rot</b> = ausgeschlossen / fix falsch
-                    </div>
+                    <div><b>Rot</b> = ausgeschlossen / fix falsch</div>
                   </div>
                   <div style={styles.helpListRow}>
                     <span style={{ ...styles.helpBadge, background: "rgba(120,120,120,0.14)", color: "#444" }}>
                       ?
                     </span>
-                    <div>
-                      <b>Grau</b> = unsicher / „vielleicht“
-                    </div>
+                    <div><b>Grau</b> = unsicher / „vielleicht“</div>
                   </div>
                   <div style={styles.helpListRow}>
-                    <span style={{ ...styles.helpBadge, background: "rgba(255,255,255,0.35)", color: "#20140c" }}>
-                      •
+                    <span style={{ ...styles.helpBadge, background: "rgba(255,255,255,0.30)", color: "#20140c" }}>
+                      –
                     </span>
-                    <div>
-                      <b>Leer</b> = unknown / noch nicht bewertet
-                    </div>
+                    <div><b>Leer</b> = unknown / noch nicht bewertet</div>
                   </div>
                 </div>
 
@@ -601,34 +582,27 @@ export default function App() {
                 <div style={styles.helpList}>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>i</span>
-                    <div>
-                      <b>i</b> = „Ich habe diese Geheimkarte“
-                    </div>
+                    <div><b>i</b> = „Ich habe diese Geheimkarte“</div>
                   </div>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>m</span>
-                    <div>
-                      <b>m</b> = „Geheimkarte aus dem mittleren Deck“
-                    </div>
+                    <div><b>m</b> = „Geheimkarte aus dem mittleren Deck“</div>
                   </div>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>s</span>
-                    <div>
-                      <b>s</b> = „Ein anderer Spieler hat diese Karte“
-                    </div>
+                    <div><b>s</b> = „Ein anderer Spieler hat diese Karte“</div>
                   </div>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>—</span>
-                    <div>
-                      <b>—</b> = keine Notiz
-                    </div>
+                    <div><b>—</b> = keine Notiz</div>
                   </div>
                 </div>
 
                 <div style={styles.helpDivider} />
 
                 <div style={styles.helpText}>
-                  Tipp: Jeder Spieler sieht nur seine eigenen Notizen – andere Spieler können nicht in deinen Zettel schauen.
+                  Tipp: Jeder Spieler sieht nur seine eigenen Notizen – andere
+                  Spieler können nicht in deinen Zettel schauen.
                 </div>
               </div>
             </div>
@@ -638,56 +612,59 @@ export default function App() {
         {/* Sheet */}
         <div style={{ marginTop: 14, display: "grid", gap: 14 }}>
           {sections.map((sec) => (
-            <PaperCard key={sec.key}>
+            <div key={sec.key} style={styles.card}>
               <div style={styles.sectionHeader}>{sec.title}</div>
 
-              <div style={styles.tableWrap}>
-                {sec.entries.map((e) => (
-                  <div
-                    key={e.entry_id}
-                    className="hp-row"
-                    style={{
-                      ...styles.row,
-                      background: getRowBg(e.status),
-                      animation: pulseId === e.entry_id ? "rowPulse 220ms ease-out" : "none",
-                    }}
-                  >
+              <div style={{ display: "grid" }}>
+                {sec.entries.map((e) => {
+                  const badge = getStatusBadge(e.status);
+                  return (
                     <div
-                      onClick={() => cycleStatus(e)}
+                      key={e.entry_id}
+                      className="hp-row"
                       style={{
-                        ...styles.name,
-                        textDecoration: e.status === 1 ? "line-through" : "none",
-                        color: getNameColor(e.status),
-                        opacity: e.status === 1 ? 0.75 : 1,
+                        ...styles.row,
+                        background: getRowBg(e.status),
+                        animation: pulseId === e.entry_id ? "rowPulse 220ms ease-out" : "none",
                       }}
-                      title="Klick: Grün → Rot → Grau → Leer"
                     >
-                      {e.label}
-                    </div>
-
-                    <div style={styles.statusCell}>
-                      <span
+                      <div
+                        onClick={() => cycleStatus(e)}
                         style={{
-                          ...styles.statusBadge,
-                          color: getStatusSymbolColor(e.status),
-                          borderColor: "rgba(0,0,0,0.22)",
+                          ...styles.name,
+                          textDecoration: e.status === 1 ? "line-through" : "none",
+                          color: getNameColor(e.status),
+                          opacity: e.status === 1 ? 0.75 : 1,
                         }}
+                        title="Klick: Grün → Rot → Grau → Leer"
                       >
-                        {getStatusSymbol(e.status)}
-                      </span>
-                    </div>
+                        {e.label}
+                      </div>
 
-                    <button
-                      onClick={() => toggleTag(e)}
-                      style={styles.tagBtn}
-                      title="i → m → s → leer"
-                    >
-                      {e.note_tag || "—"}
-                    </button>
-                  </div>
-                ))}
+                      <div style={styles.statusCell}>
+                        <span
+                          style={{
+                            ...styles.statusBadge,
+                            color: badge.color,
+                            background: badge.background,
+                          }}
+                        >
+                          {getStatusSymbol(e.status)}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => toggleTag(e)}
+                        style={styles.tagBtn}
+                        title="i → m → s → leer"
+                      >
+                        {e.note_tag || "—"}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
-            </PaperCard>
+            </div>
           ))}
         </div>
 
@@ -698,50 +675,12 @@ export default function App() {
 }
 
 /* ===== Styles ===== */
-
-const PAPER_EDGE_SVG =
-  "data:image/svg+xml;utf8," +
-  encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" width="260" height="18" viewBox="0 0 260 18">
-  <!-- torn silhouette -->
-  <path d="M0,14
-           C14,18 26,9 40,14
-           C54,19 68,9 82,14
-           C98,20 110,10 126,14
-           C142,18 156,10 172,14
-           C188,18 202,10 218,14
-           C234,18 246,12 260,14
-           L260,0 L0,0 Z"
-        fill="rgba(255,255,255,0.92)"/>
-  <!-- ink edge -->
-  <path d="M0,14
-           C14,18 26,9 40,14
-           C54,19 68,9 82,14
-           C98,20 110,10 126,14
-           C142,18 156,10 172,14
-           C188,18 202,10 218,14
-           C234,18 246,12 260,14"
-        fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="1.2" stroke-linecap="round"/>
-</svg>
-`);
-
 const styles = {
   page: {
     minHeight: "100dvh",
     margin: 0,
     padding: 0,
-    background: `
-      radial-gradient(circle at 12% 18%, rgba(120,80,30,0.16), rgba(0,0,0,0) 38%),
-      radial-gradient(circle at 85% 22%, rgba(120,80,30,0.10), rgba(0,0,0,0) 42%),
-      radial-gradient(circle at 35% 82%, rgba(120,80,30,0.08), rgba(0,0,0,0) 45%),
-      radial-gradient(circle at 70% 75%, rgba(90,60,25,0.08), rgba(0,0,0,0) 40%),
-      repeating-linear-gradient(0deg,
-        rgba(255,255,255,0.02),
-        rgba(255,255,255,0.02) 4px,
-        rgba(0,0,0,0.02) 8px
-      ),
-      linear-gradient(180deg, #f1e2c2, #e3c996)
-    `,
+    background: "transparent",
   },
 
   shell: {
@@ -764,6 +703,14 @@ const styles = {
     backdropFilter: "blur(4px)",
   },
 
+  card: {
+    borderRadius: 18,
+    overflow: "hidden",
+    border: "1px solid rgba(0,0,0,0.16)",
+    background: "rgba(255,255,255,0.26)",
+    boxShadow: "0 18px 40px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.55)",
+  },
+
   cardBody: {
     padding: 12,
     display: "flex",
@@ -771,78 +718,17 @@ const styles = {
     alignItems: "center",
   },
 
-  // ===== PAPER CARD =====
-  paperCard: {
-    position: "relative",
-    borderRadius: 18,
-    overflow: "hidden",
-    border: "1px solid rgba(0,0,0,0.16)",
-    background: "rgba(255,255,255,0.28)",
-    boxShadow:
-      "0 18px 40px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.55)",
-  },
-  paperInner: {
-    position: "relative",
-    zIndex: 1,
-  },
-  paperEdgeTop: {
-    position: "absolute",
-    left: -2,
-    right: -2,
-    top: -1,
-    height: 16,
-    zIndex: 3,
-    pointerEvents: "none",
-    backgroundImage: `url("${PAPER_EDGE_SVG}")`,
-    backgroundRepeat: "repeat-x",
-    backgroundSize: "260px 16px",
-    opacity: 0.75,
-    mixBlendMode: "multiply",
-  },
-  paperEdgeBottom: {
-    position: "absolute",
-    left: -2,
-    right: -2,
-    bottom: -1,
-    height: 16,
-    zIndex: 3,
-    pointerEvents: "none",
-    backgroundImage: `url("${PAPER_EDGE_SVG}")`,
-    backgroundRepeat: "repeat-x",
-    backgroundSize: "260px 16px",
-    opacity: 0.75,
-    mixBlendMode: "multiply",
-    transform: "scaleY(-1)",
-  },
-
-  // Header: weniger 2008, mehr "ink+gold"
   sectionHeader: {
     padding: "11px 14px",
     fontWeight: 1000,
     fontFamily: '"Cinzel Decorative", "IM Fell English", system-ui',
     letterSpacing: 1.0,
     color: "rgba(25,16,10,0.95)",
-    background: `
-      linear-gradient(180deg, rgba(210,170,90,0.95), rgba(150,110,35,0.95)),
-      repeating-linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.06) 6px, rgba(0,0,0,0.03) 10px)
-    `,
+    background:
+      "linear-gradient(180deg, rgba(210,170,90,0.95), rgba(150,110,35,0.95))",
     borderBottom: "1px solid rgba(0,0,0,0.22)",
     textTransform: "uppercase",
     textShadow: "0 1px 0 rgba(255,255,255,0.20)",
-    position: "relative",
-  },
-
-  // "notebook lines" look
-  tableWrap: {
-    background: `
-      repeating-linear-gradient(
-        180deg,
-        rgba(0,0,0,0.045),
-        rgba(0,0,0,0.045) 1px,
-        rgba(0,0,0,0) 1px,
-        rgba(0,0,0,0) 38px
-      )
-    `,
   },
 
   row: {
@@ -852,13 +738,11 @@ const styles = {
     padding: "12px 14px",
     alignItems: "center",
     borderBottom: "1px solid rgba(0,0,0,0.08)",
-    background: "rgba(255,255,255,0.18)",
   },
 
   name: {
     cursor: "pointer",
     userSelect: "none",
-    color: "#20140c",
     fontWeight: 800,
     letterSpacing: 0.2,
   },
@@ -868,6 +752,7 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
   },
+
   statusBadge: {
     width: 34,
     height: 34,
@@ -876,7 +761,6 @@ const styles = {
     alignItems: "center",
     borderRadius: 999,
     border: "1px solid rgba(0,0,0,0.22)",
-    background: "rgba(255,255,255,0.38)",
     fontWeight: 1100,
     fontSize: 16,
     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)",
@@ -920,7 +804,6 @@ const styles = {
     background: "linear-gradient(180deg, rgba(246,226,179,0.95), rgba(202,164,90,0.95))",
     fontWeight: 1000,
     cursor: "pointer",
-    transition: "transform 140ms ease, box-shadow 140ms ease",
     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)",
   },
 
@@ -931,7 +814,6 @@ const styles = {
     background: "rgba(255,255,255,0.46)",
     fontWeight: 900,
     cursor: "pointer",
-    transition: "transform 140ms ease, box-shadow 140ms ease",
     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)",
   },
 
@@ -941,7 +823,7 @@ const styles = {
     padding: 12,
     borderRadius: 16,
     border: "1px solid rgba(0,0,0,0.16)",
-    background: "rgba(255,255,255,0.26)",
+    background: "rgba(255,255,255,0.22)",
     boxShadow: "0 12px 28px rgba(0,0,0,0.12)",
   },
   adminTop: {
@@ -953,7 +835,6 @@ const styles = {
   adminTitle: {
     fontWeight: 1000,
     color: "#20140c",
-    marginBottom: 0,
   },
   userRow: {
     display: "grid",
@@ -1072,23 +953,19 @@ const styles = {
     position: "relative",
     overflow: "hidden",
     padding: 20,
-    background: `
-      radial-gradient(circle at 12% 18%, rgba(120,80,30,0.16), rgba(0,0,0,0) 38%),
-      radial-gradient(circle at 85% 22%, rgba(120,80,30,0.10), rgba(0,0,0,0) 42%),
-      radial-gradient(circle at 35% 82%, rgba(120,80,30,0.08), rgba(0,0,0,0) 45%),
-      repeating-linear-gradient(0deg,
-        rgba(255,255,255,0.02),
-        rgba(255,255,255,0.02) 4px,
-        rgba(0,0,0,0.02) 8px
-      ),
-      linear-gradient(180deg, #f1e2c2, #e3c996)
-    `,
+    background: "transparent",
   },
   loginCard: {
     width: "100%",
     maxWidth: 420,
     padding: 26,
     borderRadius: 22,
+    position: "relative",
+    zIndex: 2,
+    border: "1px solid rgba(0,0,0,0.20)",
+    background: "rgba(255,255,255,0.28)",
+    boxShadow: "0 18px 55px rgba(0,0,0,0.28)",
+    backdropFilter: "blur(8px)",
     animation: "popIn 240ms ease-out",
   },
   loginTitle: {
@@ -1128,7 +1005,6 @@ const styles = {
     fontWeight: 1000,
     fontSize: 16,
     cursor: "pointer",
-    transition: "transform 140ms ease, box-shadow 140ms ease",
     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)",
   },
   loginHint: {
