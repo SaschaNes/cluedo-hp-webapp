@@ -126,7 +126,7 @@ function AdminPanel() {
               </div>
 
               <div style={{ fontSize: 12, opacity: 0.75 }}>
-                Tipp: Tap auf Item = rot (ausschließen), Long-Press = grün (bestätigt), ? = unsicher.
+                Tipp: Klick auf Item: Grün → Rot → Grau → Leer
               </div>
             </div>
           </div>
@@ -134,39 +134,6 @@ function AdminPanel() {
       )}
     </div>
   );
-}
-
-function useLongPress(onLongPress, onClick, { delay = 450 } = {}) {
-  const [longPressed, setLongPressed] = useState(false);
-  const timeoutRef = React.useRef(null);
-
-  const start = (e) => {
-    e.preventDefault();
-    setLongPressed(false);
-    timeoutRef.current = setTimeout(() => {
-      setLongPressed(true);
-      onLongPress();
-    }, delay);
-  };
-
-  const clear = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = null;
-  };
-
-  const end = () => {
-    clear();
-    if (!longPressed) onClick();
-  };
-
-  return {
-    onMouseDown: start,
-    onMouseUp: end,
-    onMouseLeave: clear,
-    onTouchStart: start,
-    onTouchEnd: end,
-    onTouchMove: clear,
-  };
 }
 
 export default function App() {
@@ -236,30 +203,20 @@ export default function App() {
     setSheet(sh);
   };
 
-  const toggleCross = async (entry) => {
-    const next = entry.status === 1 ? 0 : 1;
-    await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ status: next }),
-    });
-    await reloadSheet();
-  };
+  // ✅ Cycle: unknown -> green -> red -> gray -> unknown
+  const cycleStatus = async (entry) => {
+    let next = 0;
 
-  const toggleConfirmed = async (entry) => {
-    const next = entry.status === 2 ? 0 : 2;
-    await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ status: next }),
-    });
-    await reloadSheet();
-  };
+    if (entry.status === 0) next = 2;       // grün (confirmed)
+    else if (entry.status === 2) next = 1;  // rot (crossed)
+    else if (entry.status === 1) next = 3;  // grau (maybe)
+    else next = 0;                          // zurück unknown
 
-  const toggleMaybe = async (entry) => {
-    const next = entry.status === 3 ? 0 : 3;
     await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
       method: "PATCH",
       body: JSON.stringify({ status: next }),
     });
+
     await reloadSheet();
   };
 
@@ -316,16 +273,16 @@ export default function App() {
     : [];
 
   const getRowBg = (status) => {
-    if (status === 1) return "rgba(255, 0, 0, 0.06)";     // crossed
-    if (status === 2) return "rgba(0, 170, 60, 0.07)";    // confirmed
-    if (status === 3) return "rgba(255, 180, 70, 0.12)";  // maybe
+    if (status === 1) return "rgba(255, 0, 0, 0.06)";     // rot
+    if (status === 2) return "rgba(0, 170, 60, 0.07)";    // grün
+    if (status === 3) return "rgba(120, 120, 120, 0.14)"; // grau
     return "rgba(255,255,255,0.22)";
   };
 
   const getNameColor = (status) => {
     if (status === 1) return "#b10000";
     if (status === 2) return "#0b6a1e";
-    if (status === 3) return "#6b4d00";
+    if (status === 3) return "#444444";
     return "#20140c";
   };
 
@@ -371,59 +328,37 @@ export default function App() {
               <div style={styles.sectionHeader}>{sec.title}</div>
 
               <div style={{ display: "grid" }}>
-                {sec.entries.map((e) => {
-                  const pressHandlers = useLongPress(
-                    () => toggleConfirmed(e), // long press -> confirmed
-                    () => toggleCross(e),     // tap -> crossed
-                    { delay: 450 }
-                  );
-
-                  return (
+                {sec.entries.map((e) => (
+                  <div
+                    key={e.entry_id}
+                    style={{
+                      ...styles.row,
+                      background: getRowBg(e.status),
+                    }}
+                  >
+                    {/* ✅ Klick Cycle */}
                     <div
-                      key={e.entry_id}
+                      onClick={() => cycleStatus(e)}
                       style={{
-                        ...styles.row,
-                        background: getRowBg(e.status),
+                        ...styles.name,
+                        textDecoration: e.status === 1 ? "line-through" : "none",
+                        color: getNameColor(e.status),
+                        opacity: e.status === 1 ? 0.75 : 1,
                       }}
+                      title="Klick: Grün → Rot → Grau → Leer"
                     >
-                      {/* Name: Tap = rot, Long-Press = grün */}
-                      <div
-                        {...pressHandlers}
-                        style={{
-                          ...styles.name,
-                          textDecoration: e.status === 1 ? "line-through" : "none",
-                          color: getNameColor(e.status),
-                          opacity: e.status === 1 ? 0.75 : 1,
-                        }}
-                        title="Tippen = ausschließen | Lange halten = bestätigt"
-                      >
-                        {e.label}
-                      </div>
-
-                      {/* ? = maybe */}
-                      <button
-                        onClick={() => toggleMaybe(e)}
-                        style={{
-                          ...styles.maybeBtn,
-                          background: e.status === 3
-                            ? "linear-gradient(180deg, rgba(255,210,120,0.9), rgba(180,120,20,0.25))"
-                            : styles.maybeBtn.background,
-                        }}
-                        title="Unsicher"
-                      >
-                        ?
-                      </button>
-
-                      <div style={styles.cell}>{e.status === 1 ? "X" : ""}</div>
-                      <div style={styles.cell}>{e.status === 1 ? "✓" : ""}</div>
-                      <div style={styles.cell}>{e.status === 2 ? "✓" : ""}</div>
-
-                      <button onClick={() => toggleTag(e)} style={styles.tagBtn} title="i → m → s → leer">
-                        {e.note_tag || "—"}
-                      </button>
+                      {e.label}
                     </div>
-                  );
-                })}
+
+                    <div style={styles.cell}>{e.status === 1 ? "X" : ""}</div>
+                    <div style={styles.cell}>{e.status === 1 ? "✓" : ""}</div>
+                    <div style={styles.cell}>{e.status === 2 ? "✓" : ""}</div>
+
+                    <button onClick={() => toggleTag(e)} style={styles.tagBtn} title="i → m → s → leer">
+                      {e.note_tag || "—"}
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           ))}
@@ -486,7 +421,7 @@ const styles = {
   },
   row: {
     display: "grid",
-    gridTemplateColumns: "1fr 42px 40px 40px 40px 56px", // ✅ extra Spalte für ?
+    gridTemplateColumns: "1fr 40px 40px 40px 56px", // ✅ ohne ? Button
     gap: 8,
     padding: "10px 12px",
     alignItems: "center",
@@ -503,15 +438,6 @@ const styles = {
     textAlign: "center",
     fontWeight: 1000,
     color: "#20140c",
-  },
-  maybeBtn: {
-    padding: "8px 0",
-    fontWeight: 1000,
-    borderRadius: 10,
-    border: "1px solid rgba(0,0,0,0.25)",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(0,0,0,0.06))",
-    color: "#6b4d00",
-    cursor: "pointer",
   },
   tagBtn: {
     padding: "8px 0",
