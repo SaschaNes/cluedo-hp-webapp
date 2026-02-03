@@ -143,6 +143,7 @@ export default function App() {
   const [games, setGames] = useState([]);
   const [gameId, setGameId] = useState(null);
   const [sheet, setSheet] = useState(null);
+  const [pulseId, setPulseId] = useState(null);
 
   // ✅ Hilfe Modal State
   const [helpOpen, setHelpOpen] = useState(false);
@@ -156,6 +157,24 @@ export default function App() {
 
     if (gs[0] && !gameId) setGameId(gs[0].id);
   };
+
+  useEffect(() => {
+    document.body.style.margin = "0";
+    document.body.style.padding = "0";
+    document.body.style.background = "transparent";
+  }, []);
+
+  useEffect(() => {
+    if (document.getElementById("hp-anim-style")) return;
+    const style = document.createElement("style");
+    style.id = "hp-anim-style";
+    style.innerHTML = `
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes popIn { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+      @keyframes rowPulse { 0%{ transform: scale(1); } 50%{ transform: scale(1.01); } 100%{ transform: scale(1); } }
+    `;
+    document.head.appendChild(style);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -221,6 +240,8 @@ export default function App() {
     });
 
     await reloadSheet();
+    setPulseId(entry.entry_id);
+    setTimeout(() => setPulseId(null), 220);
   };
 
   const toggleTag = async (entry) => {
@@ -435,6 +456,10 @@ export default function App() {
                     style={{
                       ...styles.row,
                       background: getRowBg(e.status),
+                      animation:
+                        pulseId === e.entry_id
+                          ? "rowPulse 220ms ease-out"
+                          : "none",
                     }}
                   >
                     <div
@@ -474,17 +499,38 @@ export default function App() {
 const styles = {
   page: {
     minHeight: "100vh",
-    padding: 16,
+    margin: 0,
+    padding: 0,
     background:
-      "radial-gradient(circle at 20% 10%, rgba(255,255,255,0.40), rgba(0,0,0,0) 45%), linear-gradient(180deg, #f3e7cf, #e5d2ac)",
+      `
+      radial-gradient(circle at 12% 18%, rgba(120,80,30,0.18), rgba(0,0,0,0) 38%),
+      radial-gradient(circle at 85% 22%, rgba(120,80,30,0.12), rgba(0,0,0,0) 42%),
+      radial-gradient(circle at 35% 82%, rgba(120,80,30,0.10), rgba(0,0,0,0) 45%),
+      radial-gradient(circle at 70% 75%, rgba(90,60,25,0.10), rgba(0,0,0,0) 40%),
+
+      /* subtile Papier-Noise (Pattern) */
+      repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,0.03),
+        rgba(255,255,255,0.03) 1px,
+        rgba(0,0,0,0.02) 2px,
+        rgba(0,0,0,0.02) 3px
+      ),
+
+      /* Grundfarbe Pergament */
+      linear-gradient(180deg, #f1e2c2, #e3c996)
+      `,
+    backgroundAttachment: "fixed",
   },
   shell: {
-    fontFamily: "system-ui",
+    fontFamily: '"IM Fell English", system-ui',
+    padding: 16,
     maxWidth: 620,
     margin: "0 auto",
   },
   title: {
     fontWeight: 1000,
+    fontFamily: '"Cinzel Decorative", "IM Fell English", system-ui',
     letterSpacing: 0.5,
     fontSize: 22,
     color: "#20140c",
@@ -509,10 +555,12 @@ const styles = {
     border: "1px solid rgba(0,0,0,0.18)",
     background: "rgba(255,255,255,0.35)",
     boxShadow: "0 10px 24px rgba(0,0,0,0.12)",
+    transition: "transform 180ms ease, box-shadow 180ms ease",
   },
   sectionHeader: {
     padding: "10px 12px",
     fontWeight: 1000,
+    fontFamily: '"Cinzel Decorative", "IM Fell English", system-ui',
     letterSpacing: 0.7,
     color: "#2b1a0e",
     background: "linear-gradient(180deg, #caa45a, #a67a2a)",
@@ -571,6 +619,7 @@ const styles = {
     background: "linear-gradient(180deg, #f3d79b, #caa45a)",
     fontWeight: 1000,
     cursor: "pointer",
+    transition: "transform 140ms ease, box-shadow 140ms ease",
   },
   secondaryBtn: {
     padding: "10px 12px",
@@ -579,6 +628,7 @@ const styles = {
     background: "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(0,0,0,0.05))",
     fontWeight: 900,
     cursor: "pointer",
+    transition: "transform 140ms ease, box-shadow 140ms ease",
   },
   adminWrap: {
     marginTop: 14,
@@ -611,6 +661,7 @@ const styles = {
     justifyContent: "center",
     padding: 16,
     zIndex: 9999,
+    animation: "fadeIn 160ms ease-out",
   },
   modalCard: {
     width: "100%",
@@ -621,6 +672,7 @@ const styles = {
     boxShadow: "0 18px 50px rgba(0,0,0,0.35)",
     padding: 14,
     backdropFilter: "blur(6px)",
+    animation: "popIn 160ms ease-out",
   },
   modalHeader: {
     display: "flex",
