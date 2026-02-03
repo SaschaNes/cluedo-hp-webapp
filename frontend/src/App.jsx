@@ -284,39 +284,45 @@ export default function App() {
   };
 
   if (!me) {
-    return (
-      <div style={styles.page}>
-        <div style={styles.shell}>
-          <div style={styles.title}>Zauber-Detektiv Notizbogen</div>
+  return (
+    <div style={styles.loginPage}>
+      <div style={styles.loginCard}>
+        <div style={styles.loginTitle}>
+          Zauber-Detektiv Notizbogen
+        </div>
 
-          <div style={styles.card}>
-            <div style={styles.sectionHeader}>Login</div>
+        <div style={styles.loginSubtitle}>
+          Melde dich an, um dein Cluedo-Magie-Sheet zu öffnen
+        </div>
 
-            <div style={{ padding: 12, display: "grid", gap: 10 }}>
-              <input
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-                placeholder="Email"
-                style={styles.input}
-              />
-              <input
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                placeholder="Passwort"
-                type="password"
-                style={styles.input}
-              />
-              <button onClick={doLogin} style={styles.primaryBtn}>Anmelden</button>
+        <div style={{ marginTop: 18, display: "grid", gap: 12 }}>
+          <input
+            value={loginEmail}
+            onChange={(e) => setLoginEmail(e.target.value)}
+            placeholder="Email"
+            style={styles.input}
+          />
 
-              <div style={{ opacity: 0.75, fontSize: 13 }}>
-                Default Admin: <b>admin@local</b> (Passwort aus <code>.env</code>)
-              </div>
-            </div>
-          </div>
+          <input
+            value={loginPassword}
+            onChange={(e) => setLoginPassword(e.target.value)}
+            placeholder="Passwort"
+            type="password"
+            style={styles.input}
+          />
+
+          <button onClick={doLogin} style={styles.loginBtn}>
+            ✦ Anmelden
+          </button>
+        </div>
+
+        <div style={styles.loginHint}>
+          Deine Notizen bleiben privat – jeder Spieler sieht nur seinen eigenen Zettel.
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   const sections = sheet
     ? [
@@ -776,5 +782,81 @@ const styles = {
     margin: "14px 0",
     height: 1,
     background: "rgba(0,0,0,0.12)",
+  },
+  loginPage: {
+    minHeight: "100dvh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+
+    // Hintergrund bleibt Pergament
+    background:
+      `
+      radial-gradient(circle at 12% 18%, rgba(120,80,30,0.18), rgba(0,0,0,0) 38%),
+      radial-gradient(circle at 85% 22%, rgba(120,80,30,0.12), rgba(0,0,0,0) 42%),
+      radial-gradient(circle at 35% 82%, rgba(120,80,30,0.10), rgba(0,0,0,0) 45%),
+      repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,0.03),
+        rgba(255,255,255,0.03) 1px,
+        rgba(0,0,0,0.02) 2px,
+        rgba(0,0,0,0.02) 3px
+      ),
+      linear-gradient(180deg, #f1e2c2, #e3c996)
+      `,
+  },
+
+  loginCard: {
+    width: "100%",
+    maxWidth: 420,
+    padding: 26,
+    borderRadius: 22,
+    border: "1px solid rgba(0,0,0,0.25)",
+
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.40))",
+
+    boxShadow: "0 18px 55px rgba(0,0,0,0.35)",
+    backdropFilter: "blur(8px)",
+
+    animation: "popIn 240ms ease-out",
+  },
+
+  loginTitle: {
+    fontFamily: '"Cinzel Decorative", "IM Fell English", system-ui',
+    fontWeight: 1000,
+    fontSize: 26,
+    color: "#20140c",
+    textAlign: "center",
+    letterSpacing: 0.6,
+  },
+
+  loginSubtitle: {
+    marginTop: 6,
+    textAlign: "center",
+    opacity: 0.85,
+    fontSize: 15,
+    lineHeight: 1.4,
+  },
+
+  loginBtn: {
+    padding: "12px 14px",
+    borderRadius: 14,
+    border: "1px solid rgba(0,0,0,0.30)",
+    background:
+      "linear-gradient(180deg, #f6e2b3, #caa45a)",
+    fontWeight: 1000,
+    fontSize: 16,
+    cursor: "pointer",
+    transition: "transform 140ms ease, box-shadow 140ms ease",
+  },
+
+  loginHint: {
+    marginTop: 18,
+    fontSize: 13,
+    opacity: 0.72,
+    textAlign: "center",
+    lineHeight: 1.35,
   },
 };
