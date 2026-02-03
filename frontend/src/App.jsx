@@ -90,7 +90,10 @@ function AdminPanel() {
 
       {open && (
         <div style={styles.modalOverlay} onMouseDown={closeModal}>
-          <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
+          <div
+            style={styles.modalCard}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <div style={styles.modalHeader}>
               <div style={{ fontWeight: 1000, color: "#20140c" }}>
                 Neuen User anlegen
@@ -119,14 +122,25 @@ function AdminPanel() {
                 type="password"
                 style={styles.input}
               />
-              <select value={role} onChange={(e) => setRole(e.target.value)} style={styles.input}>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                style={styles.input}
+              >
                 <option value="user">user</option>
                 <option value="admin">admin</option>
               </select>
 
               {msg && <div style={{ opacity: 0.9 }}>{msg}</div>}
 
-              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  justifyContent: "flex-end",
+                  marginTop: 4,
+                }}
+              >
                 <button
                   onClick={() => {
                     resetForm();
@@ -163,7 +177,6 @@ export default function App() {
   const [sheet, setSheet] = useState(null);
   const [pulseId, setPulseId] = useState(null);
 
-  // Hilfe Modal
   const [helpOpen, setHelpOpen] = useState(false);
 
   const load = async () => {
@@ -195,7 +208,7 @@ export default function App() {
     link.id = "hp-fonts";
     link.rel = "stylesheet";
     link.href =
-      "https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=IM+Fell+English:ital,wght@0,400;0,700;1,400&display=swap";
+      "https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=IM+Fell+English:ital,wght@0,400;0,0.700;1,400&display=swap";
 
     document.head.appendChild(pre1);
     document.head.appendChild(pre2);
@@ -212,7 +225,6 @@ export default function App() {
       @keyframes popIn { from { opacity: 0; transform: translateY(8px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
       @keyframes rowPulse { 0%{ transform: scale(1); } 50%{ transform: scale(1.01); } 100%{ transform: scale(1); } }
 
-      /* Candle / warm glow */
       @keyframes candleGlow {
         0%   { opacity: .55; transform: translateY(0px) scale(1); filter: blur(16px); }
         35%  { opacity: .85; transform: translateY(-2px) scale(1.02); filter: blur(18px); }
@@ -223,20 +235,19 @@ export default function App() {
     document.head.appendChild(style);
   }, []);
 
-  // ✅ Background: Rumtreiberkarte (blurred) + Overlay (lesbar)
+  // ✅ html/body reset
   useEffect(() => {
-    // html/body reset
     document.documentElement.style.height = "100%";
     document.body.style.height = "100%";
     document.documentElement.style.margin = "0";
     document.body.style.margin = "0";
     document.documentElement.style.padding = "0";
     document.body.style.padding = "0";
-    document.documentElement.style.background = "#2a1c12";
-    document.body.style.background = "#2a1c12";
+    document.documentElement.style.background = "#1c140d";
+    document.body.style.background = "#1c140d";
   }, []);
 
-  // ✅ Global CSS (NO HOVER on rows, NO paper edges)
+  // ✅ Global CSS (Hover komplett weg + sauberes Scroll-Verhalten)
   useEffect(() => {
     if (document.getElementById("hp-global-style")) return;
     const style = document.createElement("style");
@@ -251,11 +262,6 @@ export default function App() {
         background: #1c140d;
       }
 
-      html, body {
-        background: #1c140d;
-      }
-      #root { background: transparent; }
-
       body {
         overflow-x: hidden;
         touch-action: pan-y;
@@ -264,13 +270,16 @@ export default function App() {
 
       #root { background: transparent; }
 
-      /* WICHTIG: Kein Row-Hover mehr */
-      .hp-row:hover { background: inherit !important; }
+      /* ✅ Hover komplett killen (auch wenn Browser/Styles irgendwo was reinfunken) */
+      .hp-row:hover { background: inherit !important; filter: none !important; }
+      .hp-row *:hover { filter: none !important; }
+
+      /* Optional: Buttons nicht "glowen" beim Hover (modern clean) */
+      button:hover { filter: none; }
     `;
     document.head.appendChild(style);
   }, []);
 
-  // initial load
   useEffect(() => {
     (async () => {
       try {
@@ -282,7 +291,6 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // sheet load
   useEffect(() => {
     (async () => {
       if (!gameId) return;
@@ -327,12 +335,11 @@ export default function App() {
     setSheet(sh);
   };
 
-  // ✅ Cycle: unknown -> green -> red -> gray -> unknown
   const cycleStatus = async (entry) => {
     let next = 0;
-    if (entry.status === 0) next = 2; // grün
-    else if (entry.status === 2) next = 1; // rot
-    else if (entry.status === 1) next = 3; // grau
+    if (entry.status === 0) next = 2;
+    else if (entry.status === 2) next = 1;
+    else if (entry.status === 1) next = 3;
     else next = 0;
 
     await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
@@ -354,7 +361,6 @@ export default function App() {
     await reloadSheet();
   };
 
-  // ===== Login Screen =====
   if (!me) {
     return (
       <div style={styles.loginPage}>
@@ -362,7 +368,9 @@ export default function App() {
           <div style={styles.bgMap} />
           <div style={styles.bgInkVignette} />
         </div>
+
         <div style={styles.candleGlowLayer} aria-hidden="true" />
+
         <div style={styles.loginCard}>
           <div style={styles.loginTitle}>Zauber-Detektiv Notizbogen</div>
 
@@ -418,10 +426,13 @@ export default function App() {
     );
   }
 
-  // ===== Main App =====
   const sections = sheet
     ? [
-        { key: "suspect", title: "VERDÄCHTIGE PERSON", entries: sheet.suspect || [] },
+        {
+          key: "suspect",
+          title: "VERDÄCHTIGE PERSON",
+          entries: sheet.suspect || [],
+        },
         { key: "item", title: "GEGENSTAND", entries: sheet.item || [] },
         { key: "location", title: "ORT", entries: sheet.location || [] },
       ]
@@ -449,10 +460,16 @@ export default function App() {
   };
 
   const getStatusBadge = (status) => {
-    if (status === 2) return { color: "#0b6a1e", background: "rgba(0,170,60,0.10)" };
-    if (status === 1) return { color: "#b10000", background: "rgba(255,0,0,0.10)" };
-    if (status === 3) return { color: "#444444", background: "rgba(120,120,120,0.12)" };
-    return { color: "rgba(30,20,12,0.60)", background: "rgba(255,255,255,0.26)" };
+    if (status === 2)
+      return { color: "#0b6a1e", background: "rgba(0,170,60,0.10)" };
+    if (status === 1)
+      return { color: "#b10000", background: "rgba(255,0,0,0.10)" };
+    if (status === 3)
+      return { color: "#444444", background: "rgba(120,120,120,0.12)" };
+    return {
+      color: "rgba(30,20,12,0.60)",
+      background: "rgba(255,255,255,0.26)",
+    };
   };
 
   const closeHelp = () => setHelpOpen(false);
@@ -463,6 +480,7 @@ export default function App() {
         <div style={styles.bgMap} />
         <div style={styles.bgInkVignette} />
       </div>
+
       <div style={styles.shell}>
         <div style={styles.topBar}>
           <div>
@@ -482,7 +500,6 @@ export default function App() {
 
         {me.role === "admin" && <AdminPanel />}
 
-        {/* Spiel + Hilfe */}
         <div style={{ marginTop: 14 }}>
           <div style={styles.card}>
             <div style={styles.sectionHeader}>Spiel</div>
@@ -511,10 +528,12 @@ export default function App() {
           </div>
         </div>
 
-        {/* Hilfe Modal */}
         {helpOpen && (
           <div style={styles.modalOverlay} onMouseDown={closeHelp}>
-            <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
+            <div
+              style={styles.modalCard}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
               <div style={styles.modalHeader}>
                 <div style={{ fontWeight: 1000, color: "#20140c" }}>Hilfe</div>
                 <button
@@ -536,54 +555,97 @@ export default function App() {
 
                 <div style={styles.helpList}>
                   <div style={styles.helpListRow}>
-                    <span style={{ ...styles.helpBadge, background: "rgba(0,170,60,0.12)", color: "#0b6a1e" }}>
+                    <span
+                      style={{
+                        ...styles.helpBadge,
+                        background: "rgba(0,170,60,0.12)",
+                        color: "#0b6a1e",
+                      }}
+                    >
                       ✓
                     </span>
-                    <div><b>Grün</b> = bestätigt / fix richtig</div>
+                    <div>
+                      <b>Grün</b> = bestätigt / fix richtig
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
-                    <span style={{ ...styles.helpBadge, background: "rgba(255,0,0,0.10)", color: "#b10000" }}>
+                    <span
+                      style={{
+                        ...styles.helpBadge,
+                        background: "rgba(255,0,0,0.10)",
+                        color: "#b10000",
+                      }}
+                    >
                       ✕
                     </span>
-                    <div><b>Rot</b> = ausgeschlossen / fix falsch</div>
+                    <div>
+                      <b>Rot</b> = ausgeschlossen / fix falsch
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
-                    <span style={{ ...styles.helpBadge, background: "rgba(120,120,120,0.14)", color: "#444" }}>
+                    <span
+                      style={{
+                        ...styles.helpBadge,
+                        background: "rgba(120,120,120,0.14)",
+                        color: "#444",
+                      }}
+                    >
                       ?
                     </span>
-                    <div><b>Grau</b> = unsicher / „vielleicht“</div>
+                    <div>
+                      <b>Grau</b> = unsicher / „vielleicht“
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
-                    <span style={{ ...styles.helpBadge, background: "rgba(255,255,255,0.30)", color: "#20140c" }}>
+                    <span
+                      style={{
+                        ...styles.helpBadge,
+                        background: "rgba(255,255,255,0.30)",
+                        color: "#20140c",
+                      }}
+                    >
                       –
                     </span>
-                    <div><b>Leer</b> = unknown / noch nicht bewertet</div>
+                    <div>
+                      <b>Leer</b> = unknown / noch nicht bewertet
+                    </div>
                   </div>
                 </div>
 
                 <div style={styles.helpDivider} />
 
-                <div style={styles.helpSectionTitle}>2) i / m / s Button (Notiz)</div>
+                <div style={styles.helpSectionTitle}>
+                  2) i / m / s Button (Notiz)
+                </div>
                 <div style={styles.helpText}>
-                  Rechts pro Zeile gibt es einen Button, der durch diese Werte rotiert:
+                  Rechts pro Zeile gibt es einen Button, der durch diese Werte
+                  rotiert:
                 </div>
 
                 <div style={styles.helpList}>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>i</span>
-                    <div><b>i</b> = „Ich habe diese Geheimkarte“</div>
+                    <div>
+                      <b>i</b> = „Ich habe diese Geheimkarte“
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>m</span>
-                    <div><b>m</b> = „Geheimkarte aus dem mittleren Deck“</div>
+                    <div>
+                      <b>m</b> = „Geheimkarte aus dem mittleren Deck“
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>s</span>
-                    <div><b>s</b> = „Ein anderer Spieler hat diese Karte“</div>
+                    <div>
+                      <b>s</b> = „Ein anderer Spieler hat diese Karte“
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>—</span>
-                    <div><b>—</b> = keine Notiz</div>
+                    <div>
+                      <b>—</b> = keine Notiz
+                    </div>
                   </div>
                 </div>
 
@@ -598,7 +660,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Sheet */}
         <div style={{ marginTop: 14, display: "grid", gap: 14 }}>
           {sections.map((sec) => (
             <div key={sec.key} style={styles.card}>
@@ -614,14 +675,18 @@ export default function App() {
                       style={{
                         ...styles.row,
                         background: getRowBg(e.status),
-                        animation: pulseId === e.entry_id ? "rowPulse 220ms ease-out" : "none",
+                        animation:
+                          pulseId === e.entry_id
+                            ? "rowPulse 220ms ease-out"
+                            : "none",
                       }}
                     >
                       <div
                         onClick={() => cycleStatus(e)}
                         style={{
                           ...styles.name,
-                          textDecoration: e.status === 1 ? "line-through" : "none",
+                          textDecoration:
+                            e.status === 1 ? "line-through" : "none",
                           color: getNameColor(e.status),
                           opacity: e.status === 1 ? 0.75 : 1,
                         }}
@@ -670,6 +735,8 @@ const styles = {
     margin: 0,
     padding: 0,
     background: "transparent",
+    position: "relative",
+    zIndex: 1,
   },
 
   shell: {
@@ -697,7 +764,8 @@ const styles = {
     overflow: "hidden",
     border: "1px solid rgba(0,0,0,0.16)",
     background: "rgba(255,255,255,0.26)",
-    boxShadow: "0 18px 40px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.55)",
+    boxShadow:
+      "0 18px 40px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.55)",
   },
 
   cardBody: {
@@ -790,7 +858,8 @@ const styles = {
     padding: "10px 12px",
     borderRadius: 12,
     border: "1px solid rgba(0,0,0,0.22)",
-    background: "linear-gradient(180deg, rgba(246,226,179,0.95), rgba(202,164,90,0.95))",
+    background:
+      "linear-gradient(180deg, rgba(246,226,179,0.95), rgba(202,164,90,0.95))",
     fontWeight: 1000,
     cursor: "pointer",
     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)",
@@ -806,7 +875,6 @@ const styles = {
     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)",
   },
 
-  // Admin
   adminWrap: {
     marginTop: 14,
     padding: 12,
@@ -835,7 +903,6 @@ const styles = {
     border: "1px solid rgba(0,0,0,0.08)",
   },
 
-  // Modal
   modalOverlay: {
     position: "fixed",
     inset: 0,
@@ -852,7 +919,8 @@ const styles = {
     maxWidth: 560,
     borderRadius: 18,
     border: "1px solid rgba(0,0,0,0.25)",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.42))",
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.42))",
     boxShadow: "0 18px 50px rgba(0,0,0,0.35)",
     padding: 14,
     backdropFilter: "blur(6px)",
@@ -876,7 +944,6 @@ const styles = {
     textAlign: "center",
   },
 
-  // Help
   helpBody: {
     marginTop: 10,
     paddingTop: 4,
@@ -933,7 +1000,6 @@ const styles = {
     background: "rgba(0,0,0,0.12)",
   },
 
-  // Login
   loginPage: {
     minHeight: "100dvh",
     display: "flex",
@@ -943,6 +1009,7 @@ const styles = {
     overflow: "hidden",
     padding: 20,
     background: "transparent",
+    zIndex: 1,
   },
   loginCard: {
     width: "100%",
@@ -990,7 +1057,8 @@ const styles = {
     padding: "12px 14px",
     borderRadius: 14,
     border: "1px solid rgba(0,0,0,0.26)",
-    background: "linear-gradient(180deg, rgba(246,226,179,0.95), rgba(202,164,90,0.95))",
+    background:
+      "linear-gradient(180deg, rgba(246,226,179,0.95), rgba(202,164,90,0.95))",
     fontWeight: 1000,
     fontSize: 16,
     cursor: "pointer",
@@ -1046,26 +1114,32 @@ const styles = {
     padding: 0,
   },
 
-  // Background
+  // ✅ Background (FIXED) — unter Content (zIndex -1) und ohne blur() Filter
   bgFixed: {
     position: "fixed",
     inset: 0,
-    zIndex: 0,
+    zIndex: -1,
     pointerEvents: "none",
   },
 
+  // ✅ WICHTIG: Nutze ein vorab geblurrtes Bild, sonst kriegst du wieder Nähte.
+  // Lege ab: /public/bg/marauders-map-blur.jpg
   bgMap: {
     position: "absolute",
     inset: 0,
-    // >>> HIER dein Bildpfad (public/...)
-    backgroundImage: 'url("/marauders-map.jpg")',
+    backgroundImage: 'url("/bg/marauders-map-blur.jpg")',
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
 
-    // Map weicher + “unter Pergament”
-    filter: "blur(7px) saturate(0.9) contrast(1.05)",
-    transform: "scale(1.05)", // verhindert Ränder durch Blur
+    // KEIN blur() hier!
+    filter: "saturate(0.95) contrast(1.05) brightness(0.98)",
+
+    // GPU / Seam-Fix
+    transform: "translate3d(0,0,0) scale(1.04)",
+    willChange: "transform",
+    backfaceVisibility: "hidden",
+
     opacity: 0.95,
   },
 
@@ -1074,17 +1148,16 @@ const styles = {
     inset: 0,
     background: `
       radial-gradient(circle at 50% 45%,
-        rgba(0,0,0,0.08) 0%,
-        rgba(0,0,0,0.18) 48%,
-        rgba(0,0,0,0.55) 78%,
-        rgba(0,0,0,0.72) 100%
+        rgba(0,0,0,0.10) 0%,
+        rgba(0,0,0,0.22) 55%,
+        rgba(0,0,0,0.55) 82%,
+        rgba(0,0,0,0.70) 100%
       ),
       linear-gradient(180deg,
-        rgba(245, 226, 185, 0.42),
-        rgba(214, 180, 120, 0.32)
+        rgba(245, 226, 185, 0.38),
+        rgba(214, 180, 120, 0.28)
       )
     `,
     mixBlendMode: "multiply",
   },
-
 };
