@@ -244,13 +244,18 @@ export default function App() {
     document.head.appendChild(style);
   }, []);
 
-  // ✅ Hintergrund (html + body) setzen (gegen white flashes)
+  // ✅ Hintergrund (html + body) setzen (gegen white flashes) + ✅ Performance Fix für Mobile
   useEffect(() => {
+    // ⚡ PERFORMANCE: etwas "gröberes" Noise Pattern (weniger Repaints)
     const bg = `radial-gradient(circle at 12% 18%, rgba(120,80,30,0.18), rgba(0,0,0,0) 38%),
       radial-gradient(circle at 85% 22%, rgba(120,80,30,0.12), rgba(0,0,0,0) 42%),
       radial-gradient(circle at 35% 82%, rgba(120,80,30,0.10), rgba(0,0,0,0) 45%),
       radial-gradient(circle at 70% 75%, rgba(90,60,25,0.10), rgba(0,0,0,0) 40%),
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.03), rgba(255,255,255,0.03) 1px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 3px),
+      repeating-linear-gradient(0deg,
+        rgba(255,255,255,0.02),
+        rgba(255,255,255,0.02) 4px,
+        rgba(0,0,0,0.02) 8px
+      ),
       linear-gradient(180deg, #f1e2c2, #e3c996)`;
 
     document.documentElement.style.height = "100%";
@@ -263,14 +268,26 @@ export default function App() {
     document.documentElement.style.background = bg;
     document.body.style.background = bg;
 
+    // ⚡ MOBILE: background-attachment fixed verursacht oft Scroll-Lag → explizit ausschalten
+    const isTouch =
+      "ontouchstart" in window ||
+      (navigator && navigator.maxTouchPoints > 0);
+
+    if (isTouch) {
+      document.documentElement.style.backgroundAttachment = "scroll";
+      document.body.style.backgroundAttachment = "scroll";
+    }
+
     const root = document.getElementById("root");
     if (root) {
       root.style.minHeight = "100dvh";
       root.style.background = "transparent";
+      // extra: verhindert manchmal "white flash" bei overscroll
+      root.style.overflowX = "hidden";
     }
   }, []);
 
-  // ✅ Global CSS Fixes (iOS overscroll + Input-zoom)
+  // ✅ Global CSS Fixes (iOS overscroll + Input-zoom + smooth scrolling)
   useEffect(() => {
     if (document.getElementById("hp-global-style")) return;
     const style = document.createElement("style");
@@ -284,6 +301,7 @@ export default function App() {
       body {
         overflow-x: hidden;
         touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
       }
       #root { background: transparent; }
     `;
@@ -722,21 +740,21 @@ const styles = {
     minHeight: "100dvh",
     margin: 0,
     padding: 0,
+    // ⚡ PERFORMANCE: gröberes Pattern (weniger Repaints)
     background: `
       radial-gradient(circle at 12% 18%, rgba(120,80,30,0.18), rgba(0,0,0,0) 38%),
       radial-gradient(circle at 85% 22%, rgba(120,80,30,0.12), rgba(0,0,0,0) 42%),
       radial-gradient(circle at 35% 82%, rgba(120,80,30,0.10), rgba(0,0,0,0) 45%),
       radial-gradient(circle at 70% 75%, rgba(90,60,25,0.10), rgba(0,0,0,0) 40%),
-      repeating-linear-gradient(
-        0deg,
-        rgba(255,255,255,0.03),
-        rgba(255,255,255,0.03) 1px,
-        rgba(0,0,0,0.02) 2px,
-        rgba(0,0,0,0.02) 3px
+      repeating-linear-gradient(0deg,
+        rgba(255,255,255,0.02),
+        rgba(255,255,255,0.02) 4px,
+        rgba(0,0,0,0.02) 8px
       ),
       linear-gradient(180deg, #f1e2c2, #e3c996)
     `,
-    backgroundAttachment: "fixed",
+    // ✅ FIX: "fixed" raus → Mobile scrollt deutlich smoother
+    // backgroundAttachment: "fixed",
   },
   shell: {
     fontFamily: '"IM Fell English", system-ui',
@@ -979,16 +997,15 @@ const styles = {
     position: "relative",
     overflow: "hidden",
     padding: 20,
+    // ⚡ Performance: gröberes Pattern
     background: `
       radial-gradient(circle at 12% 18%, rgba(120,80,30,0.18), rgba(0,0,0,0) 38%),
       radial-gradient(circle at 85% 22%, rgba(120,80,30,0.12), rgba(0,0,0,0) 42%),
       radial-gradient(circle at 35% 82%, rgba(120,80,30,0.10), rgba(0,0,0,0) 45%),
-      repeating-linear-gradient(
-        0deg,
-        rgba(255,255,255,0.03),
-        rgba(255,255,255,0.03) 1px,
-        rgba(0,0,0,0.02) 2px,
-        rgba(0,0,0,0.02) 3px
+      repeating-linear-gradient(0deg,
+        rgba(255,255,255,0.02),
+        rgba(255,255,255,0.02) 4px,
+        rgba(0,0,0,0.02) 8px
       ),
       linear-gradient(180deg, #f1e2c2, #e3c996)
     `,
@@ -1078,12 +1095,12 @@ const styles = {
     border: "1px solid rgba(0,0,0,0.25)",
     background: "rgba(255,255,255,0.55)",
     outline: "none",
-    minWidth: 0, // ✅ wichtig für mobile overflow
+    minWidth: 0,
     fontSize: 16, // ✅ iOS: verhindert Zoom
   },
   pwToggleBtn: {
     width: 48,
-    display: "flex", // ✅ Emoji sauber zentrieren
+    display: "flex",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: "0 12px 12px 0",
