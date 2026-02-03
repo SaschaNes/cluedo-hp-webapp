@@ -392,45 +392,64 @@ export default function App() {
   const chooseChip = async (chip) => {
     if (!chipEntry) return;
 
-    setChipLS(gameId, chipEntry.entry_id, chip);
-
-    await api(`/games/${gameId}/sheet/${chipEntry.entry_id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ note_tag: "s" }),
-    });
-
+    // UI sofort schließen -> fühlt sich besser an
+    const entry = chipEntry;
     setChipOpen(false);
     setChipEntry(null);
-    await reloadSheet();
+
+    // local speichern
+    setChipLS(gameId, entry.entry_id, chip);
+
+    try {
+      // Backend bekommt nur "s"
+      await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ note_tag: "s" }),
+      });
+    } finally {
+      await reloadSheet();
+    }
   };
 
   // X im Modal:
   // Backend zurück auf null und lokalen Chip löschen
   const closeChipModalToDash = async () => {
-    if (chipEntry) {
-      clearChipLS(gameId, chipEntry.entry_id);
+    if (!chipEntry) {
+      setChipOpen(false);
+      return;
+    }
 
-      await api(`/games/${gameId}/sheet/${chipEntry.entry_id}`, {
+    // UI sofort schließen
+    const entry = chipEntry;
+    setChipOpen(false);
+    setChipEntry(null);
+
+    // Frontend-only Chip entfernen
+    clearChipLS(gameId, entry.entry_id);
+
+    try {
+      // Backend zurück auf —
+      await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
         method: "PATCH",
         body: JSON.stringify({ note_tag: null }),
       });
-
+    } finally {
       await reloadSheet();
     }
-    setChipOpen(false);
-    setChipEntry(null);
   };
 
   // Anzeige im Tag-Button:
-  // - "s" wird zu "s.AL" (aus localStorage), sonst "s.XX"
+  // - "s" wird zu "s.AL" (aus localStorage), sonst "s"
   const displayTag = (entry) => {
     const t = entry.note_tag;
     if (!t) return "—";
+
     if (t === "s") {
       const chip = getChipLS(gameId, entry.entry_id);
-      return `s.${chip || "XX"}`;
+      return chip ? `s.${chip}` : "s"; // <-- genau wie gewünscht
     }
-    return t;
+
+    return t; // i oder m
   };
 
   // --- helpers ---
