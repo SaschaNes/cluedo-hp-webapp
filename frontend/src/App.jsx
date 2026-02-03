@@ -728,8 +728,8 @@ export default function App() {
               <div style={{ display: "grid" }}>
                 {sec.entries.map((e) => {
                   // UI "rot" wenn note_tag i oder s (Backend s wird als s.XX angezeigt)
-                  const isIorS = e.note_tag === "i" || e.note_tag === "s";
-                  const effectiveStatus = e.status === 0 && isIorS ? 1 : e.status;
+                  const isIorMorS = e.note_tag === "i" || e.note_tag === "m" || e.note_tag === "s";
+                  const effectiveStatus = e.status === 0 && isIorMorS ? 1 : e.status;
 
                   const badge = getStatusBadge(effectiveStatus);
 
