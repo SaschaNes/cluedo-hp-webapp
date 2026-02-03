@@ -643,9 +643,7 @@ export default function App() {
                 title="User Menü"
               >
                 <span style={{ fontSize: 16, lineHeight: 1 }}>👤</span>
-                <span style={{ overflow: "hidden", textOverflow: "ellipsis", maxWidth: 170 }}>
-                  {me.email}
-                </span>
+                <span>Account</span>
                 <span style={{ opacity: 0.8 }}>▾</span>
               </button>
 
@@ -1419,7 +1417,7 @@ const styles = {
     fontWeight: 900,
     cursor: "pointer",
     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
-    maxWidth: 260,
+    maxWidth: 180,
   },
 
   userDropdown: {
