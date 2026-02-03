@@ -138,8 +138,9 @@ function AdminPanel() {
 
 export default function App() {
   const [me, setMe] = useState(null);
-  const [loginEmail, setLoginEmail] = useState("admin@local");
+  const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [games, setGames] = useState([]);
   const [gameId, setGameId] = useState(null);
   const [sheet, setSheet] = useState(null);
@@ -166,6 +167,14 @@ export default function App() {
       @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       @keyframes popIn { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
       @keyframes rowPulse { 0%{ transform: scale(1); } 50%{ transform: scale(1.01); } 100%{ transform: scale(1); } }
+
+      /* Candle / warm glow */
+      @keyframes candleGlow {
+        0%   { opacity: .65; transform: translateY(0px) scale(1); filter: blur(16px); }
+        35%  { opacity: .85; transform: translateY(-2px) scale(1.02); filter: blur(18px); }
+        70%  { opacity: .70; transform: translateY(1px) scale(1.01); filter: blur(17px); }
+        100% { opacity: .65; transform: translateY(0px) scale(1); filter: blur(16px); }
+      }
     `;
     document.head.appendChild(style);
   }, []);
@@ -286,6 +295,7 @@ export default function App() {
   if (!me) {
   return (
     <div style={styles.loginPage}>
+      <div style={styles.candleGlowLayer} aria-hidden="true" />
       <div style={styles.loginCard}>
         <div style={styles.loginTitle}>
           Zauber-Detektiv Notizbogen
@@ -303,13 +313,25 @@ export default function App() {
             style={styles.input}
           />
 
-          <input
-            value={loginPassword}
-            onChange={(e) => setLoginPassword(e.target.value)}
-            placeholder="Passwort"
-            type="password"
-            style={styles.input}
-          />
+          <div style={styles.pwWrap}>
+            <input
+              value={loginPassword}
+              onChange={(e) => setLoginPassword(e.target.value)}
+              placeholder="Passwort"
+              type={showPw ? "text" : "password"}
+              style={{ ...styles.input, paddingRight: 52 }}
+            />
+
+            <button
+              type="button"
+              onClick={() => setShowPw((v) => !v)}
+              style={styles.pwToggleBtn}
+              aria-label={showPw ? "Passwort verbergen" : "Passwort anzeigen"}
+              title={showPw ? "Verbergen" : "Anzeigen"}
+            >
+              {showPw ? "🙈" : "👁"}
+            </button>
+          </div>
 
           <button onClick={doLogin} style={styles.loginBtn}>
             ✦ Anmelden
@@ -788,8 +810,9 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    position: "relative",
+    overflow: "hidden",
     padding: 20,
-
     // Hintergrund bleibt Pergament
     background:
       `
@@ -806,12 +829,13 @@ const styles = {
       linear-gradient(180deg, #f1e2c2, #e3c996)
       `,
   },
-
   loginCard: {
     width: "100%",
     maxWidth: 420,
     padding: 26,
     borderRadius: 22,
+    position: "relative",
+    zIndex: 2,
     border: "1px solid rgba(0,0,0,0.25)",
 
     background:
@@ -822,7 +846,6 @@ const styles = {
 
     animation: "popIn 240ms ease-out",
   },
-
   loginTitle: {
     fontFamily: '"Cinzel Decorative", "IM Fell English", system-ui',
     fontWeight: 1000,
@@ -831,7 +854,6 @@ const styles = {
     textAlign: "center",
     letterSpacing: 0.6,
   },
-
   loginSubtitle: {
     marginTop: 6,
     textAlign: "center",
@@ -839,7 +861,6 @@ const styles = {
     fontSize: 15,
     lineHeight: 1.4,
   },
-
   loginBtn: {
     padding: "12px 14px",
     borderRadius: 14,
@@ -851,12 +872,42 @@ const styles = {
     cursor: "pointer",
     transition: "transform 140ms ease, box-shadow 140ms ease",
   },
-
   loginHint: {
     marginTop: 18,
     fontSize: 13,
     opacity: 0.72,
     textAlign: "center",
     lineHeight: 1.35,
+  },
+  candleGlowLayer: {
+    position: "absolute",
+    inset: 0,
+    pointerEvents: "none",
+    background: `
+      radial-gradient(circle at 20% 25%, rgba(255, 200, 120, 0.22), rgba(0,0,0,0) 40%),
+      radial-gradient(circle at 80% 30%, rgba(255, 210, 140, 0.18), rgba(0,0,0,0) 42%),
+      radial-gradient(circle at 55% 75%, rgba(255, 180, 100, 0.12), rgba(0,0,0,0) 45%)
+    `,
+    animation: "candleGlow 3.8s ease-in-out infinite",
+    mixBlendMode: "multiply",
+  },
+  pwWrap: {
+    position: "relative",
+  },
+  pwToggleBtn: {
+    position: "absolute",
+    right: 8,
+    top: "50%",
+    transform: "translateY(-50%)",
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    border: "1px solid rgba(0,0,0,0.22)",
+    background: "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(0,0,0,0.06))",
+    cursor: "pointer",
+    fontSize: 16,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
 };
