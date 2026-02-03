@@ -322,16 +322,29 @@ export default function App() {
 
               <div style={{ display: "grid" }}>
                 {sec.entries.map((e) => (
-                  <div key={e.entry_id} style={styles.row}>
+                  <div
+                    key={e.entry_id}
+                    style={{
+                      ...styles.row,
+                      background:
+                        e.status === 1
+                          ? "rgba(255, 0, 0, 0.06)"   // leicht rot
+                          : "rgba(255,255,255,0.22)",
+                    }}
+                  >
                     {/* Name: Tap toggelt crossed */}
                     <div
                       onClick={() => toggleCross(e)}
                       style={{
                         ...styles.name,
                         textDecoration: e.status === 1 ? "line-through" : "none",
-                        opacity: e.status === 1 ? 0.85 : 1,
+
+                        // ✅ Rot wenn gestrichen
+                        color: e.status === 1 ? "#b10000" : "#20140c",
+
+                        // optional etwas transparenter
+                        opacity: e.status === 1 ? 0.75 : 1,
                       }}
-                      title="Tippen = durchstreichen"
                     >
                       {e.label}
                     </div>
