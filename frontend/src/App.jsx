@@ -14,18 +14,43 @@ async function api(path, opts = {}) {
 }
 
 /**
- * Tag-Rotation:
- * null/"" -> i -> m -> s (öffnet Popup) -> (nach Auswahl) s.XX -> null
+ * Backend erlaubt: null | "i" | "m" | "s"
+ * Rotation:
+ * null -> i -> m -> s (Popup) -> null
  */
 function cycleTag(tag) {
   if (!tag) return "i";
   if (tag === "i") return "m";
   if (tag === "m") return "s";
-  if (tag === "s") return null;
-  if (typeof tag === "string" && tag.startsWith("s.")) return null;
-  return null;
+  return null; // "s" -> null
 }
 
+/* ========= Chip localStorage (Frontend-only) ========= */
+function chipStorageKey(gameId, entryId) {
+  return `chip:${gameId}:${entryId}`;
+}
+
+function getChipLS(gameId, entryId) {
+  try {
+    return localStorage.getItem(chipStorageKey(gameId, entryId));
+  } catch {
+    return null;
+  }
+}
+
+function setChipLS(gameId, entryId, chip) {
+  try {
+    localStorage.setItem(chipStorageKey(gameId, entryId), chip);
+  } catch {}
+}
+
+function clearChipLS(gameId, entryId) {
+  try {
+    localStorage.removeItem(chipStorageKey(gameId, entryId));
+  } catch {}
+}
+
+/* ========= Admin Panel ========= */
 function AdminPanel() {
   const [users, setUsers] = useState([]);
 
@@ -158,6 +183,7 @@ function AdminPanel() {
   );
 }
 
+/* ========= App ========= */
 export default function App() {
   const [me, setMe] = useState(null);
   const [loginEmail, setLoginEmail] = useState("");
@@ -169,7 +195,7 @@ export default function App() {
   const [sheet, setSheet] = useState(null);
   const [pulseId, setPulseId] = useState(null);
 
-  // ✅ Chip Modal State
+  // Chip popup
   const [chipOpen, setChipOpen] = useState(false);
   const [chipEntry, setChipEntry] = useState(null);
 
@@ -220,7 +246,6 @@ export default function App() {
       @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       @keyframes popIn { from { opacity: 0; transform: translateY(8px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
       @keyframes rowPulse { 0%{ transform: scale(1); } 50%{ transform: scale(1.01); } 100%{ transform: scale(1); } }
-
       @keyframes candleGlow {
         0%   { opacity: .55; transform: translateY(0px) scale(1); filter: blur(16px); }
         35%  { opacity: .85; transform: translateY(-2px) scale(1.02); filter: blur(18px); }
@@ -256,12 +281,10 @@ export default function App() {
         background: ${stylesTokens.pageBg};
         color: ${stylesTokens.textMain};
       }
-
       body {
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
       }
-
       #root { background: transparent; }
       * { -webkit-tap-highlight-color: transparent; }
     `;
@@ -340,22 +363,22 @@ export default function App() {
     setTimeout(() => setPulseId(null), 220);
   };
 
-  /**
-   * Notiz-Button:
-   * - wenn m -> s: Popup öffnen und NICHT sofort ins Backend schreiben
-   * - wenn s.XX -> null: normal zurücksetzen
-   */
+  // Notiz-Button: i -> m -> (Popup) s -> null
   const toggleTag = async (entry) => {
     const next = cycleTag(entry.note_tag);
 
-    // Wenn der nächste Schritt "s" wäre -> Popup öffnen
+    // Wenn wir zu "s" gehen würden -> Chip Popup öffnen, aber NICHT ins Backend schreiben
     if (next === "s") {
       setChipEntry(entry);
       setChipOpen(true);
       return;
     }
 
-    // normal schreiben (i, m, oder null)
+    // Wenn wir auf null gehen, Chip lokal löschen (weil s -> —)
+    if (next === null) {
+      clearChipLS(gameId, entry.entry_id);
+    }
+
     await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
       method: "PATCH",
       body: JSON.stringify({ note_tag: next }),
@@ -363,13 +386,17 @@ export default function App() {
     await reloadSheet();
   };
 
-  // Chip auswählen -> note_tag wird s.XX
+  // Chip wählen:
+  // Backend: note_tag = "s"
+  // Frontend: Chip in localStorage
   const chooseChip = async (chip) => {
     if (!chipEntry) return;
 
+    setChipLS(gameId, chipEntry.entry_id, chip);
+
     await api(`/games/${gameId}/sheet/${chipEntry.entry_id}`, {
       method: "PATCH",
-      body: JSON.stringify({ note_tag: `s.${chip}` }),
+      body: JSON.stringify({ note_tag: "s" }),
     });
 
     setChipOpen(false);
@@ -377,17 +404,33 @@ export default function App() {
     await reloadSheet();
   };
 
-  // X drücken: zurück auf —
+  // X im Modal:
+  // Backend zurück auf null und lokalen Chip löschen
   const closeChipModalToDash = async () => {
     if (chipEntry) {
+      clearChipLS(gameId, chipEntry.entry_id);
+
       await api(`/games/${gameId}/sheet/${chipEntry.entry_id}`, {
         method: "PATCH",
         body: JSON.stringify({ note_tag: null }),
       });
+
       await reloadSheet();
     }
     setChipOpen(false);
     setChipEntry(null);
+  };
+
+  // Anzeige im Tag-Button:
+  // - "s" wird zu "s.AL" (aus localStorage), sonst "s.XX"
+  const displayTag = (entry) => {
+    const t = entry.note_tag;
+    if (!t) return "—";
+    if (t === "s") {
+      const chip = getChipLS(gameId, entry.entry_id);
+      return `s.${chip || "XX"}`;
+    }
+    return t;
   };
 
   // --- helpers ---
@@ -416,10 +459,7 @@ export default function App() {
     if (status === 2) return { color: "#baf3c9", background: "rgba(0,190,80,0.18)" };
     if (status === 1) return { color: "#ffb3b3", background: "rgba(255,35,35,0.18)" };
     if (status === 3)
-      return {
-        color: "rgba(233,216,166,0.85)",
-        background: "rgba(140,140,140,0.14)",
-      };
+      return { color: "rgba(233,216,166,0.85)", background: "rgba(140,140,140,0.14)" };
     return { color: "rgba(233,216,166,0.75)", background: "rgba(255,255,255,0.08)" };
   };
 
@@ -438,9 +478,7 @@ export default function App() {
         <div style={styles.loginCard}>
           <div style={styles.loginTitle}>Zauber-Detektiv Notizbogen</div>
 
-          <div style={styles.loginSubtitle}>
-            Melde dich an, um dein Cluedo-Magie-Sheet zu öffnen
-          </div>
+          <div style={styles.loginSubtitle}>Melde dich an, um dein Cluedo-Magie-Sheet zu öffnen</div>
 
           <div style={{ marginTop: 18, display: "grid", gap: 12 }}>
             <div style={styles.loginFieldWrap}>
@@ -564,13 +602,7 @@ export default function App() {
 
                 <div style={styles.helpList}>
                   <div style={styles.helpListRow}>
-                    <span
-                      style={{
-                        ...styles.helpBadge,
-                        background: "rgba(0,190,80,0.18)",
-                        color: "#baf3c9",
-                      }}
-                    >
+                    <span style={{ ...styles.helpBadge, background: "rgba(0,190,80,0.18)", color: "#baf3c9" }}>
                       ✓
                     </span>
                     <div>
@@ -578,13 +610,7 @@ export default function App() {
                     </div>
                   </div>
                   <div style={styles.helpListRow}>
-                    <span
-                      style={{
-                        ...styles.helpBadge,
-                        background: "rgba(255,35,35,0.18)",
-                        color: "#ffb3b3",
-                      }}
-                    >
+                    <span style={{ ...styles.helpBadge, background: "rgba(255,35,35,0.18)", color: "#ffb3b3" }}>
                       ✕
                     </span>
                     <div>
@@ -624,7 +650,9 @@ export default function App() {
                 <div style={styles.helpDivider} />
 
                 <div style={styles.helpSectionTitle}>2) i / m / s Button (Notiz)</div>
-                <div style={styles.helpText}>Rechts pro Zeile gibt es einen Button, der rotiert:</div>
+                <div style={styles.helpText}>
+                  Rechts pro Zeile gibt es einen Button, der durch diese Werte rotiert:
+                </div>
 
                 <div style={styles.helpList}>
                   <div style={styles.helpListRow}>
@@ -642,7 +670,7 @@ export default function App() {
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>s</span>
                     <div>
-                      <b>s</b> = „Ein anderer Spieler hat diese Karte“ (Popup)
+                      <b>s</b> = „Ein anderer Spieler hat diese Karte“ (Chip Auswahl)
                     </div>
                   </div>
                   <div style={styles.helpListRow}>
@@ -664,7 +692,7 @@ export default function App() {
           </div>
         )}
 
-        {/* ✅ Chip Popup */}
+        {/* Chip Popup */}
         {chipOpen && (
           <div style={styles.modalOverlay} onMouseDown={closeChipModalToDash}>
             <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
@@ -699,12 +727,10 @@ export default function App() {
 
               <div style={{ display: "grid" }}>
                 {sec.entries.map((e) => {
-                  // ✅ i oder s.XX => visuell wie rot (nur UI)
-                  const isIorS =
-                    e.note_tag === "i" ||
-                    (typeof e.note_tag === "string" && e.note_tag.startsWith("s."));
-
+                  // UI "rot" wenn note_tag i oder s (Backend s wird als s.XX angezeigt)
+                  const isIorS = e.note_tag === "i" || e.note_tag === "s";
                   const effectiveStatus = e.status === 0 && isIorS ? 1 : e.status;
+
                   const badge = getStatusBadge(effectiveStatus);
 
                   return (
@@ -744,12 +770,8 @@ export default function App() {
                         </span>
                       </div>
 
-                      <button
-                        onClick={() => toggleTag(e)}
-                        style={styles.tagBtn}
-                        title="— → i → m → s.(Chip) → —"
-                      >
-                        {e.note_tag || "—"}
+                      <button onClick={() => toggleTag(e)} style={styles.tagBtn} title="— → i → m → s.(Chip) → —">
+                        {displayTag(e)}
                       </button>
                     </div>
                   );
@@ -1204,13 +1226,13 @@ const styles = {
     filter: "saturate(0.9) contrast(1.05) brightness(0.55)",
   },
 
-  // Chip Buttons
   chipGrid: {
     marginTop: 12,
     display: "grid",
     gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
     gap: 8,
   },
+
   chipBtn: {
     padding: "10px 14px",
     borderRadius: 12,
