@@ -1161,7 +1161,7 @@ const styles = {
   bgMap: {
     position: "absolute",
     inset: 0,
-    backgroundImage: 'url("/marauders-map.jpg")',
+    backgroundImage: 'url("/public/bg/marauders-map-blur.jpg")',
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
