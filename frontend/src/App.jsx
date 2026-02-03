@@ -20,12 +20,12 @@ function cycleTag(tag) {
 }
 
 /**
- * PaperCard: wrapper, der oben + unten einen "torn paper edge" drauflegt.
- * Wichtig: Edge braucht zIndex > children, sonst verschwindet er unter dem Header.
+ * PaperCard: "Pergamentkarte" mit torn edges.
+ * Wir legen die Edges bewusst über die Card, aber dezent.
  */
 function PaperCard({ children, style }) {
   return (
-    <div style={{ ...styles.paperCard, ...style }}>
+    <div className="hp-card" style={{ ...styles.paperCard, ...style }}>
       <div style={styles.paperEdgeTop} aria-hidden="true" />
       <div style={styles.paperInner}>{children}</div>
       <div style={styles.paperEdgeBottom} aria-hidden="true" />
@@ -80,14 +80,7 @@ function AdminPanel() {
 
   return (
     <div style={styles.adminWrap}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 10,
-        }}
-      >
+      <div style={styles.adminTop}>
         <div style={styles.adminTitle}>Admin Dashboard</div>
         <button onClick={() => setOpen(true)} style={styles.primaryBtn}>
           + User anlegen
@@ -111,10 +104,7 @@ function AdminPanel() {
 
       {open && (
         <div style={styles.modalOverlay} onMouseDown={closeModal}>
-          <div
-            style={styles.modalCard}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
+          <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
               <div style={{ fontWeight: 1000, color: "#20140c" }}>
                 Neuen User anlegen
@@ -143,25 +133,14 @@ function AdminPanel() {
                 type="password"
                 style={styles.input}
               />
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                style={styles.input}
-              >
+              <select value={role} onChange={(e) => setRole(e.target.value)} style={styles.input}>
                 <option value="user">user</option>
                 <option value="admin">admin</option>
               </select>
 
               {msg && <div style={{ opacity: 0.9 }}>{msg}</div>}
 
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  justifyContent: "flex-end",
-                  marginTop: 4,
-                }}
-              >
+              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
                 <button
                   onClick={() => {
                     resetForm();
@@ -244,26 +223,26 @@ export default function App() {
     style.id = "hp-anim-style";
     style.innerHTML = `
       @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-      @keyframes popIn { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+      @keyframes popIn { from { opacity: 0; transform: translateY(8px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
       @keyframes rowPulse { 0%{ transform: scale(1); } 50%{ transform: scale(1.01); } 100%{ transform: scale(1); } }
 
       /* Candle / warm glow */
       @keyframes candleGlow {
-        0%   { opacity: .65; transform: translateY(0px) scale(1); filter: blur(16px); }
+        0%   { opacity: .55; transform: translateY(0px) scale(1); filter: blur(16px); }
         35%  { opacity: .85; transform: translateY(-2px) scale(1.02); filter: blur(18px); }
-        70%  { opacity: .70; transform: translateY(1px) scale(1.01); filter: blur(17px); }
-        100% { opacity: .65; transform: translateY(0px) scale(1); filter: blur(16px); }
+        70%  { opacity: .62; transform: translateY(1px) scale(1.01); filter: blur(17px); }
+        100% { opacity: .55; transform: translateY(0px) scale(1); filter: blur(16px); }
       }
     `;
     document.head.appendChild(style);
   }, []);
 
-  // ✅ Hintergrund (html + body) setzen (gegen white flashes) + ✅ Performance Fix für Mobile
+  // ✅ Hintergrund + ✅ Performance Fix für Mobile
   useEffect(() => {
-    const bg = `radial-gradient(circle at 12% 18%, rgba(120,80,30,0.18), rgba(0,0,0,0) 38%),
-      radial-gradient(circle at 85% 22%, rgba(120,80,30,0.12), rgba(0,0,0,0) 42%),
-      radial-gradient(circle at 35% 82%, rgba(120,80,30,0.10), rgba(0,0,0,0) 45%),
-      radial-gradient(circle at 70% 75%, rgba(90,60,25,0.10), rgba(0,0,0,0) 40%),
+    const bg = `radial-gradient(circle at 12% 18%, rgba(120,80,30,0.16), rgba(0,0,0,0) 38%),
+      radial-gradient(circle at 85% 22%, rgba(120,80,30,0.10), rgba(0,0,0,0) 42%),
+      radial-gradient(circle at 35% 82%, rgba(120,80,30,0.08), rgba(0,0,0,0) 45%),
+      radial-gradient(circle at 70% 75%, rgba(90,60,25,0.08), rgba(0,0,0,0) 40%),
       repeating-linear-gradient(0deg,
         rgba(255,255,255,0.02),
         rgba(255,255,255,0.02) 4px,
@@ -297,7 +276,7 @@ export default function App() {
     }
   }, []);
 
-  // ✅ Global CSS Fixes (iOS overscroll + Input-zoom + smooth scrolling)
+  // ✅ Global CSS Fixes + moderne Hover-UX
   useEffect(() => {
     if (document.getElementById("hp-global-style")) return;
     const style = document.createElement("style");
@@ -307,6 +286,9 @@ export default function App() {
         overscroll-behavior-y: none;
         background: transparent;
         -webkit-text-size-adjust: 100%;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
       body {
         overflow-x: hidden;
@@ -314,6 +296,12 @@ export default function App() {
         -webkit-overflow-scrolling: touch;
       }
       #root { background: transparent; }
+
+      /* Moderner Hover (perf: nur transform/opacity) */
+      .hp-card { transition: transform 160ms ease, box-shadow 160ms ease; }
+      .hp-card:hover { transform: translateY(-2px); box-shadow: 0 18px 40px rgba(0,0,0,0.18); }
+      .hp-row { transition: background 140ms ease; }
+      .hp-row:hover { background: rgba(255,255,255,0.34) !important; }
     `;
     document.head.appendChild(style);
   }, []);
@@ -440,9 +428,7 @@ export default function App() {
                   type="button"
                   onClick={() => setShowPw((v) => !v)}
                   style={styles.pwToggleBtn}
-                  aria-label={
-                    showPw ? "Passwort verstecken" : "Passwort anzeigen"
-                  }
+                  aria-label={showPw ? "Passwort verstecken" : "Passwort anzeigen"}
                   title={showPw ? "Verstecken" : "Anzeigen"}
                 >
                   {showPw ? "🙈" : "👁"}
@@ -467,42 +453,38 @@ export default function App() {
   // ===== Main App =====
   const sections = sheet
     ? [
-        {
-          key: "suspect",
-          title: "VERDÄCHTIGE PERSON",
-          entries: sheet.suspect || [],
-        },
+        { key: "suspect", title: "VERDÄCHTIGE PERSON", entries: sheet.suspect || [] },
         { key: "item", title: "GEGENSTAND", entries: sheet.item || [] },
         { key: "location", title: "ORT", entries: sheet.location || [] },
       ]
     : [];
 
   const getRowBg = (status) => {
-    if (status === 1) return "rgba(255, 0, 0, 0.06)";
-    if (status === 2) return "rgba(0, 170, 60, 0.07)";
-    if (status === 3) return "rgba(120, 120, 120, 0.14)";
-    return "rgba(255,255,255,0.22)";
+    if (status === 1) return "rgba(255, 0, 0, 0.055)";
+    if (status === 2) return "rgba(0, 170, 60, 0.06)";
+    if (status === 3) return "rgba(90, 90, 90, 0.10)";
+    return "rgba(255,255,255,0.18)";
   };
 
   const getNameColor = (status) => {
-    if (status === 1) return "#b10000";
+    if (status === 1) return "#9f0f0f";
     if (status === 2) return "#0b6a1e";
-    if (status === 3) return "#444444";
+    if (status === 3) return "#3f3f3f";
     return "#20140c";
   };
 
   const getStatusSymbol = (status) => {
     if (status === 2) return "✓";
-    if (status === 1) return "X";
+    if (status === 1) return "✕";
     if (status === 3) return "?";
-    return "";
+    return "•";
   };
 
   const getStatusSymbolColor = (status) => {
     if (status === 2) return "#0b6a1e";
     if (status === 1) return "#b10000";
     if (status === 3) return "#444444";
-    return "#20140c";
+    return "rgba(30,20,12,0.55)";
   };
 
   const closeHelp = () => setHelpOpen(false);
@@ -532,14 +514,7 @@ export default function App() {
         <div style={{ marginTop: 14 }}>
           <PaperCard>
             <div style={styles.sectionHeader}>Spiel</div>
-            <div
-              style={{
-                padding: 12,
-                display: "flex",
-                gap: 10,
-                alignItems: "center",
-              }}
-            >
+            <div style={styles.cardBody}>
               <select
                 value={gameId || ""}
                 onChange={(e) => setGameId(e.target.value)}
@@ -567,38 +542,23 @@ export default function App() {
         {/* Hilfe Modal */}
         {helpOpen && (
           <div style={styles.modalOverlay} onMouseDown={closeHelp}>
-            <div
-              style={styles.modalCard}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
+            <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
               <div style={styles.modalHeader}>
                 <div style={{ fontWeight: 1000, color: "#20140c" }}>Hilfe</div>
-                <button
-                  onClick={closeHelp}
-                  style={styles.modalCloseBtn}
-                  aria-label="Schließen"
-                >
+                <button onClick={closeHelp} style={styles.modalCloseBtn} aria-label="Schließen">
                   ✕
                 </button>
               </div>
 
               <div style={styles.helpBody}>
-                <div style={styles.helpSectionTitle}>
-                  1) Namen anklicken (Status)
-                </div>
+                <div style={styles.helpSectionTitle}>1) Namen anklicken (Status)</div>
                 <div style={styles.helpText}>
                   Tippe auf einen Namen, um den Status zu wechseln. Reihenfolge:
                 </div>
 
                 <div style={styles.helpList}>
                   <div style={styles.helpListRow}>
-                    <span
-                      style={{
-                        ...styles.helpBadge,
-                        background: "rgba(0,170,60,0.12)",
-                        color: "#0b6a1e",
-                      }}
-                    >
+                    <span style={{ ...styles.helpBadge, background: "rgba(0,170,60,0.12)", color: "#0b6a1e" }}>
                       ✓
                     </span>
                     <div>
@@ -606,27 +566,15 @@ export default function App() {
                     </div>
                   </div>
                   <div style={styles.helpListRow}>
-                    <span
-                      style={{
-                        ...styles.helpBadge,
-                        background: "rgba(255,0,0,0.10)",
-                        color: "#b10000",
-                      }}
-                    >
-                      X
+                    <span style={{ ...styles.helpBadge, background: "rgba(255,0,0,0.10)", color: "#b10000" }}>
+                      ✕
                     </span>
                     <div>
                       <b>Rot</b> = ausgeschlossen / fix falsch
                     </div>
                   </div>
                   <div style={styles.helpListRow}>
-                    <span
-                      style={{
-                        ...styles.helpBadge,
-                        background: "rgba(120,120,120,0.14)",
-                        color: "#444",
-                      }}
-                    >
+                    <span style={{ ...styles.helpBadge, background: "rgba(120,120,120,0.14)", color: "#444" }}>
                       ?
                     </span>
                     <div>
@@ -634,13 +582,9 @@ export default function App() {
                     </div>
                   </div>
                   <div style={styles.helpListRow}>
-                    <span
-                      style={{
-                        ...styles.helpBadge,
-                        background: "rgba(255,255,255,0.35)",
-                        color: "#20140c",
-                      }}
-                    />
+                    <span style={{ ...styles.helpBadge, background: "rgba(255,255,255,0.35)", color: "#20140c" }}>
+                      •
+                    </span>
                     <div>
                       <b>Leer</b> = unknown / noch nicht bewertet
                     </div>
@@ -649,12 +593,9 @@ export default function App() {
 
                 <div style={styles.helpDivider} />
 
-                <div style={styles.helpSectionTitle}>
-                  2) i / m / s Button (Notiz)
-                </div>
+                <div style={styles.helpSectionTitle}>2) i / m / s Button (Notiz)</div>
                 <div style={styles.helpText}>
-                  Rechts pro Zeile gibt es einen Button, der durch diese Werte
-                  rotiert:
+                  Rechts pro Zeile gibt es einen Button, der durch diese Werte rotiert:
                 </div>
 
                 <div style={styles.helpList}>
@@ -687,8 +628,7 @@ export default function App() {
                 <div style={styles.helpDivider} />
 
                 <div style={styles.helpText}>
-                  Tipp: Jeder Spieler sieht nur seine eigenen Notizen – andere
-                  Spieler können nicht in deinen Zettel schauen.
+                  Tipp: Jeder Spieler sieht nur seine eigenen Notizen – andere Spieler können nicht in deinen Zettel schauen.
                 </div>
               </div>
             </div>
@@ -701,15 +641,15 @@ export default function App() {
             <PaperCard key={sec.key}>
               <div style={styles.sectionHeader}>{sec.title}</div>
 
-              <div style={{ display: "grid" }}>
+              <div style={styles.tableWrap}>
                 {sec.entries.map((e) => (
                   <div
                     key={e.entry_id}
+                    className="hp-row"
                     style={{
                       ...styles.row,
                       background: getRowBg(e.status),
-                      animation:
-                        pulseId === e.entry_id ? "rowPulse 220ms ease-out" : "none",
+                      animation: pulseId === e.entry_id ? "rowPulse 220ms ease-out" : "none",
                     }}
                   >
                     <div
@@ -725,13 +665,16 @@ export default function App() {
                       {e.label}
                     </div>
 
-                    <div
-                      style={{
-                        ...styles.statusCell,
-                        color: getStatusSymbolColor(e.status),
-                      }}
-                    >
-                      {getStatusSymbol(e.status)}
+                    <div style={styles.statusCell}>
+                      <span
+                        style={{
+                          ...styles.statusBadge,
+                          color: getStatusSymbolColor(e.status),
+                          borderColor: "rgba(0,0,0,0.22)",
+                        }}
+                      >
+                        {getStatusSymbol(e.status)}
+                      </span>
                     </div>
 
                     <button
@@ -756,29 +699,29 @@ export default function App() {
 
 /* ===== Styles ===== */
 
-// Paper edge SVG (repeat-x) – bewusst simpel & leichtgewichtig.
-// Wir encoden minimal (spaces -> %20 etc.) damit es zuverlässig als data-uri läuft.
 const PAPER_EDGE_SVG =
   "data:image/svg+xml;utf8," +
   encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" width="220" height="20" viewBox="0 0 220 20">
-  <path d="M0,18
-           C12,20 22,10 34,16
-           C48,23 58,9 72,15
-           C86,22 96,11 110,16
-           C126,22 138,10 152,15
-           C166,20 178,12 192,16
-           C204,19 212,14 220,16
-           L220,0 L0,0 Z"
-        fill="rgba(255,255,255,0.95)"/>
-  <path d="M0,18
-           C12,20 22,10 34,16
-           C48,23 58,9 72,15
-           C86,22 96,11 110,16
-           C126,22 138,10 152,15
-           C166,20 178,12 192,16
-           C204,19 212,14 220,16"
-        fill="none" stroke="rgba(0,0,0,0.14)" stroke-width="1.2" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="18" viewBox="0 0 260 18">
+  <!-- torn silhouette -->
+  <path d="M0,14
+           C14,18 26,9 40,14
+           C54,19 68,9 82,14
+           C98,20 110,10 126,14
+           C142,18 156,10 172,14
+           C188,18 202,10 218,14
+           C234,18 246,12 260,14
+           L260,0 L0,0 Z"
+        fill="rgba(255,255,255,0.92)"/>
+  <!-- ink edge -->
+  <path d="M0,14
+           C14,18 26,9 40,14
+           C54,19 68,9 82,14
+           C98,20 110,10 126,14
+           C142,18 156,10 172,14
+           C188,18 202,10 218,14
+           C234,18 246,12 260,14"
+        fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="1.2" stroke-linecap="round"/>
 </svg>
 `);
 
@@ -788,10 +731,10 @@ const styles = {
     margin: 0,
     padding: 0,
     background: `
-      radial-gradient(circle at 12% 18%, rgba(120,80,30,0.18), rgba(0,0,0,0) 38%),
-      radial-gradient(circle at 85% 22%, rgba(120,80,30,0.12), rgba(0,0,0,0) 42%),
-      radial-gradient(circle at 35% 82%, rgba(120,80,30,0.10), rgba(0,0,0,0) 45%),
-      radial-gradient(circle at 70% 75%, rgba(90,60,25,0.10), rgba(0,0,0,0) 40%),
+      radial-gradient(circle at 12% 18%, rgba(120,80,30,0.16), rgba(0,0,0,0) 38%),
+      radial-gradient(circle at 85% 22%, rgba(120,80,30,0.10), rgba(0,0,0,0) 42%),
+      radial-gradient(circle at 35% 82%, rgba(120,80,30,0.08), rgba(0,0,0,0) 45%),
+      radial-gradient(circle at 70% 75%, rgba(90,60,25,0.08), rgba(0,0,0,0) 40%),
       repeating-linear-gradient(0deg,
         rgba(255,255,255,0.02),
         rgba(255,255,255,0.02) 4px,
@@ -804,7 +747,7 @@ const styles = {
   shell: {
     fontFamily: '"IM Fell English", system-ui',
     padding: 16,
-    maxWidth: 620,
+    maxWidth: 680,
     margin: "0 auto",
   },
 
@@ -815,37 +758,45 @@ const styles = {
     gap: 10,
     padding: 12,
     borderRadius: 16,
-    background: "rgba(255,255,255,0.35)",
-    border: "1px solid rgba(0,0,0,0.15)",
-    boxShadow: "0 6px 18px rgba(0,0,0,0.10)",
+    background: "rgba(255,255,255,0.30)",
+    border: "1px solid rgba(0,0,0,0.14)",
+    boxShadow: "0 12px 28px rgba(0,0,0,0.14)",
     backdropFilter: "blur(4px)",
+  },
+
+  cardBody: {
+    padding: 12,
+    display: "flex",
+    gap: 10,
+    alignItems: "center",
   },
 
   // ===== PAPER CARD =====
   paperCard: {
     position: "relative",
-    borderRadius: 16,
+    borderRadius: 18,
     overflow: "hidden",
-    border: "1px solid rgba(0,0,0,0.18)",
-    background: "rgba(255,255,255,0.35)",
-    boxShadow: "0 10px 24px rgba(0,0,0,0.12)",
+    border: "1px solid rgba(0,0,0,0.16)",
+    background: "rgba(255,255,255,0.28)",
+    boxShadow:
+      "0 18px 40px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.55)",
   },
   paperInner: {
     position: "relative",
-    zIndex: 1, // content below edges
+    zIndex: 1,
   },
   paperEdgeTop: {
     position: "absolute",
     left: -2,
     right: -2,
     top: -1,
-    height: 18,
+    height: 16,
     zIndex: 3,
     pointerEvents: "none",
     backgroundImage: `url("${PAPER_EDGE_SVG}")`,
     backgroundRepeat: "repeat-x",
-    backgroundSize: "220px 18px",
-    opacity: 0.95,
+    backgroundSize: "260px 16px",
+    opacity: 0.75,
     mixBlendMode: "multiply",
   },
   paperEdgeBottom: {
@@ -853,75 +804,110 @@ const styles = {
     left: -2,
     right: -2,
     bottom: -1,
-    height: 18,
+    height: 16,
     zIndex: 3,
     pointerEvents: "none",
     backgroundImage: `url("${PAPER_EDGE_SVG}")`,
     backgroundRepeat: "repeat-x",
-    backgroundSize: "220px 18px",
-    opacity: 0.95,
+    backgroundSize: "260px 16px",
+    opacity: 0.75,
     mixBlendMode: "multiply",
     transform: "scaleY(-1)",
   },
 
+  // Header: weniger 2008, mehr "ink+gold"
   sectionHeader: {
-    padding: "10px 12px",
+    padding: "11px 14px",
     fontWeight: 1000,
     fontFamily: '"Cinzel Decorative", "IM Fell English", system-ui',
-    letterSpacing: 0.7,
-    color: "#2b1a0e",
-    background: "linear-gradient(180deg, #caa45a, #a67a2a)",
-    borderBottom: "1px solid rgba(0,0,0,0.25)",
+    letterSpacing: 1.0,
+    color: "rgba(25,16,10,0.95)",
+    background: `
+      linear-gradient(180deg, rgba(210,170,90,0.95), rgba(150,110,35,0.95)),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.06) 6px, rgba(0,0,0,0.03) 10px)
+    `,
+    borderBottom: "1px solid rgba(0,0,0,0.22)",
     textTransform: "uppercase",
+    textShadow: "0 1px 0 rgba(255,255,255,0.20)",
+    position: "relative",
+  },
+
+  // "notebook lines" look
+  tableWrap: {
+    background: `
+      repeating-linear-gradient(
+        180deg,
+        rgba(0,0,0,0.045),
+        rgba(0,0,0,0.045) 1px,
+        rgba(0,0,0,0) 1px,
+        rgba(0,0,0,0) 38px
+      )
+    `,
   },
 
   row: {
     display: "grid",
-    gridTemplateColumns: "1fr 46px 56px",
-    gap: 8,
-    padding: "10px 12px",
+    gridTemplateColumns: "1fr 54px 68px",
+    gap: 10,
+    padding: "12px 14px",
     alignItems: "center",
-    borderBottom: "1px solid rgba(0,0,0,0.10)",
-    background: "rgba(255,255,255,0.22)",
+    borderBottom: "1px solid rgba(0,0,0,0.08)",
+    background: "rgba(255,255,255,0.18)",
   },
 
   name: {
     cursor: "pointer",
     userSelect: "none",
     color: "#20140c",
-    fontWeight: 700,
+    fontWeight: 800,
+    letterSpacing: 0.2,
   },
 
   statusCell: {
-    textAlign: "center",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  statusBadge: {
+    width: 34,
+    height: 34,
+    display: "inline-flex",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 999,
+    border: "1px solid rgba(0,0,0,0.22)",
+    background: "rgba(255,255,255,0.38)",
     fontWeight: 1100,
-    fontSize: 18,
+    fontSize: 16,
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)",
   },
 
   tagBtn: {
     padding: "8px 0",
     fontWeight: 1000,
-    borderRadius: 10,
-    border: "1px solid rgba(0,0,0,0.25)",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(0,0,0,0.06))",
+    borderRadius: 12,
+    border: "1px solid rgba(0,0,0,0.22)",
+    background: "rgba(255,255,255,0.42)",
     cursor: "pointer",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)",
   },
 
   helpBtn: {
     padding: "10px 12px",
     borderRadius: 12,
-    border: "1px solid rgba(0,0,0,0.25)",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(0,0,0,0.06))",
+    border: "1px solid rgba(0,0,0,0.22)",
+    background: "rgba(255,255,255,0.46)",
     fontWeight: 1000,
     cursor: "pointer",
     whiteSpace: "nowrap",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)",
   },
 
   input: {
     width: "100%",
     padding: 10,
     borderRadius: 12,
-    border: "1px solid rgba(0,0,0,0.25)",
+    border: "1px solid rgba(0,0,0,0.20)",
     background: "rgba(255,255,255,0.55)",
     outline: "none",
     fontSize: 16,
@@ -930,35 +916,44 @@ const styles = {
   primaryBtn: {
     padding: "10px 12px",
     borderRadius: 12,
-    border: "1px solid rgba(0,0,0,0.25)",
-    background: "linear-gradient(180deg, #f3d79b, #caa45a)",
+    border: "1px solid rgba(0,0,0,0.22)",
+    background: "linear-gradient(180deg, rgba(246,226,179,0.95), rgba(202,164,90,0.95))",
     fontWeight: 1000,
     cursor: "pointer",
     transition: "transform 140ms ease, box-shadow 140ms ease",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)",
   },
 
   secondaryBtn: {
     padding: "10px 12px",
     borderRadius: 12,
-    border: "1px solid rgba(0,0,0,0.25)",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(0,0,0,0.05))",
+    border: "1px solid rgba(0,0,0,0.20)",
+    background: "rgba(255,255,255,0.46)",
     fontWeight: 900,
     cursor: "pointer",
     transition: "transform 140ms ease, box-shadow 140ms ease",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)",
   },
 
+  // Admin
   adminWrap: {
     marginTop: 14,
     padding: 12,
     borderRadius: 16,
-    border: "1px solid rgba(0,0,0,0.18)",
-    background: "rgba(255,255,255,0.30)",
-    boxShadow: "0 8px 18px rgba(0,0,0,0.10)",
+    border: "1px solid rgba(0,0,0,0.16)",
+    background: "rgba(255,255,255,0.26)",
+    boxShadow: "0 12px 28px rgba(0,0,0,0.12)",
+  },
+  adminTop: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
   },
   adminTitle: {
     fontWeight: 1000,
     color: "#20140c",
-    marginBottom: 8,
+    marginBottom: 0,
   },
   userRow: {
     display: "grid",
@@ -966,10 +961,11 @@ const styles = {
     gap: 8,
     padding: 10,
     borderRadius: 12,
-    background: "rgba(255,255,255,0.55)",
-    border: "1px solid rgba(0,0,0,0.10)",
+    background: "rgba(255,255,255,0.50)",
+    border: "1px solid rgba(0,0,0,0.08)",
   },
 
+  // Modal
   modalOverlay: {
     position: "fixed",
     inset: 0,
@@ -1003,13 +999,14 @@ const styles = {
     height: 38,
     borderRadius: 12,
     border: "1px solid rgba(0,0,0,0.25)",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(0,0,0,0.06))",
+    background: "rgba(255,255,255,0.60)",
     fontWeight: 1000,
     cursor: "pointer",
     lineHeight: "38px",
     textAlign: "center",
   },
 
+  // Help
   helpBody: {
     marginTop: 10,
     paddingTop: 4,
@@ -1066,7 +1063,7 @@ const styles = {
     background: "rgba(0,0,0,0.12)",
   },
 
-  // ===== Login =====
+  // Login
   loginPage: {
     minHeight: "100dvh",
     display: "flex",
@@ -1076,9 +1073,9 @@ const styles = {
     overflow: "hidden",
     padding: 20,
     background: `
-      radial-gradient(circle at 12% 18%, rgba(120,80,30,0.18), rgba(0,0,0,0) 38%),
-      radial-gradient(circle at 85% 22%, rgba(120,80,30,0.12), rgba(0,0,0,0) 42%),
-      radial-gradient(circle at 35% 82%, rgba(120,80,30,0.10), rgba(0,0,0,0) 45%),
+      radial-gradient(circle at 12% 18%, rgba(120,80,30,0.16), rgba(0,0,0,0) 38%),
+      radial-gradient(circle at 85% 22%, rgba(120,80,30,0.10), rgba(0,0,0,0) 42%),
+      radial-gradient(circle at 35% 82%, rgba(120,80,30,0.08), rgba(0,0,0,0) 45%),
       repeating-linear-gradient(0deg,
         rgba(255,255,255,0.02),
         rgba(255,255,255,0.02) 4px,
@@ -1118,7 +1115,7 @@ const styles = {
     width: "100%",
     padding: 10,
     borderRadius: 12,
-    border: "1px solid rgba(0,0,0,0.25)",
+    border: "1px solid rgba(0,0,0,0.20)",
     background: "rgba(255,255,255,0.55)",
     outline: "none",
     fontSize: 16,
@@ -1126,12 +1123,13 @@ const styles = {
   loginBtn: {
     padding: "12px 14px",
     borderRadius: 14,
-    border: "1px solid rgba(0,0,0,0.30)",
-    background: "linear-gradient(180deg, #f6e2b3, #caa45a)",
+    border: "1px solid rgba(0,0,0,0.26)",
+    background: "linear-gradient(180deg, rgba(246,226,179,0.95), rgba(202,164,90,0.95))",
     fontWeight: 1000,
     fontSize: 16,
     cursor: "pointer",
     transition: "transform 140ms ease, box-shadow 140ms ease",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)",
   },
   loginHint: {
     marginTop: 18,
@@ -1163,7 +1161,7 @@ const styles = {
     flex: 1,
     padding: 10,
     borderRadius: "12px 0 0 12px",
-    border: "1px solid rgba(0,0,0,0.25)",
+    border: "1px solid rgba(0,0,0,0.20)",
     background: "rgba(255,255,255,0.55)",
     outline: "none",
     minWidth: 0,
@@ -1175,9 +1173,9 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     borderRadius: "0 12px 12px 0",
-    border: "1px solid rgba(0,0,0,0.25)",
+    border: "1px solid rgba(0,0,0,0.20)",
     borderLeft: "none",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(0,0,0,0.06))",
+    background: "rgba(255,255,255,0.60)",
     cursor: "pointer",
     fontWeight: 900,
     padding: 0,
