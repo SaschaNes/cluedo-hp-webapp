@@ -251,31 +251,10 @@ export default function App() {
         background: #1c140d;
       }
 
-      /* Rumtreiberkarte Layer (Image in /public/bg/marauders-map.jpg) */
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        z-index: -2;
-        background-image: url("/bg/marauders-map.jpg");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        filter: blur(8px) saturate(1.1) contrast(1.05) brightness(0.95);
-        transform: scale(1.05); /* Blur edges vermeiden */
+      html, body {
+        background: #1c140d;
       }
-
-      /* Lesbarkeits-Overlay (warm parchment wash) */
-      body::after {
-        content: "";
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        background:
-          radial-gradient(circle at 15% 20%, rgba(255,220,160,0.18), rgba(0,0,0,0) 40%),
-          radial-gradient(circle at 80% 30%, rgba(255,210,140,0.14), rgba(0,0,0,0) 42%),
-          linear-gradient(180deg, rgba(241,226,194,0.78), rgba(227,201,150,0.78));
-      }
+      #root { background: transparent; }
 
       body {
         overflow-x: hidden;
