@@ -19,6 +19,16 @@ function cycleTag(tag) {
   return null;
 }
 
+function PaperCard({ children, style }) {
+  return (
+    <div style={{ ...styles.paperCard, ...style }}>
+      <div style={styles.paperEdgeTop} aria-hidden="true" />
+      {children}
+      <div style={styles.paperEdgeBottom} aria-hidden="true" />
+    </div>
+  );
+}
+
 function AdminPanel() {
   const [users, setUsers] = useState([]);
 
@@ -223,7 +233,7 @@ export default function App() {
     document.head.appendChild(link);
   }, []);
 
-  // ✅ Keyframes / Animationen
+  // ✅ Keyframes / Animationen (+ Paper Edge minimal)
   useEffect(() => {
     if (document.getElementById("hp-anim-style")) return;
     const style = document.createElement("style");
@@ -239,6 +249,13 @@ export default function App() {
         35%  { opacity: .85; transform: translateY(-2px) scale(1.02); filter: blur(18px); }
         70%  { opacity: .70; transform: translateY(1px) scale(1.01); filter: blur(17px); }
         100% { opacity: .65; transform: translateY(0px) scale(1); filter: blur(16px); }
+      }
+
+      /* Paper edge: super subtle, keeps it "alive" without causing scroll lag */
+      @keyframes paperEdgeDrift {
+        0% { opacity: .92; transform: translateX(0px); }
+        50% { opacity: .98; transform: translateX(0.6px); }
+        100% { opacity: .92; transform: translateX(0px); }
       }
     `;
     document.head.appendChild(style);
@@ -282,7 +299,6 @@ export default function App() {
     if (root) {
       root.style.minHeight = "100dvh";
       root.style.background = "transparent";
-      // extra: verhindert manchmal "white flash" bei overscroll
       root.style.overflowX = "hidden";
     }
   }, []);
@@ -397,7 +413,7 @@ export default function App() {
     return (
       <div style={styles.loginPage}>
         <div style={styles.candleGlowLayer} aria-hidden="true" />
-        <div style={styles.loginCard}>
+        <PaperCard style={styles.loginCard}>
           <div style={styles.loginTitle}>Zauber-Detektiv Notizbogen</div>
 
           <div style={styles.loginSubtitle}>
@@ -447,7 +463,7 @@ export default function App() {
             Deine Notizen bleiben privat – jeder Spieler sieht nur seinen eigenen
             Zettel.
           </div>
-        </div>
+        </PaperCard>
       </div>
     );
   }
@@ -455,7 +471,11 @@ export default function App() {
   // ===== Main App =====
   const sections = sheet
     ? [
-        { key: "suspect", title: "VERDÄCHTIGE PERSON", entries: sheet.suspect || [] },
+        {
+          key: "suspect",
+          title: "VERDÄCHTIGE PERSON",
+          entries: sheet.suspect || [],
+        },
         { key: "item", title: "GEGENSTAND", entries: sheet.item || [] },
         { key: "location", title: "ORT", entries: sheet.location || [] },
       ]
@@ -514,7 +534,7 @@ export default function App() {
 
         {/* Spiel + Hilfe */}
         <div style={{ marginTop: 14 }}>
-          <div style={styles.card}>
+          <PaperCard>
             <div style={styles.sectionHeader}>Spiel</div>
             <div
               style={{
@@ -545,7 +565,7 @@ export default function App() {
                 Hilfe
               </button>
             </div>
-          </div>
+          </PaperCard>
         </div>
 
         {/* Hilfe Modal */}
@@ -633,9 +653,12 @@ export default function App() {
 
                 <div style={styles.helpDivider} />
 
-                <div style={styles.helpSectionTitle}>2) i / m / s Button (Notiz)</div>
+                <div style={styles.helpSectionTitle}>
+                  2) i / m / s Button (Notiz)
+                </div>
                 <div style={styles.helpText}>
-                  Rechts pro Zeile gibt es einen Button, der durch diese Werte rotiert:
+                  Rechts pro Zeile gibt es einen Button, der durch diese Werte
+                  rotiert:
                 </div>
 
                 <div style={styles.helpList}>
@@ -679,7 +702,7 @@ export default function App() {
         {/* Sheet */}
         <div style={{ marginTop: 14, display: "grid", gap: 14 }}>
           {sections.map((sec) => (
-            <div key={sec.key} style={styles.card}>
+            <PaperCard key={sec.key}>
               <div style={styles.sectionHeader}>{sec.title}</div>
 
               <div style={{ display: "grid" }}>
@@ -689,7 +712,10 @@ export default function App() {
                     style={{
                       ...styles.row,
                       background: getRowBg(e.status),
-                      animation: pulseId === e.entry_id ? "rowPulse 220ms ease-out" : "none",
+                      animation:
+                        pulseId === e.entry_id
+                          ? "rowPulse 220ms ease-out"
+                          : "none",
                     }}
                   >
                     <div
@@ -724,7 +750,7 @@ export default function App() {
                   </div>
                 ))}
               </div>
-            </div>
+            </PaperCard>
           ))}
         </div>
 
@@ -776,6 +802,18 @@ const styles = {
     backdropFilter: "blur(4px)",
   },
 
+  // === Paper card base (replaces `card` visually) ===
+  paperCard: {
+    position: "relative",
+    borderRadius: 16,
+    overflow: "hidden",
+    border: "1px solid rgba(0,0,0,0.18)",
+    background: "rgba(255,255,255,0.35)",
+    boxShadow: "0 10px 24px rgba(0,0,0,0.12)",
+    transition: "transform 180ms ease, box-shadow 180ms ease",
+  },
+
+  // Fallback (kept, in case you still use it somewhere)
   card: {
     borderRadius: 16,
     overflow: "hidden",
@@ -783,6 +821,82 @@ const styles = {
     background: "rgba(255,255,255,0.35)",
     boxShadow: "0 10px 24px rgba(0,0,0,0.12)",
     transition: "transform 180ms ease, box-shadow 180ms ease",
+  },
+
+  // Paper edges (top + bottom) — mask-based, lightweight, no heavy blur/filters
+  paperEdgeTop: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    height: 18,
+    pointerEvents: "none",
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.62), rgba(255,255,255,0.0))",
+    opacity: 0.95,
+
+    WebkitMaskImage:
+      "radial-gradient(10px 8px at 6% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(12px 9px at 14% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(9px 7px at 24% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(13px 10px at 36% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(10px 8px at 49% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(12px 9px at 62% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(9px 7px at 74% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(13px 10px at 86% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(10px 8px at 94% 100%, #000 98%, transparent 102%)," +
+      "linear-gradient(#000, #000)",
+    maskImage:
+      "radial-gradient(10px 8px at 6% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(12px 9px at 14% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(9px 7px at 24% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(13px 10px at 36% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(10px 8px at 49% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(12px 9px at 62% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(9px 7px at 74% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(13px 10px at 86% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(10px 8px at 94% 100%, #000 98%, transparent 102%)," +
+      "linear-gradient(#000, #000)",
+
+    filter: "drop-shadow(0 1px 0 rgba(0,0,0,0.14))",
+    animation: "paperEdgeDrift 8s ease-in-out infinite",
+  },
+
+  paperEdgeBottom: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 20,
+    pointerEvents: "none",
+    background:
+      "linear-gradient(0deg, rgba(255,255,255,0.62), rgba(255,255,255,0.0))",
+    opacity: 0.95,
+    transform: "scaleY(-1)",
+    WebkitMaskImage:
+      "radial-gradient(10px 8px at 6% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(12px 9px at 14% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(9px 7px at 24% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(13px 10px at 36% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(10px 8px at 49% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(12px 9px at 62% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(9px 7px at 74% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(13px 10px at 86% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(10px 8px at 94% 100%, #000 98%, transparent 102%)," +
+      "linear-gradient(#000, #000)",
+    maskImage:
+      "radial-gradient(10px 8px at 6% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(12px 9px at 14% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(9px 7px at 24% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(13px 10px at 36% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(10px 8px at 49% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(12px 9px at 62% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(9px 7px at 74% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(13px 10px at 86% 100%, #000 98%, transparent 102%)," +
+      "radial-gradient(10px 8px at 94% 100%, #000 98%, transparent 102%)," +
+      "linear-gradient(#000, #000)",
+    filter: "drop-shadow(0 1px 0 rgba(0,0,0,0.14))",
+    animation: "paperEdgeDrift 8s ease-in-out infinite",
   },
 
   sectionHeader: {
@@ -824,7 +938,8 @@ const styles = {
     fontWeight: 1000,
     borderRadius: 10,
     border: "1px solid rgba(0,0,0,0.25)",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(0,0,0,0.06))",
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(0,0,0,0.06))",
     cursor: "pointer",
   },
 
@@ -832,7 +947,8 @@ const styles = {
     padding: "10px 12px",
     borderRadius: 12,
     border: "1px solid rgba(0,0,0,0.25)",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(0,0,0,0.06))",
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(0,0,0,0.06))",
     fontWeight: 1000,
     cursor: "pointer",
     whiteSpace: "nowrap",
@@ -862,7 +978,8 @@ const styles = {
     padding: "10px 12px",
     borderRadius: 12,
     border: "1px solid rgba(0,0,0,0.25)",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(0,0,0,0.05))",
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(0,0,0,0.05))",
     fontWeight: 900,
     cursor: "pointer",
     transition: "transform 140ms ease, box-shadow 140ms ease",
@@ -907,7 +1024,8 @@ const styles = {
     maxWidth: 560,
     borderRadius: 18,
     border: "1px solid rgba(0,0,0,0.25)",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.42))",
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.42))",
     boxShadow: "0 18px 50px rgba(0,0,0,0.35)",
     padding: 14,
     backdropFilter: "blur(6px)",
@@ -924,7 +1042,8 @@ const styles = {
     height: 38,
     borderRadius: 12,
     border: "1px solid rgba(0,0,0,0.25)",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(0,0,0,0.06))",
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(0,0,0,0.06))",
     fontWeight: 1000,
     cursor: "pointer",
     lineHeight: "38px",
@@ -1014,13 +1133,10 @@ const styles = {
     width: "100%",
     maxWidth: 420,
     padding: 26,
-    borderRadius: 22,
+    borderRadius: 22, // paperCard uses 16; this overrides for login
     position: "relative",
     zIndex: 2,
-    border: "1px solid rgba(0,0,0,0.25)",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.40))",
-    boxShadow: "0 18px 55px rgba(0,0,0,0.35)",
-    backdropFilter: "blur(8px)",
+    // border/background/boxShadow handled by PaperCard base
     animation: "popIn 240ms ease-out",
   },
   loginTitle: {
@@ -1106,7 +1222,8 @@ const styles = {
     borderRadius: "0 12px 12px 0",
     border: "1px solid rgba(0,0,0,0.25)",
     borderLeft: "none",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(0,0,0,0.06))",
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(0,0,0,0.06))",
     cursor: "pointer",
     fontWeight: 900,
     padding: 0,
