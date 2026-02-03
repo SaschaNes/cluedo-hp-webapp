@@ -1143,12 +1143,9 @@ const styles = {
     top: 0,
     left: 0,
     width: "100vw",
-    // iOS dynamic viewport support:
     height: "100dvh",
-    zIndex: 0,
+    zIndex: -1,           // ✅ war 0
     pointerEvents: "none",
-
-    // verhindert “zucken” bei repaint:
     transform: "translateZ(0)",
     backfaceVisibility: "hidden",
     willChange: "transform",
@@ -1157,30 +1154,9 @@ const styles = {
   bgMap: {
     position: "absolute",
     inset: 0,
-    backgroundImage: 'url("/public/bg/marauders-map-blur.jpg")',
+    backgroundImage: 'url("/bg/marauders-map-blur.jpg")',
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
   },
-
-  bgInkVignette: {
-    position: "absolute",
-    inset: 0,
-    background: `
-      radial-gradient(circle at 50% 45%,
-        rgba(0,0,0,0.08) 0%,
-        rgba(0,0,0,0.18) 48%,
-        rgba(0,0,0,0.55) 78%,
-        rgba(0,0,0,0.72) 100%
-      ),
-      linear-gradient(180deg,
-        rgba(245, 226, 185, 0.42),
-        rgba(214, 180, 120, 0.32)
-      )
-    `,
-    mixBlendMode: "multiply",
-    transform: "translateZ(0)",
-    backfaceVisibility: "hidden",
-  },
-
 };
