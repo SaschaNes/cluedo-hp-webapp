@@ -264,13 +264,13 @@ export default function App() {
 
       body {
         overflow-x: hidden;
-        touch-action: pan-y;
+        // touch-action: pan-y;
         -webkit-overflow-scrolling: touch;
       }
 
       #root { background: transparent; }
 
-      /* ✅ HOVER/ACTIVE komplett entfernen – Row + alle Children */
+      /*
       .hp-row:hover,
       .hp-row:active,
       .hp-row:focus,
@@ -288,21 +288,17 @@ export default function App() {
         box-shadow: none !important;
         outline: none !important;
       }
-
-      /* ✅ Mobile Tap-Highlight killen (dieser "Flash" schaut oft wie Hover aus) */
       .hp-row, .hp-row * {
         -webkit-tap-highlight-color: transparent !important;
         -webkit-touch-callout: none;
       }
-
-      /* ✅ Button-Default Hover/Active Kill (dein tagBtn & helpBtn etc.) */
       button:hover,
       button:active,
       button:focus {
         filter: none !important;
         box-shadow: none !important;
         outline: none !important;
-      }
+      }*/
     `;
     document.head.appendChild(style);
   }, []);
