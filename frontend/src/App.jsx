@@ -1166,12 +1166,12 @@ const styles = {
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
 
-    // Blur ist teuer -> aber stabilisieren:
+    /* Blur ist teuer -> aber stabilisieren:
     filter: "blur(6px) saturate(0.95) contrast(1.05)",
     transform: "scale(1.06) translateZ(0)",
     backfaceVisibility: "hidden",
     willChange: "transform",
-    opacity: 0.95,
+    opacity: 0.95,*/
   },
 
   bgInkVignette: {
