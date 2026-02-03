@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-const API = "http://localhost:8080";
+const API = "/api";
 
 async function api(path, opts = {}) {
   const res = await fetch(API + path, {
