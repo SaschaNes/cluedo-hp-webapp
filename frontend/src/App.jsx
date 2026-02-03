@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 const API = "/api";
-const CHIP_LIST = ["AL", "JG", "JN", "SN", "TL"];
+const CHIP_OPTIONS = ["AL", "JG", "JN", "SN", "TL"];
 
 
 async function api(path, opts = {}) {
