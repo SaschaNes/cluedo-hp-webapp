@@ -159,12 +159,6 @@ export default function App() {
   };
 
   useEffect(() => {
-    document.body.style.margin = "0";
-    document.body.style.padding = "0";
-    document.body.style.background = "transparent";
-  }, []);
-
-  useEffect(() => {
     if (document.getElementById("hp-anim-style")) return;
     const style = document.createElement("style");
     style.id = "hp-anim-style";
@@ -172,6 +166,42 @@ export default function App() {
       @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       @keyframes popIn { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
       @keyframes rowPulse { 0%{ transform: scale(1); } 50%{ transform: scale(1.01); } 100%{ transform: scale(1); } }
+    `;
+    document.head.appendChild(style);
+  }, []);
+
+  useEffect(() => {
+    const bg =
+      `radial-gradient(circle at 12% 18%, rgba(120,80,30,0.18), rgba(0,0,0,0) 38%),
+       radial-gradient(circle at 85% 22%, rgba(120,80,30,0.12), rgba(0,0,0,0) 42%),
+       radial-gradient(circle at 35% 82%, rgba(120,80,30,0.10), rgba(0,0,0,0) 45%),
+       radial-gradient(circle at 70% 75%, rgba(90,60,25,0.10), rgba(0,0,0,0) 40%),
+       repeating-linear-gradient(0deg, rgba(255,255,255,0.03), rgba(255,255,255,0.03) 1px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 3px),
+       linear-gradient(180deg, #f1e2c2, #e3c996)`;
+
+    // html & body & root fixen
+    document.documentElement.style.height = "100%";
+    document.body.style.height = "100%";
+    document.documentElement.style.margin = "0";
+    document.body.style.margin = "0";
+    document.documentElement.style.padding = "0";
+    document.body.style.padding = "0";
+
+    // wichtig: Hintergrund auf html UND body setzen
+    document.documentElement.style.background = bg;
+    document.body.style.background = bg;
+
+    // verhindert, dass weiß vom Root durchscheint
+    const root = document.getElementById("root");
+    if (root) root.style.minHeight = "100dvh";
+  }, []);
+
+  useEffect(() => {
+    if (document.getElementById("hp-global-style")) return;
+    const style = document.createElement("style");
+    style.id = "hp-global-style";
+    style.innerHTML = `
+      html, body { overscroll-behavior-y: none; }
     `;
     document.head.appendChild(style);
   }, []);
@@ -498,7 +528,7 @@ export default function App() {
 /* ===== Styles (Parchment / Boardgame Look) ===== */
 const styles = {
   page: {
-    minHeight: "100vh",
+    minHeight: "100dvh",
     margin: 0,
     padding: 0,
     background:
@@ -691,7 +721,6 @@ const styles = {
     lineHeight: "38px",
     textAlign: "center",
   },
-
   // Help modal content
   helpBody: {
     marginTop: 10,
