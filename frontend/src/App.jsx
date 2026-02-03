@@ -3,8 +3,6 @@ import React, { useEffect, useState } from "react";
 const API = "/api";
 const CHIP_LIST = ["AL", "JG", "JN", "SN", "TL"];
 
-const [chipOpen, setChipOpen] = useState(false);
-const [chipEntry, setChipEntry] = useState(null);
 
 async function api(path, opts = {}) {
   const res = await fetch(API + path, {
@@ -208,8 +206,8 @@ export default function App() {
   const [sheet, setSheet] = useState(null);
   const [pulseId, setPulseId] = useState(null);
 
-  const [chipPickOpen, setChipPickOpen] = useState(false);
-  const [chipPickEntry, setChipPickEntry] = useState(null);
+  const [chipOpen, setChipOpen] = useState(false);
+  const [chipEntry, setChipEntry] = useState(null);
 
   const [helpOpen, setHelpOpen] = useState(false);
 
