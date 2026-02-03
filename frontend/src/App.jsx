@@ -243,8 +243,6 @@ export default function App() {
     document.body.style.margin = "0";
     document.documentElement.style.padding = "0";
     document.body.style.padding = "0";
-    document.documentElement.style.background = "#1c140d";
-    document.body.style.background = "#1c140d";
   }, []);
 
   // ✅ Global CSS (Hover komplett weg + sauberes Scroll-Verhalten)
