@@ -66,14 +66,23 @@ function AdminPanel() {
 
   return (
     <div style={styles.adminWrap}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 10,
+        }}
+      >
         <div style={styles.adminTitle}>Admin Dashboard</div>
         <button onClick={() => setOpen(true)} style={styles.primaryBtn}>
           + User anlegen
         </button>
       </div>
 
-      <div style={{ marginTop: 12, fontWeight: 900, color: "#20140c" }}>Vorhandene User</div>
+      <div style={{ marginTop: 12, fontWeight: 900, color: "#20140c" }}>
+        Vorhandene User
+      </div>
       <div style={{ marginTop: 8, display: "grid", gap: 8 }}>
         {users.map((u) => (
           <div key={u.id} style={styles.userRow}>
@@ -88,10 +97,21 @@ function AdminPanel() {
 
       {open && (
         <div style={styles.modalOverlay} onMouseDown={closeModal}>
-          <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
+          <div
+            style={styles.modalCard}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <div style={styles.modalHeader}>
-              <div style={{ fontWeight: 1000, color: "#20140c" }}>Neuen User anlegen</div>
-              <button onClick={closeModal} style={styles.modalCloseBtn} aria-label="Schließen">✕</button>
+              <div style={{ fontWeight: 1000, color: "#20140c" }}>
+                Neuen User anlegen
+              </div>
+              <button
+                onClick={closeModal}
+                style={styles.modalCloseBtn}
+                aria-label="Schließen"
+              >
+                ✕
+              </button>
             </div>
 
             <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
@@ -109,15 +129,32 @@ function AdminPanel() {
                 type="password"
                 style={styles.input}
               />
-              <select value={role} onChange={(e) => setRole(e.target.value)} style={styles.input}>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                style={styles.input}
+              >
                 <option value="user">user</option>
                 <option value="admin">admin</option>
               </select>
 
               {msg && <div style={{ opacity: 0.9 }}>{msg}</div>}
 
-              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
-                <button onClick={() => { resetForm(); setMsg(""); }} style={styles.secondaryBtn}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  justifyContent: "flex-end",
+                  marginTop: 4,
+                }}
+              >
+                <button
+                  onClick={() => {
+                    resetForm();
+                    setMsg("");
+                  }}
+                  style={styles.secondaryBtn}
+                >
                   Leeren
                 </button>
                 <button onClick={createUser} style={styles.primaryBtn}>
@@ -141,12 +178,13 @@ export default function App() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
+
   const [games, setGames] = useState([]);
   const [gameId, setGameId] = useState(null);
   const [sheet, setSheet] = useState(null);
   const [pulseId, setPulseId] = useState(null);
 
-  // ✅ Hilfe Modal State
+  // Hilfe Modal
   const [helpOpen, setHelpOpen] = useState(false);
 
   const load = async () => {
@@ -159,6 +197,33 @@ export default function App() {
     if (gs[0] && !gameId) setGameId(gs[0].id);
   };
 
+  // ✅ Google Fonts laden (damit es auch am Handy klappt)
+  useEffect(() => {
+    if (document.getElementById("hp-fonts")) return;
+
+    const pre1 = document.createElement("link");
+    pre1.id = "hp-fonts-pre1";
+    pre1.rel = "preconnect";
+    pre1.href = "https://fonts.googleapis.com";
+
+    const pre2 = document.createElement("link");
+    pre2.id = "hp-fonts-pre2";
+    pre2.rel = "preconnect";
+    pre2.href = "https://fonts.gstatic.com";
+    pre2.crossOrigin = "anonymous";
+
+    const link = document.createElement("link");
+    link.id = "hp-fonts";
+    link.rel = "stylesheet";
+    link.href =
+      "https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=IM+Fell+English:ital,wght@0,400;0,700;1,400&display=swap";
+
+    document.head.appendChild(pre1);
+    document.head.appendChild(pre2);
+    document.head.appendChild(link);
+  }, []);
+
+  // ✅ Keyframes / Animationen
   useEffect(() => {
     if (document.getElementById("hp-anim-style")) return;
     const style = document.createElement("style");
@@ -179,16 +244,15 @@ export default function App() {
     document.head.appendChild(style);
   }, []);
 
+  // ✅ Hintergrund (html + body) setzen (gegen white flashes)
   useEffect(() => {
-    const bg =
-      `radial-gradient(circle at 12% 18%, rgba(120,80,30,0.18), rgba(0,0,0,0) 38%),
-       radial-gradient(circle at 85% 22%, rgba(120,80,30,0.12), rgba(0,0,0,0) 42%),
-       radial-gradient(circle at 35% 82%, rgba(120,80,30,0.10), rgba(0,0,0,0) 45%),
-       radial-gradient(circle at 70% 75%, rgba(90,60,25,0.10), rgba(0,0,0,0) 40%),
-       repeating-linear-gradient(0deg, rgba(255,255,255,0.03), rgba(255,255,255,0.03) 1px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 3px),
-       linear-gradient(180deg, #f1e2c2, #e3c996)`;
+    const bg = `radial-gradient(circle at 12% 18%, rgba(120,80,30,0.18), rgba(0,0,0,0) 38%),
+      radial-gradient(circle at 85% 22%, rgba(120,80,30,0.12), rgba(0,0,0,0) 42%),
+      radial-gradient(circle at 35% 82%, rgba(120,80,30,0.10), rgba(0,0,0,0) 45%),
+      radial-gradient(circle at 70% 75%, rgba(90,60,25,0.10), rgba(0,0,0,0) 40%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.03), rgba(255,255,255,0.03) 1px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 3px),
+      linear-gradient(180deg, #f1e2c2, #e3c996)`;
 
-    // html & body & root fixen
     document.documentElement.style.height = "100%";
     document.body.style.height = "100%";
     document.documentElement.style.margin = "0";
@@ -196,39 +260,58 @@ export default function App() {
     document.documentElement.style.padding = "0";
     document.body.style.padding = "0";
 
-    // wichtig: Hintergrund auf html UND body setzen
     document.documentElement.style.background = bg;
     document.body.style.background = bg;
 
-    // verhindert, dass weiß vom Root durchscheint
     const root = document.getElementById("root");
-    if (root) root.style.minHeight = "100dvh";
+    if (root) {
+      root.style.minHeight = "100dvh";
+      root.style.background = "transparent";
+    }
   }, []);
 
+  // ✅ Global CSS Fixes (iOS overscroll + Input-zoom)
   useEffect(() => {
     if (document.getElementById("hp-global-style")) return;
     const style = document.createElement("style");
     style.id = "hp-global-style";
     style.innerHTML = `
-      html, body { overscroll-behavior-y: none; }
+      html, body {
+        overscroll-behavior-y: none;
+        background: transparent;
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        overflow-x: hidden;
+        touch-action: pan-y;
+      }
+      #root { background: transparent; }
     `;
     document.head.appendChild(style);
   }, []);
 
+  // initial load
   useEffect(() => {
     (async () => {
-      try { await load(); } catch {}
+      try {
+        await load();
+      } catch {
+        // not logged in
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // sheet load
   useEffect(() => {
     (async () => {
       if (!gameId) return;
       try {
         const sh = await api(`/games/${gameId}/sheet`);
         setSheet(sh);
-      } catch {}
+      } catch {
+        // ignore
+      }
     })();
   }, [gameId]);
 
@@ -267,11 +350,10 @@ export default function App() {
   // ✅ Cycle: unknown -> green -> red -> gray -> unknown
   const cycleStatus = async (entry) => {
     let next = 0;
-
-    if (entry.status === 0) next = 2;       // grün (✓)
-    else if (entry.status === 2) next = 1;  // rot (X)
-    else if (entry.status === 1) next = 3;  // grau (?)
-    else next = 0;                          // zurück
+    if (entry.status === 0) next = 2; // grün
+    else if (entry.status === 2) next = 1; // rot
+    else if (entry.status === 1) next = 3; // grau
+    else next = 0;
 
     await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
       method: "PATCH",
@@ -292,60 +374,67 @@ export default function App() {
     await reloadSheet();
   };
 
+  // ===== Login Screen =====
   if (!me) {
-  return (
-    <div style={styles.loginPage}>
-      <div style={styles.candleGlowLayer} aria-hidden="true" />
-      <div style={styles.loginCard}>
-        <div style={styles.loginTitle}>
-          Zauber-Detektiv Notizbogen
-        </div>
+    return (
+      <div style={styles.loginPage}>
+        <div style={styles.candleGlowLayer} aria-hidden="true" />
+        <div style={styles.loginCard}>
+          <div style={styles.loginTitle}>Zauber-Detektiv Notizbogen</div>
 
-        <div style={styles.loginSubtitle}>
-          Melde dich an, um dein Cluedo-Magie-Sheet zu öffnen
-        </div>
+          <div style={styles.loginSubtitle}>
+            Melde dich an, um dein Cluedo-Magie-Sheet zu öffnen
+          </div>
 
-        <div style={{ marginTop: 18, display: "grid", gap: 12 }}>
-          <input
-            value={loginEmail}
-            onChange={(e) => setLoginEmail(e.target.value)}
-            placeholder="Email"
-            style={styles.input}
-          />
+          <div style={{ marginTop: 18, display: "grid", gap: 12 }}>
+            <div style={styles.loginFieldWrap}>
+              <input
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                placeholder="Email"
+                style={styles.loginInput}
+                inputMode="email"
+                autoComplete="username"
+              />
+            </div>
 
-          <div style={styles.pwWrap}>
-            <input
-              value={loginPassword}
-              onChange={(e) => setLoginPassword(e.target.value)}
-              placeholder="Passwort"
-              type={showPw ? "text" : "password"}
-              style={{ ...styles.input, paddingRight: 52 }}
-            />
+            <div style={styles.loginFieldWrap}>
+              <div style={styles.inputRow}>
+                <input
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  placeholder="Passwort"
+                  type={showPw ? "text" : "password"}
+                  style={styles.inputInRow}
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw((v) => !v)}
+                  style={styles.pwToggleBtn}
+                  aria-label={showPw ? "Passwort verstecken" : "Passwort anzeigen"}
+                  title={showPw ? "Verstecken" : "Anzeigen"}
+                >
+                  {showPw ? "🙈" : "👁"}
+                </button>
+              </div>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => setShowPw((v) => !v)}
-              style={styles.pwToggleBtn}
-              aria-label={showPw ? "Passwort verbergen" : "Passwort anzeigen"}
-              title={showPw ? "Verbergen" : "Anzeigen"}
-            >
-              {showPw ? "🙈" : "👁"}
+            <button onClick={doLogin} style={styles.loginBtn}>
+              ✦ Anmelden
             </button>
           </div>
 
-          <button onClick={doLogin} style={styles.loginBtn}>
-            ✦ Anmelden
-          </button>
-        </div>
-
-        <div style={styles.loginHint}>
-          Deine Notizen bleiben privat – jeder Spieler sieht nur seinen eigenen Zettel.
+          <div style={styles.loginHint}>
+            Deine Notizen bleiben privat – jeder Spieler sieht nur seinen eigenen
+            Zettel.
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
+  // ===== Main App =====
   const sections = sheet
     ? [
         { key: "suspect", title: "VERDÄCHTIGE PERSON", entries: sheet.suspect || [] },
@@ -355,8 +444,8 @@ export default function App() {
     : [];
 
   const getRowBg = (status) => {
-    if (status === 1) return "rgba(255, 0, 0, 0.06)";     // rot
-    if (status === 2) return "rgba(0, 170, 60, 0.07)";    // grün
+    if (status === 1) return "rgba(255, 0, 0, 0.06)"; // rot
+    if (status === 2) return "rgba(0, 170, 60, 0.07)"; // grün
     if (status === 3) return "rgba(120, 120, 120, 0.14)"; // grau
     return "rgba(255,255,255,0.22)";
   };
@@ -394,8 +483,12 @@ export default function App() {
           </div>
 
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={doLogout} style={styles.secondaryBtn}>Logout</button>
-            <button onClick={newGame} style={styles.primaryBtn}>+ Neues Spiel</button>
+            <button onClick={doLogout} style={styles.secondaryBtn}>
+              Logout
+            </button>
+            <button onClick={newGame} style={styles.primaryBtn}>
+              + Neues Spiel
+            </button>
           </div>
         </div>
 
@@ -405,7 +498,14 @@ export default function App() {
         <div style={{ marginTop: 14 }}>
           <div style={styles.card}>
             <div style={styles.sectionHeader}>Spiel</div>
-            <div style={{ padding: 12, display: "flex", gap: 10, alignItems: "center" }}>
+            <div
+              style={{
+                padding: 12,
+                display: "flex",
+                gap: 10,
+                alignItems: "center",
+              }}
+            >
               <select
                 value={gameId || ""}
                 onChange={(e) => setGameId(e.target.value)}
@@ -433,34 +533,83 @@ export default function App() {
         {/* Hilfe Modal */}
         {helpOpen && (
           <div style={styles.modalOverlay} onMouseDown={closeHelp}>
-            <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
+            <div
+              style={styles.modalCard}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
               <div style={styles.modalHeader}>
                 <div style={{ fontWeight: 1000, color: "#20140c" }}>Hilfe</div>
-                <button onClick={closeHelp} style={styles.modalCloseBtn} aria-label="Schließen">✕</button>
+                <button
+                  onClick={closeHelp}
+                  style={styles.modalCloseBtn}
+                  aria-label="Schließen"
+                >
+                  ✕
+                </button>
               </div>
 
               <div style={styles.helpBody}>
-                <div style={styles.helpSectionTitle}>1) Namen anklicken (Status)</div>
+                <div style={styles.helpSectionTitle}>
+                  1) Namen anklicken (Status)
+                </div>
                 <div style={styles.helpText}>
                   Tippe auf einen Namen, um den Status zu wechseln. Reihenfolge:
                 </div>
 
                 <div style={styles.helpList}>
                   <div style={styles.helpListRow}>
-                    <span style={{ ...styles.helpBadge, background: "rgba(0,170,60,0.12)", color: "#0b6a1e" }}>✓</span>
-                    <div><b>Grün</b> = bestätigt / fix richtig</div>
+                    <span
+                      style={{
+                        ...styles.helpBadge,
+                        background: "rgba(0,170,60,0.12)",
+                        color: "#0b6a1e",
+                      }}
+                    >
+                      ✓
+                    </span>
+                    <div>
+                      <b>Grün</b> = bestätigt / fix richtig
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
-                    <span style={{ ...styles.helpBadge, background: "rgba(255,0,0,0.10)", color: "#b10000" }}>X</span>
-                    <div><b>Rot</b> = ausgeschlossen / fix falsch</div>
+                    <span
+                      style={{
+                        ...styles.helpBadge,
+                        background: "rgba(255,0,0,0.10)",
+                        color: "#b10000",
+                      }}
+                    >
+                      X
+                    </span>
+                    <div>
+                      <b>Rot</b> = ausgeschlossen / fix falsch
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
-                    <span style={{ ...styles.helpBadge, background: "rgba(120,120,120,0.14)", color: "#444" }}>?</span>
-                    <div><b>Grau</b> = unsicher / „vielleicht“</div>
+                    <span
+                      style={{
+                        ...styles.helpBadge,
+                        background: "rgba(120,120,120,0.14)",
+                        color: "#444",
+                      }}
+                    >
+                      ?
+                    </span>
+                    <div>
+                      <b>Grau</b> = unsicher / „vielleicht“
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
-                    <span style={{ ...styles.helpBadge, background: "rgba(255,255,255,0.35)", color: "#20140c" }}> </span>
-                    <div><b>Leer</b> = unknown / noch nicht bewertet</div>
+                    <span
+                      style={{
+                        ...styles.helpBadge,
+                        background: "rgba(255,255,255,0.35)",
+                        color: "#20140c",
+                      }}
+                    />
+                    <div>
+                      <b>Leer</b> = unknown / noch nicht bewertet
+                    </div>
                   </div>
                 </div>
 
@@ -474,27 +623,35 @@ export default function App() {
                 <div style={styles.helpList}>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>i</span>
-                    <div><b>i</b> = „Ich habe diese Geheimkarte“</div>
+                    <div>
+                      <b>i</b> = „Ich habe diese Geheimkarte“
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>m</span>
-                    <div><b>m</b> = „Geheimkarte aus dem mittleren Deck“</div>
+                    <div>
+                      <b>m</b> = „Geheimkarte aus dem mittleren Deck“
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>s</span>
-                    <div><b>s</b> = „Ein anderer Spieler hat diese Karte“</div>
+                    <div>
+                      <b>s</b> = „Ein anderer Spieler hat diese Karte“
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>—</span>
-                    <div><b>—</b> = keine Notiz</div>
+                    <div>
+                      <b>—</b> = keine Notiz
+                    </div>
                   </div>
                 </div>
 
                 <div style={styles.helpDivider} />
 
                 <div style={styles.helpText}>
-
-                  Tipp: Jeder Spieler sieht nur seine eigenen Notizen – andere Spieler können nicht in deinen Zettel schauen.
+                  Tipp: Jeder Spieler sieht nur seine eigenen Notizen – andere
+                  Spieler können nicht in deinen Zettel schauen.
                 </div>
               </div>
             </div>
@@ -514,10 +671,7 @@ export default function App() {
                     style={{
                       ...styles.row,
                       background: getRowBg(e.status),
-                      animation:
-                        pulseId === e.entry_id
-                          ? "rowPulse 220ms ease-out"
-                          : "none",
+                      animation: pulseId === e.entry_id ? "rowPulse 220ms ease-out" : "none",
                     }}
                   >
                     <div
@@ -533,11 +687,20 @@ export default function App() {
                       {e.label}
                     </div>
 
-                    <div style={{ ...styles.statusCell, color: getStatusSymbolColor(e.status) }}>
+                    <div
+                      style={{
+                        ...styles.statusCell,
+                        color: getStatusSymbolColor(e.status),
+                      }}
+                    >
                       {getStatusSymbol(e.status)}
                     </div>
 
-                    <button onClick={() => toggleTag(e)} style={styles.tagBtn} title="i → m → s → leer">
+                    <button
+                      onClick={() => toggleTag(e)}
+                      style={styles.tagBtn}
+                      title="i → m → s → leer"
+                    >
                       {e.note_tag || "—"}
                     </button>
                   </div>
@@ -559,14 +722,11 @@ const styles = {
     minHeight: "100dvh",
     margin: 0,
     padding: 0,
-    background:
-      `
+    background: `
       radial-gradient(circle at 12% 18%, rgba(120,80,30,0.18), rgba(0,0,0,0) 38%),
       radial-gradient(circle at 85% 22%, rgba(120,80,30,0.12), rgba(0,0,0,0) 42%),
       radial-gradient(circle at 35% 82%, rgba(120,80,30,0.10), rgba(0,0,0,0) 45%),
       radial-gradient(circle at 70% 75%, rgba(90,60,25,0.10), rgba(0,0,0,0) 40%),
-
-      /* subtile Papier-Noise (Pattern) */
       repeating-linear-gradient(
         0deg,
         rgba(255,255,255,0.03),
@@ -574,10 +734,8 @@ const styles = {
         rgba(0,0,0,0.02) 2px,
         rgba(0,0,0,0.02) 3px
       ),
-
-      /* Grundfarbe Pergament */
       linear-gradient(180deg, #f1e2c2, #e3c996)
-      `,
+    `,
     backgroundAttachment: "fixed",
   },
   shell: {
@@ -586,15 +744,7 @@ const styles = {
     maxWidth: 620,
     margin: "0 auto",
   },
-  title: {
-    fontWeight: 1000,
-    fontFamily: '"Cinzel Decorative", "IM Fell English", system-ui',
-    letterSpacing: 0.5,
-    fontSize: 22,
-    color: "#20140c",
-    marginBottom: 12,
-    textShadow: "0 1px 0 rgba(255,255,255,0.35)",
-  },
+
   topBar: {
     display: "flex",
     justifyContent: "space-between",
@@ -607,6 +757,7 @@ const styles = {
     boxShadow: "0 6px 18px rgba(0,0,0,0.10)",
     backdropFilter: "blur(4px)",
   },
+
   card: {
     borderRadius: 16,
     overflow: "hidden",
@@ -615,6 +766,7 @@ const styles = {
     boxShadow: "0 10px 24px rgba(0,0,0,0.12)",
     transition: "transform 180ms ease, box-shadow 180ms ease",
   },
+
   sectionHeader: {
     padding: "10px 12px",
     fontWeight: 1000,
@@ -625,6 +777,7 @@ const styles = {
     borderBottom: "1px solid rgba(0,0,0,0.25)",
     textTransform: "uppercase",
   },
+
   row: {
     display: "grid",
     gridTemplateColumns: "1fr 46px 56px",
@@ -634,17 +787,20 @@ const styles = {
     borderBottom: "1px solid rgba(0,0,0,0.10)",
     background: "rgba(255,255,255,0.22)",
   },
+
   name: {
     cursor: "pointer",
     userSelect: "none",
     color: "#20140c",
     fontWeight: 700,
   },
+
   statusCell: {
     textAlign: "center",
     fontWeight: 1100,
     fontSize: 18,
   },
+
   tagBtn: {
     padding: "8px 0",
     fontWeight: 1000,
@@ -653,6 +809,7 @@ const styles = {
     background: "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(0,0,0,0.06))",
     cursor: "pointer",
   },
+
   helpBtn: {
     padding: "10px 12px",
     borderRadius: 12,
@@ -662,6 +819,7 @@ const styles = {
     cursor: "pointer",
     whiteSpace: "nowrap",
   },
+
   input: {
     width: "100%",
     padding: 10,
@@ -669,7 +827,9 @@ const styles = {
     border: "1px solid rgba(0,0,0,0.25)",
     background: "rgba(255,255,255,0.55)",
     outline: "none",
+    fontSize: 16, // ✅ iOS: verhindert Zoom
   },
+
   primaryBtn: {
     padding: "10px 12px",
     borderRadius: 12,
@@ -679,6 +839,7 @@ const styles = {
     cursor: "pointer",
     transition: "transform 140ms ease, box-shadow 140ms ease",
   },
+
   secondaryBtn: {
     padding: "10px 12px",
     borderRadius: 12,
@@ -688,6 +849,7 @@ const styles = {
     cursor: "pointer",
     transition: "transform 140ms ease, box-shadow 140ms ease",
   },
+
   adminWrap: {
     marginTop: 14,
     padding: 12,
@@ -710,6 +872,7 @@ const styles = {
     background: "rgba(255,255,255,0.55)",
     border: "1px solid rgba(0,0,0,0.10)",
   },
+
   modalOverlay: {
     position: "fixed",
     inset: 0,
@@ -749,6 +912,7 @@ const styles = {
     lineHeight: "38px",
     textAlign: "center",
   },
+
   // Help modal content
   helpBody: {
     marginTop: 10,
@@ -805,6 +969,8 @@ const styles = {
     height: 1,
     background: "rgba(0,0,0,0.12)",
   },
+
+  // ===== Login =====
   loginPage: {
     minHeight: "100dvh",
     display: "flex",
@@ -813,9 +979,7 @@ const styles = {
     position: "relative",
     overflow: "hidden",
     padding: 20,
-    // Hintergrund bleibt Pergament
-    background:
-      `
+    background: `
       radial-gradient(circle at 12% 18%, rgba(120,80,30,0.18), rgba(0,0,0,0) 38%),
       radial-gradient(circle at 85% 22%, rgba(120,80,30,0.12), rgba(0,0,0,0) 42%),
       radial-gradient(circle at 35% 82%, rgba(120,80,30,0.10), rgba(0,0,0,0) 45%),
@@ -827,7 +991,7 @@ const styles = {
         rgba(0,0,0,0.02) 3px
       ),
       linear-gradient(180deg, #f1e2c2, #e3c996)
-      `,
+    `,
   },
   loginCard: {
     width: "100%",
@@ -837,13 +1001,9 @@ const styles = {
     position: "relative",
     zIndex: 2,
     border: "1px solid rgba(0,0,0,0.25)",
-
-    background:
-      "linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.40))",
-
+    background: "linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.40))",
     boxShadow: "0 18px 55px rgba(0,0,0,0.35)",
     backdropFilter: "blur(8px)",
-
     animation: "popIn 240ms ease-out",
   },
   loginTitle: {
@@ -861,12 +1021,25 @@ const styles = {
     fontSize: 15,
     lineHeight: 1.4,
   },
+  loginFieldWrap: {
+    width: "100%",
+    display: "flex",
+    justifyContent: "center",
+  },
+  loginInput: {
+    width: "100%",
+    padding: 10,
+    borderRadius: 12,
+    border: "1px solid rgba(0,0,0,0.25)",
+    background: "rgba(255,255,255,0.55)",
+    outline: "none",
+    fontSize: 16, // ✅ iOS: verhindert Zoom
+  },
   loginBtn: {
     padding: "12px 14px",
     borderRadius: 14,
     border: "1px solid rgba(0,0,0,0.30)",
-    background:
-      "linear-gradient(180deg, #f6e2b3, #caa45a)",
+    background: "linear-gradient(180deg, #f6e2b3, #caa45a)",
     fontWeight: 1000,
     fontSize: 16,
     cursor: "pointer",
@@ -879,6 +1052,7 @@ const styles = {
     textAlign: "center",
     lineHeight: 1.35,
   },
+
   candleGlowLayer: {
     position: "absolute",
     inset: 0,
@@ -891,23 +1065,33 @@ const styles = {
     animation: "candleGlow 3.8s ease-in-out infinite",
     mixBlendMode: "multiply",
   },
-  pwWrap: {
-    position: "relative",
+
+  inputRow: {
+    display: "flex",
+    alignItems: "stretch",
+    width: "100%",
+  },
+  inputInRow: {
+    flex: 1,
+    padding: 10,
+    borderRadius: "12px 0 0 12px",
+    border: "1px solid rgba(0,0,0,0.25)",
+    background: "rgba(255,255,255,0.55)",
+    outline: "none",
+    minWidth: 0, // ✅ wichtig für mobile overflow
+    fontSize: 16, // ✅ iOS: verhindert Zoom
   },
   pwToggleBtn: {
-    position: "absolute",
-    right: 8,
-    top: "50%",
-    transform: "translateY(-50%)",
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    border: "1px solid rgba(0,0,0,0.22)",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(0,0,0,0.06))",
-    cursor: "pointer",
-    fontSize: 16,
-    display: "flex",
+    width: 48,
+    display: "flex", // ✅ Emoji sauber zentrieren
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: "0 12px 12px 0",
+    border: "1px solid rgba(0,0,0,0.25)",
+    borderLeft: "none",
+    background: "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(0,0,0,0.06))",
+    cursor: "pointer",
+    fontWeight: 900,
+    padding: 0,
   },
 };
