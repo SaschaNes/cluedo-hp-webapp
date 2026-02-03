@@ -389,7 +389,6 @@ export default function App() {
       <div style={styles.loginPage}>
         <div style={styles.bgFixed} aria-hidden="true">
           <div style={styles.bgMap} />
-          <div style={styles.bgInkVignette} />
         </div>
 
         <div style={styles.candleGlowLayer} aria-hidden="true" />
@@ -501,7 +500,6 @@ export default function App() {
     <div style={styles.page}>
       <div style={styles.bgFixed} aria-hidden="true">
         <div style={styles.bgMap} />
-        <div style={styles.bgInkVignette} />
       </div>
 
       <div style={styles.shell}>
@@ -1165,13 +1163,6 @@ const styles = {
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
-
-    /* Blur ist teuer -> aber stabilisieren:
-    filter: "blur(6px) saturate(0.95) contrast(1.05)",
-    transform: "scale(1.06) translateZ(0)",
-    backfaceVisibility: "hidden",
-    willChange: "transform",
-    opacity: 0.95,*/
   },
 
   bgInkVignette: {
