@@ -1068,28 +1068,6 @@ const styles = {
   },
 
   // Background
-  page: {
-    minHeight: "100dvh",
-    margin: 0,
-    padding: 0,
-    background: "transparent",
-    position: "relative",
-    zIndex: 1, // Inhalt über Background
-  },
-
-  loginPage: {
-    minHeight: "100dvh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-    overflow: "hidden",
-    padding: 20,
-    background: "transparent",
-    zIndex: 1,
-  },
-
-  // Background
   bgFixed: {
     position: "fixed",
     inset: 0,
