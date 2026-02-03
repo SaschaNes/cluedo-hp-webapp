@@ -89,9 +89,9 @@ function AdminPanel() {
       {open && (
         <div style={styles.modalOverlay} onMouseDown={closeModal}>
           <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+            <div style={styles.modalHeader}>
               <div style={{ fontWeight: 1000, color: "#20140c" }}>Neuen User anlegen</div>
-              <button onClick={closeModal} style={styles.secondaryBtn}>Schließen</button>
+              <button onClick={closeModal} style={styles.modalCloseBtn} aria-label="Schließen">✕</button>
             </div>
 
             <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
@@ -143,6 +143,9 @@ export default function App() {
   const [games, setGames] = useState([]);
   const [gameId, setGameId] = useState(null);
   const [sheet, setSheet] = useState(null);
+
+  // ✅ Hilfe Modal State
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const load = async () => {
     const m = await api("/auth/me");
@@ -300,6 +303,8 @@ export default function App() {
     return "#20140c";
   };
 
+  const closeHelp = () => setHelpOpen(false);
+
   return (
     <div style={styles.page}>
       <div style={styles.shell}>
@@ -317,14 +322,15 @@ export default function App() {
 
         {me.role === "admin" && <AdminPanel />}
 
+        {/* Spiel + Hilfe */}
         <div style={{ marginTop: 14 }}>
           <div style={styles.card}>
             <div style={styles.sectionHeader}>Spiel</div>
-            <div style={{ padding: 12 }}>
+            <div style={{ padding: 12, display: "flex", gap: 10, alignItems: "center" }}>
               <select
                 value={gameId || ""}
                 onChange={(e) => setGameId(e.target.value)}
-                style={styles.input}
+                style={{ ...styles.input, flex: 1 }}
               >
                 {games.map((g) => (
                   <option key={g.id} value={g.id}>
@@ -332,10 +338,91 @@ export default function App() {
                   </option>
                 ))}
               </select>
+
+              <button
+                onClick={() => setHelpOpen(true)}
+                style={styles.helpBtn}
+                title="Hilfe"
+                aria-label="Hilfe"
+              >
+                Hilfe
+              </button>
             </div>
           </div>
         </div>
 
+        {/* Hilfe Modal */}
+        {helpOpen && (
+          <div style={styles.modalOverlay} onMouseDown={closeHelp}>
+            <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <div style={{ fontWeight: 1000, color: "#20140c" }}>Hilfe</div>
+                <button onClick={closeHelp} style={styles.modalCloseBtn} aria-label="Schließen">✕</button>
+              </div>
+
+              <div style={styles.helpBody}>
+                <div style={styles.helpSectionTitle}>1) Namen anklicken (Status)</div>
+                <div style={styles.helpText}>
+                  Tippe auf einen Namen, um den Status zu wechseln. Reihenfolge:
+                </div>
+
+                <div style={styles.helpList}>
+                  <div style={styles.helpListRow}>
+                    <span style={{ ...styles.helpBadge, background: "rgba(0,170,60,0.12)", color: "#0b6a1e" }}>✓</span>
+                    <div><b>Grün</b> = bestätigt / fix richtig</div>
+                  </div>
+                  <div style={styles.helpListRow}>
+                    <span style={{ ...styles.helpBadge, background: "rgba(255,0,0,0.10)", color: "#b10000" }}>X</span>
+                    <div><b>Rot</b> = ausgeschlossen / fix falsch</div>
+                  </div>
+                  <div style={styles.helpListRow}>
+                    <span style={{ ...styles.helpBadge, background: "rgba(120,120,120,0.14)", color: "#444" }}>?</span>
+                    <div><b>Grau</b> = unsicher / „vielleicht“</div>
+                  </div>
+                  <div style={styles.helpListRow}>
+                    <span style={{ ...styles.helpBadge, background: "rgba(255,255,255,0.35)", color: "#20140c" }}> </span>
+                    <div><b>Leer</b> = unknown / noch nicht bewertet</div>
+                  </div>
+                </div>
+
+                <div style={styles.helpDivider} />
+
+                <div style={styles.helpSectionTitle}>2) i / m / s Button (Notiz)</div>
+                <div style={styles.helpText}>
+                  Rechts pro Zeile gibt es einen Button, der durch diese Werte rotiert:
+                </div>
+
+                <div style={styles.helpList}>
+                  <div style={styles.helpListRow}>
+                    <span style={styles.helpMiniTag}>i</span>
+                    <div><b>i</b> = „Ich habe diese Geheimkarte“</div>
+                  </div>
+                  <div style={styles.helpListRow}>
+                    <span style={styles.helpMiniTag}>m</span>
+                    <div><b>m</b> = „Geheimkarte aus dem mittleren Deck“</div>
+                  </div>
+                  <div style={styles.helpListRow}>
+                    <span style={styles.helpMiniTag}>s</span>
+                    <div><b>s</b> = „Ein anderer Spieler hat diese Karte“</div>
+                  </div>
+                  <div style={styles.helpListRow}>
+                    <span style={styles.helpMiniTag}>—</span>
+                    <div><b>—</b> = keine Notiz</div>
+                  </div>
+                </div>
+
+                <div style={styles.helpDivider} />
+
+                <div style={styles.helpText}>
+
+                  Tipp: Jeder Spieler sieht nur seine eigenen Notizen – andere Spieler können nicht in deinen Zettel schauen.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Sheet */}
         <div style={{ marginTop: 14, display: "grid", gap: 14 }}>
           {sections.map((sec) => (
             <div key={sec.key} style={styles.card}>
@@ -350,7 +437,6 @@ export default function App() {
                       background: getRowBg(e.status),
                     }}
                   >
-                    {/* ✅ Klick Cycle */}
                     <div
                       onClick={() => cycleStatus(e)}
                       style={{
@@ -364,12 +450,10 @@ export default function App() {
                       {e.label}
                     </div>
 
-                    {/* ✅ NUR 1 Status-Spalte */}
                     <div style={{ ...styles.statusCell, color: getStatusSymbolColor(e.status) }}>
                       {getStatusSymbol(e.status)}
                     </div>
 
-                    {/* i/m/s */}
                     <button onClick={() => toggleTag(e)} style={styles.tagBtn} title="i → m → s → leer">
                       {e.note_tag || "—"}
                     </button>
@@ -437,7 +521,7 @@ const styles = {
   },
   row: {
     display: "grid",
-    gridTemplateColumns: "1fr 46px 56px", // ✅ Name | Status | i/m/s
+    gridTemplateColumns: "1fr 46px 56px",
     gap: 8,
     padding: "10px 12px",
     alignItems: "center",
@@ -462,6 +546,15 @@ const styles = {
     border: "1px solid rgba(0,0,0,0.25)",
     background: "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(0,0,0,0.06))",
     cursor: "pointer",
+  },
+  helpBtn: {
+    padding: "10px 12px",
+    borderRadius: 12,
+    border: "1px solid rgba(0,0,0,0.25)",
+    background: "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(0,0,0,0.06))",
+    fontWeight: 1000,
+    cursor: "pointer",
+    whiteSpace: "nowrap",
   },
   input: {
     width: "100%",
@@ -521,12 +614,86 @@ const styles = {
   },
   modalCard: {
     width: "100%",
-    maxWidth: 520,
+    maxWidth: 560,
     borderRadius: 18,
     border: "1px solid rgba(0,0,0,0.25)",
     background: "linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.42))",
     boxShadow: "0 18px 50px rgba(0,0,0,0.35)",
     padding: 14,
     backdropFilter: "blur(6px)",
+  },
+  modalHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+  },
+  modalCloseBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    border: "1px solid rgba(0,0,0,0.25)",
+    background: "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(0,0,0,0.06))",
+    fontWeight: 1000,
+    cursor: "pointer",
+    lineHeight: "38px",
+    textAlign: "center",
+  },
+
+  // Help modal content
+  helpBody: {
+    marginTop: 10,
+    paddingTop: 4,
+    maxHeight: "70vh",
+    overflow: "auto",
+  },
+  helpSectionTitle: {
+    fontWeight: 1000,
+    color: "#20140c",
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  helpText: {
+    color: "#20140c",
+    opacity: 0.9,
+    lineHeight: 1.35,
+  },
+  helpList: {
+    marginTop: 10,
+    display: "grid",
+    gap: 8,
+  },
+  helpListRow: {
+    display: "grid",
+    gridTemplateColumns: "42px 1fr",
+    gap: 10,
+    alignItems: "center",
+  },
+  helpBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    border: "1px solid rgba(0,0,0,0.18)",
+    fontWeight: 1100,
+    fontSize: 18,
+  },
+  helpMiniTag: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    border: "1px solid rgba(0,0,0,0.18)",
+    background: "rgba(255,255,255,0.55)",
+    fontWeight: 1100,
+  },
+  helpDivider: {
+    margin: "14px 0",
+    height: 1,
+    background: "rgba(0,0,0,0.12)",
   },
 };
