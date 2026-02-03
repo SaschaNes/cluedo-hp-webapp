@@ -23,13 +23,43 @@ function parseTag(tag) {
   return { base: tag, chip: null };
 }
 
-function nextBaseTag(tag) {
-  const { base } = parseTag(tag);
-  if (!base) return "i";
-  if (base === "i") return "m";
-  if (base === "m") return "s"; // hier öffnen wir dann das Popup
-  // wenn s (egal ob s oder s.XY), dann zurück auf leer
+function baseTag(tag) {
+  // Backend: null | "i" | "m" | "s"
+  if (!tag) return null;
+  if (tag === "i" || tag === "m" || tag === "s") return tag;
   return null;
+}
+
+function nextBaseTag(tag) {
+  const b = baseTag(tag);
+  if (!b) return "i";
+  if (b === "i") return "m";
+  if (b === "m") return "s";
+  return null; // s -> leer
+}
+
+function chipStorageKey(gameId, entryId) {
+  return `chip:${gameId}:${entryId}`;
+}
+
+function getChipLS(gameId, entryId) {
+  try {
+    return localStorage.getItem(chipStorageKey(gameId, entryId));
+  } catch {
+    return null;
+  }
+}
+
+function setChipLS(gameId, entryId, chip) {
+  try {
+    localStorage.setItem(chipStorageKey(gameId, entryId), chip);
+  } catch {}
+}
+
+function clearChipLS(gameId, entryId) {
+  try {
+    localStorage.removeItem(chipStorageKey(gameId, entryId));
+  } catch {}
 }
 
 function AdminPanel() {
@@ -350,14 +380,18 @@ export default function App() {
   const toggleTag = async (entry) => {
     const next = nextBaseTag(entry.note_tag);
 
-    // Wenn wir bei "s" angekommen sind -> Popup öffnen statt sofort setzen
+    // Wenn wir bei "s" angekommen sind -> Popup öffnen
     if (next === "s") {
       setChipPickEntry(entry);
       setChipPickOpen(true);
       return;
     }
 
-    // normal setzen (— / i / m)
+    // Wenn wir von "s" weg gehen -> Chip local löschen
+    if (baseTag(entry.note_tag) === "s" && next === null) {
+      clearChipLS(gameId, entry.entry_id);
+    }
+
     await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
       method: "PATCH",
       body: JSON.stringify({ note_tag: next }),
@@ -374,9 +408,13 @@ export default function App() {
   const chooseChip = async (chip) => {
     if (!chipPickEntry) return;
 
+    // Chip lokal speichern
+    setChipLS(gameId, chipPickEntry.entry_id, chip);
+
+    // Backend nur "s" setzen
     await api(`/games/${gameId}/sheet/${chipPickEntry.entry_id}`, {
       method: "PATCH",
-      body: JSON.stringify({ note_tag: `s.${chip}` }),
+      body: JSON.stringify({ note_tag: "s" }),
     });
 
     closeChipPick();
@@ -700,7 +738,12 @@ export default function App() {
                       </div>
 
                       <button onClick={() => toggleTag(e)} style={styles.tagBtn} title="i → m → s → leer">
-                        {e.note_tag || "—"}
+                        {(() => {
+                          if (!e.note_tag) return "—";
+                          if (e.note_tag !== "s") return e.note_tag;
+                          const chip = getChipLS(gameId, e.entry_id);
+                          return chip ? `s.${chip}` : "s";
+                        })()}
                       </button>
                     </div>
                   );
