@@ -3,6 +3,9 @@ import React, { useEffect, useState } from "react";
 const API = "/api";
 const CHIP_LIST = ["AL", "JG", "JN", "SN", "TL"];
 
+const [chipOpen, setChipOpen] = useState(false);
+const [chipEntry, setChipEntry] = useState(null);
+
 async function api(path, opts = {}) {
   const res = await fetch(API + path, {
     credentials: "include",
@@ -378,25 +381,18 @@ export default function App() {
   };
 
   const toggleTag = async (entry) => {
-    const next = nextBaseTag(entry.note_tag);
+    const next = cycleTag(entry.note_tag);
 
-    // Wenn wir bei "s" angekommen sind -> Popup öffnen
     if (next === "s") {
-      setChipPickEntry(entry);
-      setChipPickOpen(true);
+      setChipEntry(entry);
+      setChipOpen(true);
       return;
-    }
-
-    // Wenn wir von "s" weg gehen -> Chip local löschen
-    if (baseTag(entry.note_tag) === "s" && next === null) {
-      clearChipLS(gameId, entry.entry_id);
     }
 
     await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
       method: "PATCH",
       body: JSON.stringify({ note_tag: next }),
     });
-
     await reloadSheet();
   };
 
@@ -406,19 +402,28 @@ export default function App() {
   };
 
   const chooseChip = async (chip) => {
-    if (!chipPickEntry) return;
+    if (!chipEntry) return;
 
-    // Chip lokal speichern
-    setChipLS(gameId, chipPickEntry.entry_id, chip);
-
-    // Backend nur "s" setzen
-    await api(`/games/${gameId}/sheet/${chipPickEntry.entry_id}`, {
+    await api(`/games/${gameId}/sheet/${chipEntry.entry_id}`, {
       method: "PATCH",
-      body: JSON.stringify({ note_tag: "s" }),
+      body: JSON.stringify({ note_tag: `s.${chip}` }),
     });
 
-    closeChipPick();
+    setChipOpen(false);
+    setChipEntry(null);
     await reloadSheet();
+  };
+
+  const closeChipModalToDash = async () => {
+    if (chipEntry) {
+      await api(`/games/${gameId}/sheet/${chipEntry.entry_id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ note_tag: null }),
+      });
+      await reloadSheet();
+    }
+    setChipOpen(false);
+    setChipEntry(null);
   };
 
   // --- helpers ---
@@ -654,41 +659,30 @@ export default function App() {
           </div>
         )}
 
-        {chipPickOpen && (
-          <div style={styles.modalOverlay} onMouseDown={closeChipPick}>
+        {chipOpen && (
+          <div style={styles.modalOverlay} onMouseDown={closeChipModalToDash}>
             <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
               <div style={styles.modalHeader}>
-                <div style={{ fontWeight: 1000, color: stylesTokens.textGold }}>
-                  Wer hat die Karte?
-                </div>
-                <button
-                  onClick={closeChipPick}
-                  style={styles.modalCloseBtn}
-                  aria-label="Schließen"
-                >
+                <div style={{ fontWeight: 1000, color: stylesTokens.textGold }}>Wer hat die Karte?</div>
+                <button onClick={closeChipModalToDash} style={styles.modalCloseBtn} aria-label="Schließen">
                   ✕
                 </button>
               </div>
 
-              <div style={{ marginTop: 12, color: stylesTokens.textMain, opacity: 0.9 }}>
+              <div style={{ marginTop: 12, color: stylesTokens.textMain }}>
                 Chip auswählen:
               </div>
 
-              <div style={styles.chipGrid}>
-                {CHIP_LIST.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => chooseChip(c)}
-                    style={styles.chipBtn}
-                    title={`Setze s.${c}`}
-                  >
+              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {CHIP_OPTIONS.map((c) => (
+                  <button key={c} onClick={() => chooseChip(c)} style={styles.chipBtn}>
                     {c}
                   </button>
                 ))}
               </div>
 
-              <div style={{ marginTop: 10, fontSize: 12, color: stylesTokens.textDim }}>
-                Tipp: Wenn du wieder auf den Notiz-Button klickst, geht’s von <b>s.XX</b> zurück auf <b>—</b>.
+              <div style={{ marginTop: 12, fontSize: 12, color: stylesTokens.textDim }}>
+                Tipp: Wenn du wieder auf den Notiz-Button klickst, geht’s von <b>s.XX</b> zurück auf —.
               </div>
             </div>
           </div>
@@ -702,19 +696,24 @@ export default function App() {
 
               <div style={{ display: "grid" }}>
                 {sec.entries.map((e) => {
-                  const badge = getStatusBadge(e.status);
+                  // ✅ i oder s.XX => visuell wie rot (nur UI, kein Backend)
+                  const isIorS = e.note_tag === "i" || (typeof e.note_tag === "string" && e.note_tag.startsWith("s."));
+                  const effectiveStatus = (e.status === 0 && isIorS) ? 1 : e.status;
+
+                  const badge = getStatusBadge(effectiveStatus);
+
                   return (
                     <div
                       key={e.entry_id}
                       className="hp-row"
                       style={{
                         ...styles.row,
-                        background: getRowBg(e.status),
+                        background: getRowBg(effectiveStatus),
                         animation: pulseId === e.entry_id ? "rowPulse 220ms ease-out" : "none",
                         borderLeft:
-                          e.status === 2 ? "4px solid rgba(0,190,80,0.55)" :
-                          e.status === 1 ? "4px solid rgba(255,35,35,0.55)" :
-                          e.status === 3 ? "4px solid rgba(233,216,166,0.22)" :
+                          effectiveStatus === 2 ? "4px solid rgba(0,190,80,0.55)" :
+                          effectiveStatus === 1 ? "4px solid rgba(255,35,35,0.55)" :
+                          effectiveStatus === 3 ? "4px solid rgba(233,216,166,0.22)" :
                           "4px solid rgba(0,0,0,0)",
                       }}
                     >
@@ -722,41 +721,24 @@ export default function App() {
                         onClick={() => cycleStatus(e)}
                         style={{
                           ...styles.name,
-
-                          // ✅ Karte durchstreichen wenn Rot ODER Tag i/s gesetzt ist
-                          textDecoration:
-                            e.status === 1 ||
-                            e.note_tag === "i" ||
-                            e.note_tag === "s"
-                              ? "line-through"
-                              : "none",
-
-                          opacity:
-                            e.status === 1 ||
-                            e.note_tag === "i" ||
-                            e.note_tag === "s"
-                              ? 0.65
-                              : 1,
-
-                          color: getNameColor(e.status),
+                          // ✅ Rot-Look auch bei i/s
+                          textDecoration: effectiveStatus === 1 ? "line-through" : "none",
+                          color: getNameColor(effectiveStatus),
+                          opacity: effectiveStatus === 1 ? 0.8 : 1,
                         }}
+                        title="Klick: Grün → Rot → Grau → Leer"
                       >
                         {e.label}
                       </div>
 
                       <div style={styles.statusCell}>
                         <span style={{ ...styles.statusBadge, color: badge.color, background: badge.background }}>
-                          {getStatusSymbol(e.status)}
+                          {getStatusSymbol(effectiveStatus)}
                         </span>
                       </div>
 
                       <button onClick={() => toggleTag(e)} style={styles.tagBtn} title="i → m → s → leer">
-                        {(() => {
-                          if (!e.note_tag) return "—";
-                          if (e.note_tag !== "s") return e.note_tag;
-                          const chip = getChipLS(gameId, e.entry_id);
-                          return chip ? `s.${chip}` : "s";
-                        })()}
+                        {e.note_tag || "—"}
                       </button>
                     </div>
                   );
@@ -1220,14 +1202,14 @@ const styles = {
   },
 
   chipBtn: {
-    padding: "10px 0",
+    padding: "10px 14px",
     borderRadius: 12,
-    border: `1px solid rgba(233,216,166,0.22)`,
+    border: "1px solid rgba(233,216,166,0.18)",
     background: "rgba(255,255,255,0.06)",
     color: stylesTokens.textGold,
-    fontWeight: 1100,
+    fontWeight: 1000,
     cursor: "pointer",
-    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
+    minWidth: 64,
   },
 
 };
