@@ -722,11 +722,24 @@ export default function App() {
                         onClick={() => cycleStatus(e)}
                         style={{
                           ...styles.name,
-                          textDecoration: e.status === 1 ? "line-through" : "none",
+
+                          // ✅ Karte durchstreichen wenn Rot ODER Tag i/s gesetzt ist
+                          textDecoration:
+                            e.status === 1 ||
+                            e.note_tag === "i" ||
+                            e.note_tag === "s"
+                              ? "line-through"
+                              : "none",
+
+                          opacity:
+                            e.status === 1 ||
+                            e.note_tag === "i" ||
+                            e.note_tag === "s"
+                              ? 0.65
+                              : 1,
+
                           color: getNameColor(e.status),
-                          opacity: e.status === 1 ? 0.8 : 1,
                         }}
-                        title="Klick: Grün → Rot → Grau → Leer"
                       >
                         {e.label}
                       </div>
