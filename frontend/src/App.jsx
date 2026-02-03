@@ -19,27 +19,110 @@ function cycleTag(tag) {
   return null;
 }
 
+function AdminPanel() {
+  const [users, setUsers] = useState([]);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("user");
+  const [msg, setMsg] = useState("");
+
+  const loadUsers = async () => {
+    const u = await api("/admin/users");
+    setUsers(u);
+  };
+
+  useEffect(() => {
+    loadUsers().catch(() => {});
+  }, []);
+
+  const createUser = async () => {
+    setMsg("");
+    try {
+      await api("/admin/users", {
+        method: "POST",
+        body: JSON.stringify({ email, password, role }),
+      });
+      setEmail("");
+      setPassword("");
+      setRole("user");
+      setMsg("✅ User erstellt.");
+      await loadUsers();
+    } catch (e) {
+      setMsg("❌ Fehler: " + (e?.message || "unknown"));
+    }
+  };
+
+  return (
+    <div style={styles.adminWrap}>
+      <div style={styles.adminTitle}>Admin Dashboard</div>
+
+      <div style={styles.adminGrid}>
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+          style={styles.input}
+        />
+        <input
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Initial Passwort"
+          type="password"
+          style={styles.input}
+        />
+        <select value={role} onChange={(e) => setRole(e.target.value)} style={styles.input}>
+          <option value="user">user</option>
+          <option value="admin">admin</option>
+        </select>
+        <button onClick={createUser} style={styles.primaryBtn}>User anlegen</button>
+      </div>
+
+      {msg && <div style={{ marginTop: 10, opacity: 0.9 }}>{msg}</div>}
+
+      <div style={{ marginTop: 14, fontWeight: 900, color: "#20140c" }}>Vorhandene User</div>
+      <div style={{ marginTop: 8, display: "grid", gap: 8 }}>
+        {users.map((u) => (
+          <div key={u.id} style={styles.userRow}>
+            <div>{u.email}</div>
+            <div style={{ textAlign: "center", fontWeight: 900 }}>{u.role}</div>
+            <div style={{ textAlign: "center", opacity: 0.85 }}>
+              {u.disabled ? "disabled" : "active"}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [me, setMe] = useState(null);
-  const [email, setEmail] = useState("admin@local");
-  const [password, setPassword] = useState("");
+  const [loginEmail, setLoginEmail] = useState("admin@local");
+  const [loginPassword, setLoginPassword] = useState("");
   const [games, setGames] = useState([]);
   const [gameId, setGameId] = useState(null);
   const [sheet, setSheet] = useState(null);
-  const [tab, setTab] = useState("suspect");
 
   const load = async () => {
     const m = await api("/auth/me");
     setMe(m);
+
     const gs = await api("/games");
     setGames(gs);
+
+    // wenn noch kein game ausgewählt ist -> erstes nehmen
     if (gs[0] && !gameId) setGameId(gs[0].id);
   };
 
   useEffect(() => {
     (async () => {
-      try { await load(); } catch {}
+      try {
+        await load();
+      } catch {
+        // not logged in
+      }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -48,31 +131,51 @@ export default function App() {
       try {
         const sh = await api(`/games/${gameId}/sheet`);
         setSheet(sh);
-      } catch {}
+      } catch {
+        // ignore
+      }
     })();
   }, [gameId]);
 
   const doLogin = async () => {
-    await api("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+    await api("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+    });
     await load();
   };
 
+  const doLogout = async () => {
+    await api("/auth/logout", { method: "POST" });
+    setMe(null);
+    setGames([]);
+    setGameId(null);
+    setSheet(null);
+  };
+
   const newGame = async () => {
-    const g = await api("/games", { method: "POST", body: JSON.stringify({ name: "Spiel " + new Date().toLocaleString() }) });
+    const g = await api("/games", {
+      method: "POST",
+      body: JSON.stringify({ name: "Spiel " + new Date().toLocaleString() }),
+    });
     const gs = await api("/games");
     setGames(gs);
     setGameId(g.id);
   };
 
+  const reloadSheet = async () => {
+    if (!gameId) return;
+    const sh = await api(`/games/${gameId}/sheet`);
+    setSheet(sh);
+  };
+
   const toggleCross = async (entry) => {
-    // Tap auf Name: unknown <-> crossed
     const next = entry.status === 1 ? 0 : 1;
     await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
       method: "PATCH",
       body: JSON.stringify({ status: next }),
     });
-    const sh = await api(`/games/${gameId}/sheet`);
-    setSheet(sh);
+    await reloadSheet();
   };
 
   const toggleTag = async (entry) => {
@@ -81,72 +184,265 @@ export default function App() {
       method: "PATCH",
       body: JSON.stringify({ note_tag: next }),
     });
-    const sh = await api(`/games/${gameId}/sheet`);
-    setSheet(sh);
+    await reloadSheet();
   };
 
+  // Login Screen
   if (!me) {
     return (
-      <div style={{ padding: 16, fontFamily: "system-ui" }}>
-        <h2>Login</h2>
-        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" style={{ width: "100%", padding: 10, marginBottom: 8 }} />
-        <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Passwort" type="password" style={{ width: "100%", padding: 10, marginBottom: 8 }} />
-        <button onClick={doLogin} style={{ width: "100%", padding: 12 }}>Anmelden</button>
-        <p style={{ opacity: 0.7, marginTop: 10 }}>Default Admin: admin@local (Passwort aus .env)</p>
+      <div style={styles.page}>
+        <div style={styles.shell}>
+          <div style={styles.title}>Zauber-Detektiv Notizbogen</div>
+
+          <div style={styles.card}>
+            <div style={styles.sectionHeader}>Login</div>
+
+            <div style={{ padding: 12, display: "grid", gap: 10 }}>
+              <input
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                placeholder="Email"
+                style={styles.input}
+              />
+              <input
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                placeholder="Passwort"
+                type="password"
+                style={styles.input}
+              />
+              <button onClick={doLogin} style={styles.primaryBtn}>Anmelden</button>
+
+              <div style={{ opacity: 0.75, fontSize: 13 }}>
+                Default Admin: <b>admin@local</b> (Passwort aus <code>.env</code>)
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  const entries = sheet ? sheet[tab] : [];
+  const sections = sheet
+    ? [
+        { key: "suspect", title: "VERDÄCHTIGE PERSON", entries: sheet.suspect || [] },
+        { key: "item", title: "GEGENSTAND", entries: sheet.item || [] },
+        { key: "location", title: "ORT", entries: sheet.location || [] },
+      ]
+    : [];
 
   return (
-    <div style={{ fontFamily: "system-ui", padding: 12, maxWidth: 520, margin: "0 auto" }}>
-      <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
-        <div>
-          <div style={{ fontWeight: 700 }}>{me.email}</div>
-          <div style={{ fontSize: 12, opacity: 0.7 }}>{me.role}</div>
-        </div>
-        <button onClick={newGame} style={{ padding: "10px 12px" }}>+ Neues Spiel</button>
-      </div>
-
-      <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-        <select value={gameId || ""} onChange={(e) => setGameId(e.target.value)} style={{ flex: 1, padding: 10 }}>
-          {games.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-        </select>
-      </div>
-
-      <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-        {["suspect","item","location"].map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: 10, fontWeight: tab===t ? 700 : 500 }}>
-            {t === "suspect" ? "Verdächtige" : t === "item" ? "Gegenstand" : "Ort"}
-          </button>
-        ))}
-      </div>
-
-      <div style={{ marginTop: 12, border: "1px solid #ddd", borderRadius: 12, overflow: "hidden" }}>
-        {entries.map((e) => (
-          <div key={e.entry_id} style={{ display: "grid", gridTemplateColumns: "1fr 40px 40px 40px 52px", gap: 6, padding: 10, borderBottom: "1px solid #eee", alignItems: "center" }}>
-            {/* Name: Tap toggelt crossed */}
-            <div onClick={() => toggleCross(e)} style={{ cursor: "pointer", textDecoration: e.status === 1 ? "line-through" : "none", userSelect: "none" }}>
-              {e.label}
-            </div>
-
-            {/* Spalte 1: X */}
-            <div style={{ textAlign: "center", fontWeight: 800 }}>{e.status === 1 ? "X" : ""}</div>
-
-            {/* Spalte 2: gelbes ✓ */}
-            <div style={{ textAlign: "center", fontWeight: 800 }}>{e.status === 1 ? "✓" : ""}</div>
-
-            {/* Spalte 3: grünes ✓ (für später, wenn du confirmed nutzt) */}
-            <div style={{ textAlign: "center", fontWeight: 800 }}>{e.status === 2 ? "✓" : ""}</div>
-
-            {/* Spalte 4: i/m/s */}
-            <button onClick={() => toggleTag(e)} style={{ padding: "8px 0", fontWeight: 800 }}>
-              {e.note_tag || "—"}
-            </button>
+    <div style={styles.page}>
+      <div style={styles.shell}>
+        {/* Top Bar */}
+        <div style={styles.topBar}>
+          <div>
+            <div style={{ fontWeight: 900, color: "#20140c" }}>{me.email}</div>
+            <div style={{ fontSize: 12, opacity: 0.75 }}>{me.role}</div>
           </div>
-        ))}
+
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={doLogout} style={styles.secondaryBtn}>Logout</button>
+            <button onClick={newGame} style={styles.primaryBtn}>+ Neues Spiel</button>
+          </div>
+        </div>
+
+        {/* Admin Panel */}
+        {me.role === "admin" && <AdminPanel />}
+
+        {/* Game Selector */}
+        <div style={{ marginTop: 14 }}>
+          <div style={styles.card}>
+            <div style={styles.sectionHeader}>Spiel</div>
+            <div style={{ padding: 12 }}>
+              <select
+                value={gameId || ""}
+                onChange={(e) => setGameId(e.target.value)}
+                style={styles.input}
+              >
+                {games.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Sheet */}
+        <div style={{ marginTop: 14, display: "grid", gap: 14 }}>
+          {sections.map((sec) => (
+            <div key={sec.key} style={styles.card}>
+              <div style={styles.sectionHeader}>{sec.title}</div>
+
+              <div style={{ display: "grid" }}>
+                {sec.entries.map((e) => (
+                  <div key={e.entry_id} style={styles.row}>
+                    {/* Name: Tap toggelt crossed */}
+                    <div
+                      onClick={() => toggleCross(e)}
+                      style={{
+                        ...styles.name,
+                        textDecoration: e.status === 1 ? "line-through" : "none",
+                        opacity: e.status === 1 ? 0.85 : 1,
+                      }}
+                      title="Tippen = durchstreichen"
+                    >
+                      {e.label}
+                    </div>
+
+                    {/* Spalte 1: X */}
+                    <div style={styles.cell}>{e.status === 1 ? "X" : ""}</div>
+
+                    {/* Spalte 2: gelbes ✓ */}
+                    <div style={styles.cell}>{e.status === 1 ? "✓" : ""}</div>
+
+                    {/* Spalte 3: confirmed (grünes ✓) – aktuell nicht per UI gesetzt */}
+                    <div style={styles.cell}>{e.status === 2 ? "✓" : ""}</div>
+
+                    {/* Spalte 4: i/m/s */}
+                    <button onClick={() => toggleTag(e)} style={styles.tagBtn} title="i → m → s → leer">
+                      {e.note_tag || "—"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ height: 24 }} />
       </div>
     </div>
   );
 }
+
+/* ===== Styles (Parchment / Boardgame Look) ===== */
+const styles = {
+  page: {
+    minHeight: "100vh",
+    padding: 16,
+    background:
+      "radial-gradient(circle at 20% 10%, rgba(255,255,255,0.40), rgba(0,0,0,0) 45%), linear-gradient(180deg, #f3e7cf, #e5d2ac)",
+  },
+  shell: {
+    fontFamily: "system-ui",
+    maxWidth: 620,
+    margin: "0 auto",
+  },
+  title: {
+    fontWeight: 1000,
+    letterSpacing: 0.5,
+    fontSize: 22,
+    color: "#20140c",
+    marginBottom: 12,
+    textShadow: "0 1px 0 rgba(255,255,255,0.35)",
+  },
+  topBar: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+    padding: 12,
+    borderRadius: 16,
+    background: "rgba(255,255,255,0.35)",
+    border: "1px solid rgba(0,0,0,0.15)",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.10)",
+    backdropFilter: "blur(4px)",
+  },
+  card: {
+    borderRadius: 16,
+    overflow: "hidden",
+    border: "1px solid rgba(0,0,0,0.18)",
+    background: "rgba(255,255,255,0.35)",
+    boxShadow: "0 10px 24px rgba(0,0,0,0.12)",
+  },
+  sectionHeader: {
+    padding: "10px 12px",
+    fontWeight: 1000,
+    letterSpacing: 0.7,
+    color: "#2b1a0e",
+    background: "linear-gradient(180deg, #caa45a, #a67a2a)",
+    borderBottom: "1px solid rgba(0,0,0,0.25)",
+    textTransform: "uppercase",
+  },
+  row: {
+    display: "grid",
+    gridTemplateColumns: "1fr 40px 40px 40px 56px",
+    gap: 8,
+    padding: "10px 12px",
+    alignItems: "center",
+    borderBottom: "1px solid rgba(0,0,0,0.10)",
+    background: "rgba(255,255,255,0.22)",
+  },
+  name: {
+    cursor: "pointer",
+    userSelect: "none",
+    color: "#20140c",
+    fontWeight: 700,
+  },
+  cell: {
+    textAlign: "center",
+    fontWeight: 1000,
+    color: "#20140c",
+  },
+  tagBtn: {
+    padding: "8px 0",
+    fontWeight: 1000,
+    borderRadius: 10,
+    border: "1px solid rgba(0,0,0,0.25)",
+    background: "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(0,0,0,0.06))",
+  },
+  input: {
+    width: "100%",
+    padding: 10,
+    borderRadius: 12,
+    border: "1px solid rgba(0,0,0,0.25)",
+    background: "rgba(255,255,255,0.55)",
+    outline: "none",
+  },
+  primaryBtn: {
+    padding: "10px 12px",
+    borderRadius: 12,
+    border: "1px solid rgba(0,0,0,0.25)",
+    background: "linear-gradient(180deg, #f3d79b, #caa45a)",
+    fontWeight: 1000,
+    cursor: "pointer",
+  },
+  secondaryBtn: {
+    padding: "10px 12px",
+    borderRadius: 12,
+    border: "1px solid rgba(0,0,0,0.25)",
+    background: "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(0,0,0,0.05))",
+    fontWeight: 900,
+    cursor: "pointer",
+  },
+  adminWrap: {
+    marginTop: 14,
+    padding: 12,
+    borderRadius: 16,
+    border: "1px solid rgba(0,0,0,0.18)",
+    background: "rgba(255,255,255,0.30)",
+    boxShadow: "0 8px 18px rgba(0,0,0,0.10)",
+  },
+  adminTitle: {
+    fontWeight: 1000,
+    color: "#20140c",
+    marginBottom: 8,
+  },
+  adminGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 120px 140px",
+    gap: 8,
+  },
+  userRow: {
+    display: "grid",
+    gridTemplateColumns: "1fr 80px 90px",
+    gap: 8,
+    padding: 10,
+    borderRadius: 12,
+    background: "rgba(255,255,255,0.55)",
+    border: "1px solid rgba(0,0,0,0.10)",
+  },
+};
