@@ -764,8 +764,6 @@ export default function App() {
 const styles = {
   page: {
     minHeight: "100dvh",
-    margin: 0,
-    padding: 0,
     background: "transparent",
     position: "relative",
     zIndex: 1,
@@ -1150,29 +1148,33 @@ const styles = {
   // ✅ Background (FIXED) — unter Content (zIndex -1) und ohne blur() Filter
   bgFixed: {
     position: "fixed",
-    inset: 0,
-    zIndex: -1,
+    top: 0,
+    left: 0,
+    width: "100vw",
+    // iOS dynamic viewport support:
+    height: "100dvh",
+    zIndex: 0,
     pointerEvents: "none",
+
+    // verhindert “zucken” bei repaint:
+    transform: "translateZ(0)",
+    backfaceVisibility: "hidden",
+    willChange: "transform",
   },
 
-  // ✅ WICHTIG: Nutze ein vorab geblurrtes Bild, sonst kriegst du wieder Nähte.
-  // Lege ab: /public/bg/marauders-map-blur.jpg
   bgMap: {
     position: "absolute",
     inset: 0,
-    backgroundImage: 'url("/bg/marauders-map-blur.jpg")',
+    backgroundImage: 'url("/marauders-map.jpg")',
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
 
-    // KEIN blur() hier!
-    filter: "saturate(0.95) contrast(1.05) brightness(0.98)",
-
-    // GPU / Seam-Fix
-    transform: "translate3d(0,0,0) scale(1.04)",
-    willChange: "transform",
+    // Blur ist teuer -> aber stabilisieren:
+    filter: "blur(6px) saturate(0.95) contrast(1.05)",
+    transform: "scale(1.06) translateZ(0)",
     backfaceVisibility: "hidden",
-
+    willChange: "transform",
     opacity: 0.95,
   },
 
@@ -1181,16 +1183,19 @@ const styles = {
     inset: 0,
     background: `
       radial-gradient(circle at 50% 45%,
-        rgba(0,0,0,0.10) 0%,
-        rgba(0,0,0,0.22) 55%,
-        rgba(0,0,0,0.55) 82%,
-        rgba(0,0,0,0.70) 100%
+        rgba(0,0,0,0.08) 0%,
+        rgba(0,0,0,0.18) 48%,
+        rgba(0,0,0,0.55) 78%,
+        rgba(0,0,0,0.72) 100%
       ),
       linear-gradient(180deg,
-        rgba(245, 226, 185, 0.38),
-        rgba(214, 180, 120, 0.28)
+        rgba(245, 226, 185, 0.42),
+        rgba(214, 180, 120, 0.32)
       )
     `,
     mixBlendMode: "multiply",
+    transform: "translateZ(0)",
+    backfaceVisibility: "hidden",
   },
+
 };
