@@ -62,7 +62,6 @@ function AdminPanel() {
   const closeModal = () => {
     setOpen(false);
     setMsg("");
-    // optional: resetForm();  // wenn du beim Schließen leeren willst
   };
 
   return (
@@ -87,7 +86,6 @@ function AdminPanel() {
         ))}
       </div>
 
-      {/* Modal */}
       {open && (
         <div style={styles.modalOverlay} onMouseDown={closeModal}>
           <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
@@ -128,7 +126,7 @@ function AdminPanel() {
               </div>
 
               <div style={{ fontSize: 12, opacity: 0.75 }}>
-                Tipp: Am Handy ist das Modal leichter zu bedienen als die Grid-Zeile.
+                Tipp: Tap auf Item = rot (ausschließen), Long-Press = grün (bestätigt), ? = unsicher.
               </div>
             </div>
           </div>
@@ -138,6 +136,38 @@ function AdminPanel() {
   );
 }
 
+function useLongPress(onLongPress, onClick, { delay = 450 } = {}) {
+  const [longPressed, setLongPressed] = useState(false);
+  const timeoutRef = React.useRef(null);
+
+  const start = (e) => {
+    e.preventDefault();
+    setLongPressed(false);
+    timeoutRef.current = setTimeout(() => {
+      setLongPressed(true);
+      onLongPress();
+    }, delay);
+  };
+
+  const clear = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = null;
+  };
+
+  const end = () => {
+    clear();
+    if (!longPressed) onClick();
+  };
+
+  return {
+    onMouseDown: start,
+    onMouseUp: end,
+    onMouseLeave: clear,
+    onTouchStart: start,
+    onTouchEnd: end,
+    onTouchMove: clear,
+  };
+}
 
 export default function App() {
   const [me, setMe] = useState(null);
@@ -154,17 +184,12 @@ export default function App() {
     const gs = await api("/games");
     setGames(gs);
 
-    // wenn noch kein game ausgewählt ist -> erstes nehmen
     if (gs[0] && !gameId) setGameId(gs[0].id);
   };
 
   useEffect(() => {
     (async () => {
-      try {
-        await load();
-      } catch {
-        // not logged in
-      }
+      try { await load(); } catch {}
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -175,9 +200,7 @@ export default function App() {
       try {
         const sh = await api(`/games/${gameId}/sheet`);
         setSheet(sh);
-      } catch {
-        // ignore
-      }
+      } catch {}
     })();
   }, [gameId]);
 
@@ -222,6 +245,24 @@ export default function App() {
     await reloadSheet();
   };
 
+  const toggleConfirmed = async (entry) => {
+    const next = entry.status === 2 ? 0 : 2;
+    await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: next }),
+    });
+    await reloadSheet();
+  };
+
+  const toggleMaybe = async (entry) => {
+    const next = entry.status === 3 ? 0 : 3;
+    await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: next }),
+    });
+    await reloadSheet();
+  };
+
   const toggleTag = async (entry) => {
     const next = cycleTag(entry.note_tag);
     await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
@@ -231,7 +272,6 @@ export default function App() {
     await reloadSheet();
   };
 
-  // Login Screen
   if (!me) {
     return (
       <div style={styles.page}>
@@ -275,10 +315,23 @@ export default function App() {
       ]
     : [];
 
+  const getRowBg = (status) => {
+    if (status === 1) return "rgba(255, 0, 0, 0.06)";     // crossed
+    if (status === 2) return "rgba(0, 170, 60, 0.07)";    // confirmed
+    if (status === 3) return "rgba(255, 180, 70, 0.12)";  // maybe
+    return "rgba(255,255,255,0.22)";
+  };
+
+  const getNameColor = (status) => {
+    if (status === 1) return "#b10000";
+    if (status === 2) return "#0b6a1e";
+    if (status === 3) return "#6b4d00";
+    return "#20140c";
+  };
+
   return (
     <div style={styles.page}>
       <div style={styles.shell}>
-        {/* Top Bar */}
         <div style={styles.topBar}>
           <div>
             <div style={{ fontWeight: 900, color: "#20140c" }}>{me.email}</div>
@@ -291,10 +344,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Admin Panel */}
         {me.role === "admin" && <AdminPanel />}
 
-        {/* Game Selector */}
         <div style={{ marginTop: 14 }}>
           <div style={styles.card}>
             <div style={styles.sectionHeader}>Spiel</div>
@@ -314,56 +365,65 @@ export default function App() {
           </div>
         </div>
 
-        {/* Sheet */}
         <div style={{ marginTop: 14, display: "grid", gap: 14 }}>
           {sections.map((sec) => (
             <div key={sec.key} style={styles.card}>
               <div style={styles.sectionHeader}>{sec.title}</div>
 
               <div style={{ display: "grid" }}>
-                {sec.entries.map((e) => (
-                  <div
-                    key={e.entry_id}
-                    style={{
-                      ...styles.row,
-                      background:
-                        e.status === 1
-                          ? "rgba(255, 0, 0, 0.06)"   // leicht rot
-                          : "rgba(255,255,255,0.22)",
-                    }}
-                  >
-                    {/* Name: Tap toggelt crossed */}
+                {sec.entries.map((e) => {
+                  const pressHandlers = useLongPress(
+                    () => toggleConfirmed(e), // long press -> confirmed
+                    () => toggleCross(e),     // tap -> crossed
+                    { delay: 450 }
+                  );
+
+                  return (
                     <div
-                      onClick={() => toggleCross(e)}
+                      key={e.entry_id}
                       style={{
-                        ...styles.name,
-                        textDecoration: e.status === 1 ? "line-through" : "none",
-
-                        // ✅ Rot wenn gestrichen
-                        color: e.status === 1 ? "#b10000" : "#20140c",
-
-                        // optional etwas transparenter
-                        opacity: e.status === 1 ? 0.75 : 1,
+                        ...styles.row,
+                        background: getRowBg(e.status),
                       }}
                     >
-                      {e.label}
+                      {/* Name: Tap = rot, Long-Press = grün */}
+                      <div
+                        {...pressHandlers}
+                        style={{
+                          ...styles.name,
+                          textDecoration: e.status === 1 ? "line-through" : "none",
+                          color: getNameColor(e.status),
+                          opacity: e.status === 1 ? 0.75 : 1,
+                        }}
+                        title="Tippen = ausschließen | Lange halten = bestätigt"
+                      >
+                        {e.label}
+                      </div>
+
+                      {/* ? = maybe */}
+                      <button
+                        onClick={() => toggleMaybe(e)}
+                        style={{
+                          ...styles.maybeBtn,
+                          background: e.status === 3
+                            ? "linear-gradient(180deg, rgba(255,210,120,0.9), rgba(180,120,20,0.25))"
+                            : styles.maybeBtn.background,
+                        }}
+                        title="Unsicher"
+                      >
+                        ?
+                      </button>
+
+                      <div style={styles.cell}>{e.status === 1 ? "X" : ""}</div>
+                      <div style={styles.cell}>{e.status === 1 ? "✓" : ""}</div>
+                      <div style={styles.cell}>{e.status === 2 ? "✓" : ""}</div>
+
+                      <button onClick={() => toggleTag(e)} style={styles.tagBtn} title="i → m → s → leer">
+                        {e.note_tag || "—"}
+                      </button>
                     </div>
-
-                    {/* Spalte 1: X */}
-                    <div style={styles.cell}>{e.status === 1 ? "X" : ""}</div>
-
-                    {/* Spalte 2: gelbes ✓ */}
-                    <div style={styles.cell}>{e.status === 1 ? "✓" : ""}</div>
-
-                    {/* Spalte 3: confirmed (grünes ✓) – aktuell nicht per UI gesetzt */}
-                    <div style={styles.cell}>{e.status === 2 ? "✓" : ""}</div>
-
-                    {/* Spalte 4: i/m/s */}
-                    <button onClick={() => toggleTag(e)} style={styles.tagBtn} title="i → m → s → leer">
-                      {e.note_tag || "—"}
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}
@@ -426,7 +486,7 @@ const styles = {
   },
   row: {
     display: "grid",
-    gridTemplateColumns: "1fr 40px 40px 40px 56px",
+    gridTemplateColumns: "1fr 42px 40px 40px 40px 56px", // ✅ extra Spalte für ?
     gap: 8,
     padding: "10px 12px",
     alignItems: "center",
@@ -444,12 +504,22 @@ const styles = {
     fontWeight: 1000,
     color: "#20140c",
   },
+  maybeBtn: {
+    padding: "8px 0",
+    fontWeight: 1000,
+    borderRadius: 10,
+    border: "1px solid rgba(0,0,0,0.25)",
+    background: "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(0,0,0,0.06))",
+    color: "#6b4d00",
+    cursor: "pointer",
+  },
   tagBtn: {
     padding: "8px 0",
     fontWeight: 1000,
     borderRadius: 10,
     border: "1px solid rgba(0,0,0,0.25)",
     background: "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(0,0,0,0.06))",
+    cursor: "pointer",
   },
   input: {
     width: "100%",
@@ -487,11 +557,6 @@ const styles = {
     fontWeight: 1000,
     color: "#20140c",
     marginBottom: 8,
-  },
-  adminGrid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr 120px 140px",
-    gap: 8,
   },
   userRow: {
     display: "grid",

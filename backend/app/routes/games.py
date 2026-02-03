@@ -75,7 +75,7 @@ def patch_sheet(req: Request, game_id: str, entry_id: str, data: dict, db: Sessi
 
     if note_tag not in (None, "i", "m", "s"):
         raise HTTPException(400, "invalid note_tag")
-    if status is not None and status not in (0, 1, 2):
+    if status is not None and status not in (0, 1, 2, 3):
         raise HTTPException(400, "invalid status")
 
     st = db.query(SheetState).filter(
