@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 const API = "/api";
-const CHIP_OPTIONS = ["AL", "JG", "JN", "SN", "TL"];
-
+const CHIP_LIST = ["AL", "JG", "JN", "SN", "TL"];
 
 async function api(path, opts = {}) {
   const res = await fetch(API + path, {
@@ -14,59 +13,15 @@ async function api(path, opts = {}) {
   return res.json();
 }
 
-function parseTag(tag) {
-  // erlaubt: null | "i" | "m" | "s" | "s.AL"
-  if (!tag) return { base: null, chip: null };
-  if (tag === "i") return { base: "i", chip: null };
-  if (tag === "m") return { base: "m", chip: null };
-  if (tag === "s") return { base: "s", chip: null };
-  if (tag.startsWith("s.")) return { base: "s", chip: tag.slice(2) || null };
-  return { base: tag, chip: null };
-}
-
-function baseTag(tag) {
-  // Backend: null | "i" | "m" | "s"
-  if (!tag) return null;
-  if (tag === "i" || tag === "m" || tag === "s") return tag;
-  return null;
-}
-
-function nextBaseTag(tag) {
-  const b = baseTag(tag);
-  if (!b) return "i";
-  if (b === "i") return "m";
-  if (b === "m") return "s";
-  return null; // s -> leer
-}
-
-function chipStorageKey(gameId, entryId) {
-  return `chip:${gameId}:${entryId}`;
-}
-
-function getChipLS(gameId, entryId) {
-  try {
-    return localStorage.getItem(chipStorageKey(gameId, entryId));
-  } catch {
-    return null;
-  }
-}
-
-function setChipLS(gameId, entryId, chip) {
-  try {
-    localStorage.setItem(chipStorageKey(gameId, entryId), chip);
-  } catch {}
-}
-
-function clearChipLS(gameId, entryId) {
-  try {
-    localStorage.removeItem(chipStorageKey(gameId, entryId));
-  } catch {}
-}
-
+/**
+ * Tag-Rotation:
+ * null/"" -> i -> m -> s (öffnet Popup) -> (nach Auswahl) s.XX -> null
+ */
 function cycleTag(tag) {
   if (!tag) return "i";
   if (tag === "i") return "m";
   if (tag === "m") return "s";
+  if (tag === "s") return null;
   if (typeof tag === "string" && tag.startsWith("s.")) return null;
   return null;
 }
@@ -214,6 +169,7 @@ export default function App() {
   const [sheet, setSheet] = useState(null);
   const [pulseId, setPulseId] = useState(null);
 
+  // ✅ Chip Modal State
   const [chipOpen, setChipOpen] = useState(false);
   const [chipEntry, setChipEntry] = useState(null);
 
@@ -285,7 +241,7 @@ export default function App() {
     document.body.style.padding = "0";
   }, []);
 
-  // Global CSS: Dark + Gold base
+  // Global CSS
   useEffect(() => {
     if (document.getElementById("hp-global-style")) return;
     const style = document.createElement("style");
@@ -307,8 +263,6 @@ export default function App() {
       }
 
       #root { background: transparent; }
-
-      /* Safari/Chrome tap highlight reduzieren (kein hover/flash) */
       * { -webkit-tap-highlight-color: transparent; }
     `;
     document.head.appendChild(style);
@@ -386,15 +340,22 @@ export default function App() {
     setTimeout(() => setPulseId(null), 220);
   };
 
+  /**
+   * Notiz-Button:
+   * - wenn m -> s: Popup öffnen und NICHT sofort ins Backend schreiben
+   * - wenn s.XX -> null: normal zurücksetzen
+   */
   const toggleTag = async (entry) => {
     const next = cycleTag(entry.note_tag);
 
+    // Wenn der nächste Schritt "s" wäre -> Popup öffnen
     if (next === "s") {
       setChipEntry(entry);
       setChipOpen(true);
       return;
     }
 
+    // normal schreiben (i, m, oder null)
     await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
       method: "PATCH",
       body: JSON.stringify({ note_tag: next }),
@@ -402,11 +363,7 @@ export default function App() {
     await reloadSheet();
   };
 
-  const closeChipPick = () => {
-    setChipPickOpen(false);
-    setChipPickEntry(null);
-  };
-
+  // Chip auswählen -> note_tag wird s.XX
   const chooseChip = async (chip) => {
     if (!chipEntry) return;
 
@@ -420,6 +377,7 @@ export default function App() {
     await reloadSheet();
   };
 
+  // X drücken: zurück auf —
   const closeChipModalToDash = async () => {
     if (chipEntry) {
       await api(`/games/${gameId}/sheet/${chipEntry.entry_id}`, {
@@ -457,7 +415,11 @@ export default function App() {
   const getStatusBadge = (status) => {
     if (status === 2) return { color: "#baf3c9", background: "rgba(0,190,80,0.18)" };
     if (status === 1) return { color: "#ffb3b3", background: "rgba(255,35,35,0.18)" };
-    if (status === 3) return { color: "rgba(233,216,166,0.85)", background: "rgba(140,140,140,0.14)" };
+    if (status === 3)
+      return {
+        color: "rgba(233,216,166,0.85)",
+        background: "rgba(140,140,140,0.14)",
+      };
     return { color: "rgba(233,216,166,0.75)", background: "rgba(255,255,255,0.08)" };
   };
 
@@ -546,9 +508,7 @@ export default function App() {
         <div style={styles.topBar}>
           <div>
             <div style={{ fontWeight: 900, color: stylesTokens.textGold }}>{me.email}</div>
-            <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>
-              {me.role}
-            </div>
+            <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>{me.role}</div>
           </div>
 
           <div style={{ display: "flex", gap: 8 }}>
@@ -604,67 +564,107 @@ export default function App() {
 
                 <div style={styles.helpList}>
                   <div style={styles.helpListRow}>
-                    <span style={{ ...styles.helpBadge, background: "rgba(0,190,80,0.18)", color: "#baf3c9" }}>
+                    <span
+                      style={{
+                        ...styles.helpBadge,
+                        background: "rgba(0,190,80,0.18)",
+                        color: "#baf3c9",
+                      }}
+                    >
                       ✓
                     </span>
-                    <div><b>Grün</b> = bestätigt / fix richtig</div>
+                    <div>
+                      <b>Grün</b> = bestätigt / fix richtig
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
-                    <span style={{ ...styles.helpBadge, background: "rgba(255,35,35,0.18)", color: "#ffb3b3" }}>
+                    <span
+                      style={{
+                        ...styles.helpBadge,
+                        background: "rgba(255,35,35,0.18)",
+                        color: "#ffb3b3",
+                      }}
+                    >
                       ✕
                     </span>
-                    <div><b>Rot</b> = ausgeschlossen / fix falsch</div>
+                    <div>
+                      <b>Rot</b> = ausgeschlossen / fix falsch
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
-                    <span style={{ ...styles.helpBadge, background: "rgba(140,140,140,0.14)", color: "rgba(233,216,166,0.85)" }}>
+                    <span
+                      style={{
+                        ...styles.helpBadge,
+                        background: "rgba(140,140,140,0.14)",
+                        color: "rgba(233,216,166,0.85)",
+                      }}
+                    >
                       ?
                     </span>
-                    <div><b>Grau</b> = unsicher / „vielleicht“</div>
+                    <div>
+                      <b>Grau</b> = unsicher / „vielleicht“
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
-                    <span style={{ ...styles.helpBadge, background: "rgba(255,255,255,0.08)", color: "rgba(233,216,166,0.75)" }}>
+                    <span
+                      style={{
+                        ...styles.helpBadge,
+                        background: "rgba(255,255,255,0.08)",
+                        color: "rgba(233,216,166,0.75)",
+                      }}
+                    >
                       –
                     </span>
-                    <div><b>Leer</b> = unknown / noch nicht bewertet</div>
+                    <div>
+                      <b>Leer</b> = unknown / noch nicht bewertet
+                    </div>
                   </div>
                 </div>
 
                 <div style={styles.helpDivider} />
 
                 <div style={styles.helpSectionTitle}>2) i / m / s Button (Notiz)</div>
-                <div style={styles.helpText}>
-                  Rechts pro Zeile gibt es einen Button, der durch diese Werte rotiert:
-                </div>
+                <div style={styles.helpText}>Rechts pro Zeile gibt es einen Button, der rotiert:</div>
 
                 <div style={styles.helpList}>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>i</span>
-                    <div><b>i</b> = „Ich habe diese Geheimkarte“</div>
+                    <div>
+                      <b>i</b> = „Ich habe diese Geheimkarte“
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>m</span>
-                    <div><b>m</b> = „Geheimkarte aus dem mittleren Deck“</div>
+                    <div>
+                      <b>m</b> = „Geheimkarte aus dem mittleren Deck“
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>s</span>
-                    <div><b>s</b> = „Ein anderer Spieler hat diese Karte“</div>
+                    <div>
+                      <b>s</b> = „Ein anderer Spieler hat diese Karte“ (Popup)
+                    </div>
                   </div>
                   <div style={styles.helpListRow}>
                     <span style={styles.helpMiniTag}>—</span>
-                    <div><b>—</b> = keine Notiz</div>
+                    <div>
+                      <b>—</b> = keine Notiz
+                    </div>
                   </div>
                 </div>
 
                 <div style={styles.helpDivider} />
 
                 <div style={styles.helpText}>
-                  Tipp: Jeder Spieler sieht nur seine eigenen Notizen – andere Spieler können nicht in deinen Zettel schauen.
+                  Tipp: Jeder Spieler sieht nur seine eigenen Notizen – andere Spieler können nicht in deinen
+                  Zettel schauen.
                 </div>
               </div>
             </div>
           </div>
         )}
 
+        {/* ✅ Chip Popup */}
         {chipOpen && (
           <div style={styles.modalOverlay} onMouseDown={closeChipModalToDash}>
             <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
@@ -675,12 +675,10 @@ export default function App() {
                 </button>
               </div>
 
-              <div style={{ marginTop: 12, color: stylesTokens.textMain }}>
-                Chip auswählen:
-              </div>
+              <div style={{ marginTop: 12, color: stylesTokens.textMain }}>Chip auswählen:</div>
 
-              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {CHIP_OPTIONS.map((c) => (
+              <div style={styles.chipGrid}>
+                {CHIP_LIST.map((c) => (
                   <button key={c} onClick={() => chooseChip(c)} style={styles.chipBtn}>
                     {c}
                   </button>
@@ -694,7 +692,6 @@ export default function App() {
           </div>
         )}
 
-
         <div style={{ marginTop: 14, display: "grid", gap: 14 }}>
           {sections.map((sec) => (
             <div key={sec.key} style={styles.card}>
@@ -702,10 +699,12 @@ export default function App() {
 
               <div style={{ display: "grid" }}>
                 {sec.entries.map((e) => {
-                  // ✅ i oder s.XX => visuell wie rot (nur UI, kein Backend)
-                  const isIorS = e.note_tag === "i" || (typeof e.note_tag === "string" && e.note_tag.startsWith("s."));
-                  const effectiveStatus = (e.status === 0 && isIorS) ? 1 : e.status;
+                  // ✅ i oder s.XX => visuell wie rot (nur UI)
+                  const isIorS =
+                    e.note_tag === "i" ||
+                    (typeof e.note_tag === "string" && e.note_tag.startsWith("s."));
 
+                  const effectiveStatus = e.status === 0 && isIorS ? 1 : e.status;
                   const badge = getStatusBadge(effectiveStatus);
 
                   return (
@@ -717,17 +716,19 @@ export default function App() {
                         background: getRowBg(effectiveStatus),
                         animation: pulseId === e.entry_id ? "rowPulse 220ms ease-out" : "none",
                         borderLeft:
-                          effectiveStatus === 2 ? "4px solid rgba(0,190,80,0.55)" :
-                          effectiveStatus === 1 ? "4px solid rgba(255,35,35,0.55)" :
-                          effectiveStatus === 3 ? "4px solid rgba(233,216,166,0.22)" :
-                          "4px solid rgba(0,0,0,0)",
+                          effectiveStatus === 2
+                            ? "4px solid rgba(0,190,80,0.55)"
+                            : effectiveStatus === 1
+                            ? "4px solid rgba(255,35,35,0.55)"
+                            : effectiveStatus === 3
+                            ? "4px solid rgba(233,216,166,0.22)"
+                            : "4px solid rgba(0,0,0,0)",
                       }}
                     >
                       <div
                         onClick={() => cycleStatus(e)}
                         style={{
                           ...styles.name,
-                          // ✅ Rot-Look auch bei i/s
                           textDecoration: effectiveStatus === 1 ? "line-through" : "none",
                           color: getNameColor(effectiveStatus),
                           opacity: effectiveStatus === 1 ? 0.8 : 1,
@@ -743,7 +744,11 @@ export default function App() {
                         </span>
                       </div>
 
-                      <button onClick={() => toggleTag(e)} style={styles.tagBtn} title="i → m → s → leer">
+                      <button
+                        onClick={() => toggleTag(e)}
+                        style={styles.tagBtn}
+                        title="— → i → m → s.(Chip) → —"
+                      >
                         {e.note_tag || "—"}
                       </button>
                     </div>
@@ -1196,17 +1201,16 @@ const styles = {
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
-    /* kleines Dark-Wash, damit Schwarz/Gold lesbar ist */
     filter: "saturate(0.9) contrast(1.05) brightness(0.55)",
   },
 
+  // Chip Buttons
   chipGrid: {
     marginTop: 12,
     display: "grid",
     gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
     gap: 8,
   },
-
   chipBtn: {
     padding: "10px 14px",
     borderRadius: 12,
@@ -1217,5 +1221,4 @@ const styles = {
     cursor: "pointer",
     minWidth: 64,
   },
-
 };
