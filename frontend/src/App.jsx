@@ -270,12 +270,39 @@ export default function App() {
 
       #root { background: transparent; }
 
-      /* ✅ Hover komplett killen (auch wenn Browser/Styles irgendwo was reinfunken) */
-      .hp-row:hover { background: inherit !important; filter: none !important; }
-      .hp-row *:hover { filter: none !important; }
+      /* ✅ HOVER/ACTIVE komplett entfernen – Row + alle Children */
+      .hp-row:hover,
+      .hp-row:active,
+      .hp-row:focus,
+      .hp-row:focus-within {
+        background: inherit !important;
+        filter: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+      }
 
-      /* Optional: Buttons nicht "glowen" beim Hover (modern clean) */
-      button:hover { filter: none; }
+      .hp-row *:hover,
+      .hp-row *:active,
+      .hp-row *:focus {
+        filter: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+      }
+
+      /* ✅ Mobile Tap-Highlight killen (dieser "Flash" schaut oft wie Hover aus) */
+      .hp-row, .hp-row * {
+        -webkit-tap-highlight-color: transparent !important;
+        -webkit-touch-callout: none;
+      }
+
+      /* ✅ Button-Default Hover/Active Kill (dein tagBtn & helpBtn etc.) */
+      button:hover,
+      button:active,
+      button:focus {
+        filter: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+      }
     `;
     document.head.appendChild(style);
   }, []);
@@ -439,10 +466,10 @@ export default function App() {
     : [];
 
   const getRowBg = (status) => {
-    if (status === 1) return "rgba(255, 0, 0, 0.055)";
-    if (status === 2) return "rgba(0, 170, 60, 0.06)";
-    if (status === 3) return "rgba(90, 90, 90, 0.10)";
-    return "rgba(255,255,255,0.16)";
+    if (status === 1) return "rgba(255, 35, 35, 0.16)";   // rot kräftiger
+    if (status === 2) return "rgba(0, 190, 80, 0.16)";    // grün kräftiger
+    if (status === 3) return "rgba(80, 80, 80, 0.18)";    // grau kräftiger
+    return "rgba(255,255,255,0.14)";                      // neutral
   };
 
   const getNameColor = (status) => {
@@ -679,6 +706,11 @@ export default function App() {
                           pulseId === e.entry_id
                             ? "rowPulse 220ms ease-out"
                             : "none",
+                        borderLeft:
+                          e.status === 2 ? "4px solid rgba(0,190,80,0.55)" :
+                          e.status === 1 ? "4px solid rgba(255,35,35,0.55)" :
+                          e.status === 3 ? "4px solid rgba(90,90,90,0.55)" :
+                          "4px solid rgba(0,0,0,0)",
                       }}
                     >
                       <div
@@ -795,6 +827,7 @@ const styles = {
     padding: "12px 14px",
     alignItems: "center",
     borderBottom: "1px solid rgba(0,0,0,0.08)",
+    borderLeft: "4px solid rgba(0,0,0,0)", // default
   },
 
   name: {
