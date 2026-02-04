@@ -12,25 +12,60 @@ export default function TopBar({
 }) {
   return (
     <div style={styles.topBar}>
+      {/* LINKS: nur Rolle */}
       <div>
-        <div style={{ fontWeight: 900, color: stylesTokens.textGold }}>{me.email}</div>
-        <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>{me.role}</div>
+        <div style={{ fontWeight: 900, color: stylesTokens.textGold }}>
+          Zauber-Notizbogen
+        </div>
+        <div
+          style={{
+            fontSize: 12,
+            opacity: 0.8,
+            color: stylesTokens.textDim,
+          }}
+        >
+          Eingeloggt als {me.role}
+        </div>
       </div>
 
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }} data-user-menu>
+      {/* RECHTS: Account + Neues Spiel */}
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+          flexWrap: "nowrap",
+        }}
+        data-user-menu
+      >
+        {/* Account Dropdown */}
         <div style={{ position: "relative" }}>
           <button
             onClick={() => setUserMenuOpen((v) => !v)}
             style={styles.userBtn}
             title="User Menü"
           >
-            <span style={{ fontSize: 16, lineHeight: 1 }}>👤</span>
+            <span style={{ fontSize: 16 }}>👤</span>
             <span>Account</span>
-            <span style={{ opacity: 0.8 }}>▾</span>
+            <span style={{ opacity: 0.7 }}>▾</span>
           </button>
 
           {userMenuOpen && (
             <div style={styles.userDropdown}>
+              {/* Email Info */}
+              <div
+                style={{
+                  padding: "10px 12px",
+                  fontSize: 13,
+                  opacity: 0.85,
+                  color: stylesTokens.textDim,
+                  borderBottom: "1px solid rgba(233,216,166,0.12)",
+                }}
+              >
+                {me.email}
+              </div>
+
+              {/* Actions */}
               <button onClick={openPwModal} style={styles.userDropdownItem}>
                 Passwort setzen
               </button>
@@ -42,7 +77,10 @@ export default function TopBar({
                   setUserMenuOpen(false);
                   doLogout();
                 }}
-                style={{ ...styles.userDropdownItem, color: "#ffb3b3" }}
+                style={{
+                  ...styles.userDropdownItem,
+                  color: "#ffb3b3",
+                }}
               >
                 Logout
               </button>
@@ -50,6 +88,7 @@ export default function TopBar({
           )}
         </div>
 
+        {/* Neues Spiel Button */}
         <button onClick={newGame} style={styles.primaryBtn}>
           ✦ Neues Spiel
         </button>
