@@ -51,7 +51,7 @@ export default function TopBar({
         </div>
 
         <button onClick={newGame} style={styles.primaryBtn}>
-          + Neues Spiel
+          ✦ Neues Spiel
         </button>
       </div>
     </div>
