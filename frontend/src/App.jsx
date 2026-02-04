@@ -1,35 +1,41 @@
+// src/App.jsx
 import React, { useEffect, useState } from "react";
+
 import { api } from "./api/client";
 import { cycleTag } from "./utils/cycleTag";
 import { getChipLS, setChipLS, clearChipLS } from "./utils/chipStorage";
 import { useHpGlobalStyles } from "./styles/hooks/useHpGlobalStyles";
 import { styles } from "./styles/styles";
-import { stylesTokens } from "./styles/theme";
 
 import AdminPanel from "./components/AdminPanel";
 import LoginPage from "./components/LoginPage";
 import TopBar from "./components/TopBar";
 import PasswordModal from "./components/PasswordModal";
 import ChipModal from "./components/ChipModal";
-// HelpModal + SheetSection würdest du analog auslagern
+import HelpModal from "./components/HelpModal";
+import GamePickerCard from "./components/GamePickerCard";
+import SheetSection from "./components/SheetSection";
 
 export default function App() {
   useHpGlobalStyles();
 
+  // Auth/Login UI state
   const [me, setMe] = useState(null);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
 
+  // Game/Sheet state
   const [games, setGames] = useState([]);
   const [gameId, setGameId] = useState(null);
   const [sheet, setSheet] = useState(null);
   const [pulseId, setPulseId] = useState(null);
 
+  // Modals
+  const [helpOpen, setHelpOpen] = useState(false);
+
   const [chipOpen, setChipOpen] = useState(false);
   const [chipEntry, setChipEntry] = useState(null);
-
-  const [helpOpen, setHelpOpen] = useState(false);
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -39,6 +45,7 @@ export default function App() {
   const [pwMsg, setPwMsg] = useState("");
   const [pwSaving, setPwSaving] = useState(false);
 
+  // ===== Data loaders =====
   const load = async () => {
     const m = await api("/auth/me");
     setMe(m);
@@ -48,6 +55,14 @@ export default function App() {
 
     if (gs[0] && !gameId) setGameId(gs[0].id);
   };
+
+  const reloadSheet = async () => {
+    if (!gameId) return;
+    const sh = await api(`/games/${gameId}/sheet`);
+    setSheet(sh);
+  };
+
+  // ===== Effects =====
 
   // Dropdown outside click
   useEffect(() => {
@@ -59,25 +74,32 @@ export default function App() {
     return () => document.removeEventListener("mousedown", onDown);
   }, [userMenuOpen]);
 
+  // initial load (try session)
   useEffect(() => {
     (async () => {
       try {
         await load();
-      } catch {}
+      } catch {
+        // not logged in
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // load sheet when game changes
   useEffect(() => {
     (async () => {
       if (!gameId) return;
       try {
-        const sh = await api(`/games/${gameId}/sheet`);
-        setSheet(sh);
-      } catch {}
+        await reloadSheet();
+      } catch {
+        // ignore
+      }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId]);
 
+  // ===== Auth actions =====
   const doLogin = async () => {
     await api("/auth/login", {
       method: "POST",
@@ -94,7 +116,7 @@ export default function App() {
     setSheet(null);
   };
 
-  // Password change
+  // ===== Password change =====
   const openPwModal = () => {
     setPwMsg("");
     setPw1("");
@@ -112,6 +134,7 @@ export default function App() {
 
   const savePassword = async () => {
     setPwMsg("");
+
     if (!pw1 || pw1.length < 8) return setPwMsg("❌ Passwort muss mindestens 8 Zeichen haben.");
     if (pw1 !== pw2) return setPwMsg("❌ Passwörter stimmen nicht überein.");
 
@@ -130,6 +153,7 @@ export default function App() {
     }
   };
 
+  // ===== Game actions =====
   const newGame = async () => {
     const g = await api("/games", {
       method: "POST",
@@ -140,12 +164,7 @@ export default function App() {
     setGameId(g.id);
   };
 
-  const reloadSheet = async () => {
-    if (!gameId) return;
-    const sh = await api(`/games/${gameId}/sheet`);
-    setSheet(sh);
-  };
-
+  // ===== Sheet actions =====
   const cycleStatus = async (entry) => {
     let next = 0;
     if (entry.status === 0) next = 2;
@@ -166,18 +185,21 @@ export default function App() {
   const toggleTag = async (entry) => {
     const next = cycleTag(entry.note_tag);
 
+    // going to "s" -> open chip modal, don't write backend yet
     if (next === "s") {
       setChipEntry(entry);
       setChipOpen(true);
       return;
     }
 
+    // s -> — : clear local chip
     if (next === null) clearChipLS(gameId, entry.entry_id);
 
     await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
       method: "PATCH",
       body: JSON.stringify({ note_tag: next }),
     });
+
     await reloadSheet();
   };
 
@@ -188,9 +210,11 @@ export default function App() {
     setChipOpen(false);
     setChipEntry(null);
 
+    // frontend-only save
     setChipLS(gameId, entry.entry_id, chip);
 
     try {
+      // backend only gets "s"
       await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
         method: "PATCH",
         body: JSON.stringify({ note_tag: "s" }),
@@ -229,7 +253,7 @@ export default function App() {
       const chip = getChipLS(gameId, entry.entry_id);
       return chip ? `s.${chip}` : "s";
     }
-    return t;
+    return t; // i oder m
   };
 
   // ===== Login page =====
@@ -273,8 +297,30 @@ export default function App() {
 
         {me.role === "admin" && <AdminPanel />}
 
-        {/* hier bleiben vorerst: Spiel selector + Help + Sections
-            -> kannst du als nächsten Schritt in Komponenten auslagern */}
+        <GamePickerCard
+          games={games}
+          gameId={gameId}
+          setGameId={setGameId}
+          onOpenHelp={() => setHelpOpen(true)}
+        />
+
+        <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
+
+        <div style={{ marginTop: 14, display: "grid", gap: 14 }}>
+          {sections.map((sec) => (
+            <SheetSection
+              key={sec.key}
+              title={sec.title}
+              entries={sec.entries}
+              pulseId={pulseId}
+              onCycleStatus={cycleStatus}
+              onToggleTag={toggleTag}
+              displayTag={displayTag}
+            />
+          ))}
+        </div>
+
+        <div style={{ height: 24 }} />
       </div>
 
       <PasswordModal
@@ -289,7 +335,11 @@ export default function App() {
         savePassword={savePassword}
       />
 
-      <ChipModal chipOpen={chipOpen} closeChipModalToDash={closeChipModalToDash} chooseChip={chooseChip} />
+      <ChipModal
+        chipOpen={chipOpen}
+        closeChipModalToDash={closeChipModalToDash}
+        chooseChip={chooseChip}
+      />
     </div>
   );
 }
