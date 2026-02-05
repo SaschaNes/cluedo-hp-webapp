@@ -1,0 +1,98 @@
+import React from "react";
+import { styles } from "../styles/styles";
+import { stylesTokens } from "../styles/theme";
+
+export default function TopBar({
+  me,
+  userMenuOpen,
+  setUserMenuOpen,
+  openPwModal,
+  doLogout,
+  newGame,
+}) {
+  return (
+    <div style={styles.topBar}>
+      {/* LINKS: nur Rolle */}
+      <div>
+        <div style={{ fontWeight: 900, color: stylesTokens.textGold }}>
+          Notizbogen
+        </div>
+        <div
+          style={{
+            fontSize: 12,
+            opacity: 0.8,
+            color: stylesTokens.textDim,
+          }}
+        >
+          {me.email}
+        </div>
+      </div>
+
+      {/* RECHTS: Account + Neues Spiel */}
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+          flexWrap: "nowrap",
+        }}
+        data-user-menu
+      >
+        {/* Account Dropdown */}
+        <div style={{ position: "relative" }}>
+          <button
+            onClick={() => setUserMenuOpen((v) => !v)}
+            style={styles.userBtn}
+            title="User Menü"
+          >
+            <span style={{ fontSize: 16 }}>👤</span>
+            <span>User</span>
+            <span style={{ opacity: 0.7 }}>▾</span>
+          </button>
+
+          {userMenuOpen && (
+            <div style={styles.userDropdown}>
+              {/* Email Info */}
+              <div
+                style={{
+                  padding: "10px 12px",
+                  fontSize: 13,
+                  opacity: 0.85,
+                  color: stylesTokens.textDim,
+                  borderBottom: "1px solid rgba(233,216,166,0.12)",
+                }}
+              >
+                {me.email}
+              </div>
+
+              {/* Actions */}
+              <button onClick={openPwModal} style={styles.userDropdownItem}>
+                Passwort setzen
+              </button>
+
+              <div style={styles.userDropdownDivider} />
+
+              <button
+                onClick={() => {
+                  setUserMenuOpen(false);
+                  doLogout();
+                }}
+                style={{
+                  ...styles.userDropdownItem,
+                  color: "#ffb3b3",
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Neues Spiel Button */}
+        <button onClick={newGame} style={styles.primaryBtn}>
+          ✦ New Game
+        </button>
+      </div>
+    </div>
+  );
+}
