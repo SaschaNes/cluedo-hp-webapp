@@ -17,9 +17,34 @@ export default function HelpModal({ open, onClose }) {
         </div>
 
         <div style={styles.helpBody}>
-          <div style={styles.helpSectionTitle}>1) Namen anklicken (Status)</div>
+          {/* ===== 0) Spiele & Navigation ===== */}
+          <div style={styles.helpSectionTitle}>0) Spiele auswählen / Neues Spiel</div>
           <div style={styles.helpText}>
-            Tippe auf einen Namen, um den Status zu wechseln. Reihenfolge:
+            Oben im Bereich <b>Spiel</b> kannst du zwischen bestehenden Spielen wechseln oder ein neues
+            Spiel erstellen:
+          </div>
+
+          <div style={styles.helpList}>
+            <div style={styles.helpListRow}>
+              <span style={styles.helpMiniTag}>▼</span>
+              <div>
+                <b>Spiel-Auswahl</b> (Dropdown neben dem Hilfe-Button) = vorhandene / alte Spiele öffnen
+              </div>
+            </div>
+            <div style={styles.helpListRow}>
+              <span style={styles.helpMiniTag}>✦</span>
+              <div>
+                <b>„Neues Spiel“</b> = erstellt ein neues Spiel und öffnet es automatisch
+              </div>
+            </div>
+          </div>
+
+          <div style={styles.helpDivider} />
+
+          {/* ===== 1) Status per Tippen ===== */}
+          <div style={styles.helpSectionTitle}>1) Namen antippen (Status)</div>
+          <div style={styles.helpText}>
+            Tippe auf einen Namen, um den Status zu ändern. Reihenfolge:
           </div>
 
           <div style={styles.helpList}>
@@ -79,14 +104,15 @@ export default function HelpModal({ open, onClose }) {
                 –
               </span>
               <div>
-                <b>Leer</b> = unknown / noch nicht bewertet
+                <b>Leer</b> = noch nicht bewertet
               </div>
             </div>
           </div>
 
           <div style={styles.helpDivider} />
 
-          <div style={styles.helpSectionTitle}>2) i / m / s Button (Notiz)</div>
+          {/* ===== 2) i / m / s Notizen ===== */}
+          <div style={styles.helpSectionTitle}>2) i / m / s Button (Notizen)</div>
           <div style={styles.helpText}>
             Rechts pro Zeile gibt es einen Button, der durch diese Werte rotiert:
           </div>
@@ -95,21 +121,21 @@ export default function HelpModal({ open, onClose }) {
             <div style={styles.helpListRow}>
               <span style={styles.helpMiniTag}>i</span>
               <div>
-                <b>i</b> = „Ich habe diese Geheimkarte“
+                <b>i</b> = „Ich habe diese Karte“
               </div>
             </div>
 
             <div style={styles.helpListRow}>
               <span style={styles.helpMiniTag}>m</span>
               <div>
-                <b>m</b> = „Geheimkarte aus dem mittleren Deck“
+                <b>m</b> = „Karte aus dem mittleren Deck“
               </div>
             </div>
 
             <div style={styles.helpListRow}>
               <span style={styles.helpMiniTag}>s</span>
               <div>
-                <b>s</b> = „Ein anderer Spieler hat diese Karte“ (Chip Auswahl)
+                <b>s</b> = „Ein anderer Spieler hat die Karte“ → danach Chip auswählen (z.B. <b>s.AL</b>)
               </div>
             </div>
 
@@ -123,9 +149,38 @@ export default function HelpModal({ open, onClose }) {
 
           <div style={styles.helpDivider} />
 
+          {/* ===== 3) User-Menü ===== */}
+          <div style={styles.helpSectionTitle}>3) User-Menü (Passwort / Logout)</div>
           <div style={styles.helpText}>
-            Tipp: Jeder Spieler sieht nur seine eigenen Notizen – andere Spieler können nicht in
-            deinen Zettel schauen.
+            Oben rechts im <b>User</b>-Menü findest du persönliche Einstellungen:
+          </div>
+
+          <div style={styles.helpList}>
+            <div style={styles.helpListRow}>
+              <span style={styles.helpMiniTag}>👤</span>
+              <div>
+                <b>User</b> öffnen = zeigt die aktuell verwendete Email-Adresse
+              </div>
+            </div>
+            <div style={styles.helpListRow}>
+              <span style={styles.helpMiniTag}>🔒</span>
+              <div>
+                <b>Passwort setzen</b> = eigenes Passwort ändern
+              </div>
+            </div>
+            <div style={styles.helpListRow}>
+              <span style={styles.helpMiniTag}>⎋</span>
+              <div>
+                <b>Logout</b> = ausloggen
+              </div>
+            </div>
+          </div>
+
+          <div style={styles.helpDivider} />
+
+          <div style={styles.helpText}>
+            Tipp: Jeder Spieler sieht nur seine eigenen Notizen – andere Spieler können nicht in deinen
+            Zettel schauen.
           </div>
         </div>
       </div>
