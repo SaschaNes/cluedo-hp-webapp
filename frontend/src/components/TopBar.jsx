@@ -46,7 +46,7 @@ export default function TopBar({
             title="User Menü"
           >
             <span style={{ fontSize: 16 }}>👤</span>
-            <span>Account</span>
+            <span>User</span>
             <span style={{ opacity: 0.7 }}>▾</span>
           </button>
 
