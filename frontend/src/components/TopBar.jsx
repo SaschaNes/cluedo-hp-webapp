@@ -15,7 +15,7 @@ export default function TopBar({
       {/* LINKS: nur Rolle */}
       <div>
         <div style={{ fontWeight: 900, color: stylesTokens.textGold }}>
-          Zauber-Notizbogen
+          Notizbogen
         </div>
         <div
           style={{
@@ -24,7 +24,7 @@ export default function TopBar({
             color: stylesTokens.textDim,
           }}
         >
-          Eingeloggt als {me.role}
+          {me.email}
         </div>
       </div>
 
