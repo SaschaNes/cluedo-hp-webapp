@@ -137,7 +137,14 @@ export default function AdminPanel() {
                 </button>
               </div>
 
-              <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+              <div
+                style={{
+                  marginTop: 12,
+                  display: "grid",
+                  gap: 8,
+                  justifyItems: "center",   // <<< zentriert alles
+                }}
+              >
                 <input
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}

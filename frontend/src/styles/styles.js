@@ -122,13 +122,13 @@ export const styles = {
 
   input: {
     width: "100%",
-    padding: 10,
-    borderRadius: 12,
+    padding: "10px 12px",
+    borderRadius: 14,
     border: `1px solid rgba(233,216,166,0.18)`,
     background: "rgba(10,10,12,0.55)",
     color: stylesTokens.textMain,
     outline: "none",
-    fontSize: 16,
+    fontSize: 15,
   },
 
   primaryBtn: {
@@ -197,7 +197,7 @@ export const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: 16,
+    padding: 12,
     zIndex: 2147483647, // wirklich ganz oben
     background: "rgba(0,0,0,0.72)",
     overflowY: "auto",
