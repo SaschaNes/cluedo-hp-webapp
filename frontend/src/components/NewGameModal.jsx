@@ -168,6 +168,7 @@ export default function NewGameModal({
             </>
           )}
 
+
           {/* ✅ CHOICE: nur wenn Spiel beendet oder kein Spiel selected */}
           {mode === "choice" && (
             <>
