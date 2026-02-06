@@ -2,7 +2,19 @@ import React, { useEffect, useState } from "react";
 import { api } from "../api/client";
 import { styles } from "../styles/styles";
 import { stylesTokens } from "../styles/theme";
+import { createPortal } from "react-dom";
 
+
+useEffect(() => {
+    if (!open) return;
+
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
 
@@ -112,71 +124,74 @@ export default function AdminPanel() {
         ))}
       </div>
 
-      {open && (
-        <div style={styles.modalOverlay} onMouseDown={closeModal}>
-          <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
-            <div style={styles.modalHeader}>
-              <div style={{ fontWeight: 1000, color: stylesTokens.textGold }}>
-                Neuen User anlegen
-              </div>
-              <button onClick={closeModal} style={styles.modalCloseBtn} aria-label="Schließen">
-                ✕
-              </button>
-            </div>
-
-            <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
-              <input
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Name (z.B. Sascha)"
-                style={styles.input}
-                autoFocus
-              />
-
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
-                style={styles.input}
-              />
-
-              <input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Initial Passwort"
-                type="password"
-                style={styles.input}
-              />
-
-              <select value={role} onChange={(e) => setRole(e.target.value)} style={styles.input}>
-                <option value="user">user</option>
-                <option value="admin">admin</option>
-              </select>
-
-              {msg && <div style={{ opacity: 0.9, color: stylesTokens.textMain }}>{msg}</div>}
-
-              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
-                <button
-                  onClick={() => {
-                    resetForm();
-                    setMsg("");
-                  }}
-                  style={styles.secondaryBtn}
-                >
-                  Leeren
-                </button>
-                <button onClick={createUser} style={styles.primaryBtn}>
-                  User erstellen
+      {open &&
+        createPortal(
+          <div style={styles.modalOverlay} onMouseDown={closeModal}>
+            <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <div style={{ fontWeight: 1000, color: stylesTokens.textGold }}>
+                  Neuen User anlegen
+                </div>
+                <button onClick={closeModal} style={styles.modalCloseBtn} aria-label="Schließen">
+                  ✕
                 </button>
               </div>
 
-              <div style={{ fontSize: 12, opacity: 0.75, color: stylesTokens.textDim }}>
-                Tipp: Name wird in TopBar & Siegeranzeige genutzt.
+              <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+                <input
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Name (z.B. Sascha)"
+                  style={styles.input}
+                  autoFocus
+                />
+
+                <input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email"
+                  style={styles.input}
+                />
+
+                <input
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Initial Passwort"
+                  type="password"
+                  style={styles.input}
+                />
+
+                <select value={role} onChange={(e) => setRole(e.target.value)} style={styles.input}>
+                  <option value="user">user</option>
+                  <option value="admin">admin</option>
+                </select>
+
+                {msg && <div style={{ opacity: 0.9, color: stylesTokens.textMain }}>{msg}</div>}
+
+                <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
+                  <button
+                    onClick={() => {
+                      resetForm();
+                      setMsg("");
+                    }}
+                    style={styles.secondaryBtn}
+                  >
+                    Leeren
+                  </button>
+                  <button onClick={createUser} style={styles.primaryBtn}>
+                    User erstellen
+                  </button>
+                </div>
+
+                <div style={{ fontSize: 12, opacity: 0.75, color: stylesTokens.textDim }}>
+                  Tipp: Name wird in TopBar & Siegeranzeige genutzt.
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )
+      }
     </div>
   );
 }
