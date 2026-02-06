@@ -189,25 +189,32 @@ export const styles = {
   modalOverlay: {
     position: "fixed",
     inset: 0,
-    background: "rgba(0,0,0,0.65)",
+    background: "rgba(0,0,0,0.78)",      // stärker abdunkeln
+    backdropFilter: "blur(6px)",         // Hintergrund weich (macht viel aus)
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     padding: 16,
     zIndex: 9999,
     animation: "fadeIn 160ms ease-out",
+    overflowY: "auto",                   // falls Viewport zu klein
   },
+
   modalCard: {
     width: "100%",
     maxWidth: 560,
     borderRadius: 18,
     border: `1px solid rgba(233,216,166,0.18)`,
-    background: "linear-gradient(180deg, rgba(20,20,24,0.92), rgba(12,12,14,0.86))",
+    background: "linear-gradient(180deg, rgba(20,20,24,0.95), rgba(12,12,14,0.92))",
     boxShadow: "0 18px 55px rgba(0,0,0,0.70)",
     padding: 14,
-    backdropFilter: "blur(6px)",
+    backdropFilter: "blur(8px)",
     animation: "popIn 160ms ease-out",
     color: stylesTokens.textMain,
+
+    // neu: damit es nie “kaputt” aussieht
+    maxHeight: "calc(100dvh - 32px)",
+    overflow: "auto",
   },
   modalHeader: {
     display: "flex",

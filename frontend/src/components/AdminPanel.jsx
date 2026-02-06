@@ -124,7 +124,7 @@ export default function AdminPanel() {
               </button>
             </div>
 
-            <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+            <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
               <input
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
