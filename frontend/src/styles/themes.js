@@ -65,7 +65,7 @@ export const THEMES = {
       rowOkText: "#ffd2a8",
       rowOkBorder: "rgba(255,184,107,0.55)",
 
-      rowMaybeBg: "rgba(140, 140, 140, 0.12)",
+      rowMaybeBg: "rgba(140, 140, 140, 0.04)",
       rowMaybeText: "rgba(255,210,170,0.85)",
       rowMaybeBorder: "rgba(255,184,107,0.22)",
 
@@ -103,11 +103,11 @@ export const THEMES = {
       rowOkText: "rgba(190,255,220,0.92)",
       rowOkBorder: "rgba(124,255,182,0.55)",
 
-      rowMaybeBg: "rgba(120, 255, 190, 0.10)",
+      rowMaybeBg: "rgba(120, 255, 190, 0.02)",
       rowMaybeText: "rgba(175,240,210,0.85)",
       rowMaybeBorder: "rgba(120,255,190,0.22)",
 
-      rowEmptyBg: "rgba(255,255,255,0.06)",
+      rowEmptyBg: "rgba(255,255,255,0.04)",
       rowEmptyText: "rgba(175,240,210,0.75)",
       rowEmptyBorder: "rgba(0,0,0,0)",
 
@@ -141,7 +141,7 @@ export const THEMES = {
       rowOkText: "rgba(210,230,255,0.92)",
       rowOkBorder: "rgba(143,182,255,0.55)",
 
-      rowMaybeBg: "rgba(140, 180, 255, 0.10)",
+      rowMaybeBg: "rgba(140, 180, 255, 0.04)",
       rowMaybeText: "rgba(180,205,255,0.85)",
       rowMaybeBorder: "rgba(143,182,255,0.22)",
 
@@ -179,7 +179,7 @@ export const THEMES = {
       rowOkText: "rgba(255,240,190,0.92)",
       rowOkBorder: "rgba(255,226,122,0.55)",
 
-      rowMaybeBg: "rgba(255, 226, 122, 0.10)",
+      rowMaybeBg: "rgba(255, 226, 122, 0.04)",
       rowMaybeText: "rgba(255,240,180,0.85)",
       rowMaybeBorder: "rgba(255,226,122,0.22)",
 
