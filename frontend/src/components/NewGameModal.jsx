@@ -1,0 +1,180 @@
+import React, { useMemo, useState } from "react";
+import { styles } from "../styles/styles";
+import { stylesTokens } from "../styles/theme";
+
+export default function NewGameModal({
+  open,
+  onClose,
+  onCreate,
+  onJoin,
+}) {
+  const [mode, setMode] = useState("choice"); // choice | create | join
+  const [joinCode, setJoinCode] = useState("");
+  const [err, setErr] = useState("");
+  const [created, setCreated] = useState(null); // { code }
+  const [toast, setToast] = useState("");
+
+  const canJoin = useMemo(() => joinCode.trim().length >= 4, [joinCode]);
+
+  if (!open) return null;
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 1100);
+  };
+
+  const doCreate = async () => {
+    setErr("");
+    try {
+      const res = await onCreate();
+      setCreated({ code: res.code });
+      setMode("create");
+    } catch (e) {
+      setErr("❌ Fehler: " + (e?.message || "unknown"));
+    }
+  };
+
+  const doJoin = async () => {
+    setErr("");
+    try {
+      await onJoin(joinCode.trim().toUpperCase());
+      onClose();
+    } catch (e) {
+      setErr("❌ Fehler: " + (e?.message || "unknown"));
+    }
+  };
+
+  const copyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(created?.code || "");
+      showToast("✅ Code kopiert");
+    } catch {
+      showToast("❌ Copy nicht möglich");
+    }
+  };
+
+  return (
+    <div style={styles.modalOverlay} onMouseDown={onClose}>
+      <div style={styles.modalCard} onMouseDown={(e) => e.stopPropagation()}>
+        <div style={styles.modalHeader}>
+          <div style={{ fontWeight: 1000, color: stylesTokens.textGold }}>
+            Spiel
+          </div>
+          <button onClick={onClose} style={styles.modalCloseBtn} aria-label="Schließen">
+            ✕
+          </button>
+        </div>
+
+        {/* Toast */}
+        {toast && (
+          <div
+            style={{
+              marginTop: 10,
+              padding: "10px 12px",
+              borderRadius: 12,
+              border: `1px solid ${stylesTokens.panelBorder}`,
+              background: stylesTokens.panelBg,
+              color: stylesTokens.textMain,
+              fontWeight: 900,
+              textAlign: "center",
+              animation: "fadeIn 120ms ease-out",
+            }}
+          >
+            {toast}
+          </div>
+        )}
+
+        <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+          {mode === "choice" && (
+            <>
+              <div style={{ color: stylesTokens.textMain, opacity: 0.92 }}>
+                Willst du ein Spiel <b>erstellen</b> oder einem Spiel <b>beitreten</b>?
+              </div>
+
+              <button onClick={doCreate} style={styles.primaryBtn}>
+                ✦ Spiel erstellen
+              </button>
+
+              <button onClick={() => setMode("join")} style={styles.secondaryBtn}>
+                ⎆ Spiel beitreten
+              </button>
+            </>
+          )}
+
+          {mode === "join" && (
+            <>
+              <div style={{ color: stylesTokens.textMain, opacity: 0.92 }}>
+                Gib den <b>Code</b> ein:
+              </div>
+
+              <input
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                placeholder="z.B. 8K3MZQ"
+                style={styles.input}
+                autoFocus
+              />
+
+              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                <button onClick={() => setMode("choice")} style={styles.secondaryBtn}>
+                  Zurück
+                </button>
+                <button onClick={doJoin} style={styles.primaryBtn} disabled={!canJoin}>
+                  Beitreten
+                </button>
+              </div>
+            </>
+          )}
+
+          {mode === "create" && created && (
+            <>
+              <div style={{ color: stylesTokens.textMain, opacity: 0.92 }}>
+                Dein Spiel wurde erstellt. Dieser Code bleibt auch bei „Alte Spiele“ sichtbar:
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gap: 8,
+                  padding: 12,
+                  borderRadius: 16,
+                  border: `1px solid ${stylesTokens.panelBorder}`,
+                  background: stylesTokens.panelBg,
+                  textAlign: "center",
+                }}
+              >
+                <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>
+                  Spiel-Code
+                </div>
+
+                <div
+                  style={{
+                    fontSize: 28,
+                    fontWeight: 1100,
+                    letterSpacing: 2,
+                    color: stylesTokens.textGold,
+                    fontFamily: '"Cinzel Decorative", "IM Fell English", system-ui',
+                  }}
+                >
+                  {created.code}
+                </div>
+
+                <button onClick={copyCode} style={styles.primaryBtn}>
+                  ⧉ Code kopieren
+                </button>
+              </div>
+
+              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                <button onClick={onClose} style={styles.primaryBtn}>
+                  Fertig
+                </button>
+              </div>
+            </>
+          )}
+
+          {err && <div style={{ color: stylesTokens.textMain, opacity: 0.92 }}>{err}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}

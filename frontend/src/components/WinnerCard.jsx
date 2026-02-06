@@ -1,55 +1,42 @@
-// src/components/WinnerCard.jsx
 import React from "react";
 import { styles } from "../styles/styles";
 import { stylesTokens } from "../styles/theme";
 
-/**
- * props:
- * - players: [{id,email}]
- * - winnerUserId: string|null
- * - setWinnerUserId: fn
- * - onSave: fn (async ok)
- */
-export default function WinnerCard({ players, winnerUserId, setWinnerUserId, onSave }) {
-  const hasPlayers = Array.isArray(players) && players.length > 0;
+export default function WinnerCard({
+  isHost,
+  members,
+  winnerUserId,
+  setWinnerUserId,
+  onSave,
+}) {
+  if (!isHost) return null;
 
   return (
     <div style={{ marginTop: 14 }}>
       <div style={styles.card}>
         <div style={styles.sectionHeader}>Sieger</div>
 
-        <div style={{ padding: 12, display: "grid", gap: 10 }}>
-          {!hasPlayers ? (
-            <div style={{ color: stylesTokens.textDim, opacity: 0.9 }}>
-              Keine Spieler gefunden (Admin wird nicht angezeigt).
-            </div>
-          ) : (
-            <select
-              value={winnerUserId || ""}
-              onChange={(e) => setWinnerUserId(e.target.value || null)}
-              style={styles.input}
-            >
-              <option value="">— kein Sieger gesetzt —</option>
-              {players.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.email}
-                </option>
-              ))}
-            </select>
-          )}
+        <div style={styles.cardBody}>
+          <select
+            value={winnerUserId || ""}
+            onChange={(e) => setWinnerUserId(e.target.value || "")}
+            style={{ ...styles.input, flex: 1 }}
+          >
+            <option value="">— kein Sieger —</option>
+            {members.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.email}
+              </option>
+            ))}
+          </select>
 
-          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-            <button onClick={() => setWinnerUserId(null)} style={styles.secondaryBtn}>
-              Leeren
-            </button>
-            <button onClick={onSave} style={styles.primaryBtn} disabled={!hasPlayers}>
-              Speichern
-            </button>
-          </div>
+          <button onClick={onSave} style={styles.primaryBtn}>
+            Speichern
+          </button>
+        </div>
 
-          <div style={{ fontSize: 12, opacity: 0.75, color: stylesTokens.textDim }}>
-            Der Sieger wird im Spiel gespeichert und ist für alle Spieler sichtbar.
-          </div>
+        <div style={{ padding: "0 12px 12px", fontSize: 12, color: stylesTokens.textDim, opacity: 0.9 }}>
+          Nur der Host (Spiel-Ersteller) kann den Sieger setzen.
         </div>
       </div>
     </div>

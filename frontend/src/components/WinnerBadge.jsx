@@ -8,20 +8,29 @@ export default function WinnerBadge({ winnerEmail }) {
     <div
       style={{
         marginTop: 14,
-        padding: "12px 14px",
+        padding: "10px 12px",
         borderRadius: 16,
         border: `1px solid ${stylesTokens.panelBorder}`,
         background: stylesTokens.panelBg,
-        boxShadow: "0 12px 30px rgba(0,0,0,0.45)",
+        boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
         backdropFilter: "blur(6px)",
         display: "flex",
-        gap: 10,
         alignItems: "center",
+        justifyContent: "space-between",
+        gap: 10,
       }}
     >
-      <span style={{ fontSize: 16 }}>🏆</span>
-      <span style={{ fontWeight: 1000, color: stylesTokens.textGold }}>Sieger:</span>
-      <span style={{ color: stylesTokens.textMain }}>{winnerEmail}</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ fontSize: 18 }}>🏆</div>
+        <div style={{ color: stylesTokens.textMain, fontWeight: 900 }}>
+          Sieger:
+          <span style={{ color: stylesTokens.textGold }}>{" "}{winnerEmail}</span>
+        </div>
+      </div>
+
+      <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>
+        festgelegt
+      </div>
     </div>
   );
 }
