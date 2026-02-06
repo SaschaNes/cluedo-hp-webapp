@@ -18,31 +18,40 @@ export default function WinnerCelebration({ open, winnerName, onClose }) {
     if (!reduceMotion) {
       const end = Date.now() + 4500;
 
+      // WICHTIG: über dem Overlay rendern
+      const TOP_Z = 2147483647;
+
+      // hellere Farben damit’s auch auf dark overlay knallt
+      const bright = ["#ffffff", "#ffd166", "#06d6a0", "#4cc9f0", "#f72585"];
+
       // 2 große Bursts
       confetti({
-        particleCount: 150,
+        particleCount: 170,
         spread: 95,
-        startVelocity: 38,
+        startVelocity: 42,
         origin: { x: 0.12, y: 0.62 },
-        zIndex: 999999,
+        zIndex: TOP_Z,
+        colors: bright,
       });
       confetti({
-        particleCount: 150,
+        particleCount: 170,
         spread: 95,
-        startVelocity: 38,
+        startVelocity: 42,
         origin: { x: 0.88, y: 0.62 },
-        zIndex: 999999,
+        zIndex: TOP_Z,
+        colors: bright,
       });
 
       // “Rain” über die Zeit
       (function frame() {
         confetti({
-          particleCount: 6,
-          spread: 70,
-          startVelocity: 32,
+          particleCount: 8,
+          spread: 75,
+          startVelocity: 34,
           origin: { x: Math.random(), y: Math.random() * 0.18 },
-          scalar: 1.0,
-          zIndex: 999999,
+          scalar: 1.05,
+          zIndex: TOP_Z,
+          colors: bright,
         });
         if (Date.now() < end) requestAnimationFrame(frame);
       })();
@@ -73,24 +82,27 @@ export default function WinnerCelebration({ open, winnerName, onClose }) {
         position: "fixed",
         inset: 0,
         zIndex: 2147483646,
-        display: "grid",
-        placeItems: "center",
-        background: "rgba(0,0,0,0.58)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        // weniger dunkel -> Confetti wirkt heller
+        background: "rgba(0,0,0,0.42)",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
-        padding: 12,
+        padding: 14,
       }}
       onMouseDown={onClose}
     >
       <div
         onMouseDown={(e) => e.stopPropagation()}
         style={{
-          width: "min(560px, 92vw)",
-          borderRadius: 22,
-          padding: "16px 16px",
+          // kleiner + mobile friendly
+          width: "min(420px, 90vw)",
+          borderRadius: 18,
+          padding: "14px 14px",
           border: `1px solid ${stylesTokens.panelBorder}`,
           background: stylesTokens.panelBg,
-          boxShadow: "0 22px 90px rgba(0,0,0,0.60)",
+          boxShadow: "0 18px 70px rgba(0,0,0,0.55)",
           backdropFilter: "blur(10px)",
           WebkitBackdropFilter: "blur(10px)",
           position: "relative",
@@ -103,19 +115,19 @@ export default function WinnerCelebration({ open, winnerName, onClose }) {
             position: "absolute",
             inset: 0,
             background: `linear-gradient(90deg, transparent, ${stylesTokens.goldLine}, transparent)`,
-            opacity: 0.35,
+            opacity: 0.32,
             pointerEvents: "none",
           }}
         />
 
-        {/* kleine “shine” Ecke oben rechts */}
+        {/* shine */}
         <div
           style={{
             position: "absolute",
-            top: -80,
+            top: -70,
             right: -120,
-            width: 260,
-            height: 220,
+            width: 240,
+            height: 200,
             background: `radial-gradient(circle at 30% 30%, ${stylesTokens.goldLine}, transparent 60%)`,
             opacity: 0.12,
             transform: "rotate(12deg)",
@@ -123,15 +135,15 @@ export default function WinnerCelebration({ open, winnerName, onClose }) {
           }}
         />
 
-        <div style={{ position: "relative" }}>
-          <div style={{ fontSize: 34, lineHeight: 1 }}>🏆</div>
+        <div style={{ position: "relative", display: "grid", gap: 8 }}>
+          <div style={{ fontSize: 30, lineHeight: 1 }}>🏆</div>
 
           <div
             style={{
-              marginTop: 8,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: 900,
               color: stylesTokens.textMain,
+              lineHeight: 1.25,
             }}
           >
             Spieler{" "}
@@ -141,16 +153,16 @@ export default function WinnerCelebration({ open, winnerName, onClose }) {
             hat die richtige Lösung!
           </div>
 
-          <div style={{ marginTop: 8, color: stylesTokens.textDim, opacity: 0.95 }}>
+          <div style={{ color: stylesTokens.textDim, opacity: 0.95, fontSize: 13 }}>
             Fall gelöst. Respekt. ✨
           </div>
 
-          <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end" }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 6 }}>
             <button
               onClick={onClose}
               style={{
-                padding: "10px 12px",
-                borderRadius: 14,
+                padding: "9px 11px",
+                borderRadius: 12,
                 border: `1px solid ${stylesTokens.panelBorder}`,
                 background: "rgba(255,255,255,0.06)",
                 color: stylesTokens.textMain,
