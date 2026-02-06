@@ -4,8 +4,7 @@ import { stylesTokens } from "../styles/theme";
 /**
  * Props:
  * - winner: { display_name?: string, email?: string } | null
- *   (oder als Fallback:)
- * - winnerEmail: string | null
+ * - winnerEmail: string | null (legacy fallback)
  */
 export default function WinnerBadge({ winner, winnerEmail }) {
   const name =
@@ -14,14 +13,6 @@ export default function WinnerBadge({ winner, winnerEmail }) {
     (winnerEmail || "").trim();
 
   if (!name) return null;
-
-  // Optional: wenn display_name vorhanden ist, Email klein anzeigen
-  const showEmail =
-    winner &&
-    (winner?.email || "").trim() &&
-    (winner?.display_name || "").trim() &&
-    winner.email.trim().toLowerCase() !== winner.display_name.trim().toLowerCase();
-
 
   return (
     <div
@@ -42,17 +33,9 @@ export default function WinnerBadge({ winner, winnerEmail }) {
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ fontSize: 18 }}>🏆</div>
 
-        <div style={{ display: "grid", gap: 2 }}>
-          <div style={{ color: stylesTokens.textMain, fontWeight: 900 }}>
-            Sieger:
-            <span style={{ color: stylesTokens.textGold }}>{" "}{name}</span>
-          </div>
-
-          {showEmail && (
-            <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>
-              {winner.email}
-            </div>
-          )}
+        <div style={{ color: stylesTokens.textMain, fontWeight: 900 }}>
+          Sieger:
+          <span style={{ color: stylesTokens.textGold }}>{" "}{name}</span>
         </div>
       </div>
 

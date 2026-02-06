@@ -23,11 +23,14 @@ export default function WinnerCard({
             style={{ ...styles.input, flex: 1 }}
           >
             <option value="">— kein Sieger —</option>
-            {members.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.email}
-              </option>
-            ))}
+            {members.map((m) => {
+              const dn = ((m.display_name || "").trim() || (m.email || "").trim());
+              return (
+                <option key={m.id} value={m.id}>
+                  {dn}
+                </option>
+              );
+            })}
           </select>
 
           <button onClick={onSave} style={styles.primaryBtn}>
