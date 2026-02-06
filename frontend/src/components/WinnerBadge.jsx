@@ -22,7 +22,6 @@ export default function WinnerBadge({ winner, winnerEmail }) {
     (winner?.display_name || "").trim() &&
     winner.email.trim().toLowerCase() !== winner.display_name.trim().toLowerCase();
 
-  const displayName = me ? ((me.display_name || "").trim() || me.email) : "";
 
   return (
     <div
@@ -51,7 +50,7 @@ export default function WinnerBadge({ winner, winnerEmail }) {
 
           {showEmail && (
             <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>
-              {displayName}
+              {me.display_name}
             </div>
           )}
         </div>
