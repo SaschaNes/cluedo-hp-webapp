@@ -14,7 +14,6 @@
       rel="stylesheet"
     />
 
-    <!-- Fallback Background (IMMER sichtbar, kein Schwarz) -->
     <style>
       html,
       body {
@@ -39,7 +38,9 @@
           rgba(30, 30, 30, 0.95),
           #000
         );
-        transition: opacity 160ms ease;
+        overflow: hidden;
+        opacity: 1;
+        transition: opacity 260ms ease;
       }
 
       #app-splash.hide {
@@ -47,12 +48,113 @@
         pointer-events: none;
       }
 
-      #app-splash .title {
+      /* gold animated lines */
+      #app-splash::before,
+      #app-splash::after {
+        content: "";
+        position: absolute;
+        inset: -40%;
+        background:
+          linear-gradient(
+            90deg,
+            transparent,
+            rgba(233, 216, 166, 0.18),
+            transparent
+          );
+        transform: rotate(12deg);
+        animation: goldSweep 1.6s linear infinite;
+        opacity: 0.55;
+        filter: blur(0.2px);
+        pointer-events: none;
+      }
+
+      #app-splash::after {
+        transform: rotate(-12deg);
+        animation-duration: 2.2s;
+        opacity: 0.35;
+      }
+
+      @keyframes goldSweep {
+        0% { transform: translateX(-25%) rotate(12deg); }
+        100% { transform: translateX(25%) rotate(12deg); }
+      }
+
+      /* glassy card */
+      .splash-card {
+        position: relative;
+        width: min(520px, 90vw);
+        border-radius: 22px;
+        padding: 18px 16px;
+        background: rgba(20, 20, 22, 0.55);
+        border: 1px solid rgba(233, 216, 166, 0.16);
+        box-shadow: 0 18px 70px rgba(0,0,0,0.55);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        text-align: center;
+        overflow: hidden;
+      }
+
+      .splash-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(233,216,166,0.16), transparent);
+        opacity: 0.45;
+        pointer-events: none;
+      }
+
+      .splash-title {
+        position: relative;
         font-family: "Cinzel Decorative", serif;
         font-weight: 700;
-        letter-spacing: 0.08em;
-        color: rgba(233, 216, 166, 0.85);
+        letter-spacing: 0.06em;
+        color: rgba(245, 239, 220, 0.92);
         font-size: 18px;
+        line-height: 1.25;
+      }
+
+      .splash-sub {
+        position: relative;
+        margin-top: 6px;
+        font-family: "IM Fell English", serif;
+        font-style: italic;
+        color: rgba(233, 216, 166, 0.78);
+        font-size: 13px;
+      }
+
+      /* Loader */
+      .loader {
+        position: relative;
+        margin: 14px auto 0;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        border: 2px solid rgba(233, 216, 166, 0.18);
+        border-top-color: rgba(233, 216, 166, 0.92);
+        animation: spin 0.85s linear infinite;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* tiny spark at bottom */
+      .spark {
+        position: relative;
+        margin: 14px auto 0;
+        width: 160px;
+        height: 2px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, transparent, rgba(233,216,166,0.65), transparent);
+        opacity: 0.6;
+        filter: blur(0.2px);
+        animation: pulse 1.4s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 0.35; transform: scaleX(0.92); }
+        50% { opacity: 0.85; transform: scaleX(1.02); }
       }
     </style>
 
@@ -66,9 +168,13 @@
   </head>
 
   <body>
-    <!-- ✅ Splash ist sichtbar, App lädt dahinter -->
-    <div id="app-splash">
-      <div class="title">Zauber-Detektiv Notizbogen</div>
+    <div id="app-splash" aria-hidden="true">
+      <div class="splash-card">
+        <div class="splash-title">Zauber-Detektiv Notizbogen</div>
+        <div class="splash-sub">Magie wird vorbereitet…</div>
+        <div class="loader" aria-label="Laden"></div>
+        <div class="spark"></div>
+      </div>
     </div>
 
     <div id="root"></div>
