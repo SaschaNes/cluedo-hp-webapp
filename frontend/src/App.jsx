@@ -4,8 +4,12 @@ import React, { useEffect, useState } from "react";
 import { api } from "./api/client";
 import { cycleTag } from "./utils/cycleTag";
 import { getChipLS, setChipLS, clearChipLS } from "./utils/chipStorage";
+import { getWinner, setWinner as saveWinnerLS } from "./utils/winnerStorage";
+
 import { useHpGlobalStyles } from "./styles/hooks/useHpGlobalStyles";
 import { styles } from "./styles/styles";
+
+import { applyTheme, loadThemeKey, saveThemeKey, DEFAULT_THEME_KEY } from "./styles/themes";
 
 import AdminPanel from "./components/AdminPanel";
 import LoginPage from "./components/LoginPage";
@@ -15,6 +19,8 @@ import ChipModal from "./components/ChipModal";
 import HelpModal from "./components/HelpModal";
 import GamePickerCard from "./components/GamePickerCard";
 import SheetSection from "./components/SheetSection";
+import DesignModal from "./components/DesignModal";
+import WinnerCard from "./components/WinnerCard";
 
 export default function App() {
   useHpGlobalStyles();
@@ -31,6 +37,9 @@ export default function App() {
   const [sheet, setSheet] = useState(null);
   const [pulseId, setPulseId] = useState(null);
 
+  // Winner (per game)
+  const [winnerName, setWinnerName] = useState("");
+
   // Modals
   const [helpOpen, setHelpOpen] = useState(false);
 
@@ -45,10 +54,19 @@ export default function App() {
   const [pwMsg, setPwMsg] = useState("");
   const [pwSaving, setPwSaving] = useState(false);
 
+  // Theme
+  const [designOpen, setDesignOpen] = useState(false);
+  const [themeKey, setThemeKey] = useState(DEFAULT_THEME_KEY);
+
   // ===== Data loaders =====
   const load = async () => {
     const m = await api("/auth/me");
     setMe(m);
+
+    // Theme pro User laden & anwenden
+    const tk = loadThemeKey(m?.email);
+    setThemeKey(tk);
+    applyTheme(tk);
 
     const gs = await api("/games");
     setGames(gs);
@@ -61,8 +79,6 @@ export default function App() {
     const sh = await api(`/games/${gameId}/sheet`);
     setSheet(sh);
   };
-
-  // ===== Effects =====
 
   // Dropdown outside click
   useEffect(() => {
@@ -92,9 +108,9 @@ export default function App() {
       if (!gameId) return;
       try {
         await reloadSheet();
-      } catch {
-        // ignore
-      }
+      } catch {}
+      // Winner pro Game aus LS laden
+      setWinnerName(getWinner(gameId));
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId]);
@@ -114,6 +130,7 @@ export default function App() {
     setGames([]);
     setGameId(null);
     setSheet(null);
+    setWinnerName("");
   };
 
   // ===== Password change =====
@@ -153,6 +170,18 @@ export default function App() {
     }
   };
 
+  // ===== Theme actions =====
+  const openDesignModal = () => {
+    setDesignOpen(true);
+    setUserMenuOpen(false);
+  };
+
+  const selectTheme = (key) => {
+    setThemeKey(key);
+    applyTheme(key);
+    saveThemeKey(me?.email, key);
+  };
+
   // ===== Game actions =====
   const newGame = async () => {
     const g = await api("/games", {
@@ -162,6 +191,12 @@ export default function App() {
     const gs = await api("/games");
     setGames(gs);
     setGameId(g.id);
+  };
+
+  // ===== Winner actions =====
+  const saveWinner = () => {
+    if (!gameId) return;
+    saveWinnerLS(gameId, winnerName.trim());
   };
 
   // ===== Sheet actions =====
@@ -185,14 +220,12 @@ export default function App() {
   const toggleTag = async (entry) => {
     const next = cycleTag(entry.note_tag);
 
-    // going to "s" -> open chip modal, don't write backend yet
     if (next === "s") {
       setChipEntry(entry);
       setChipOpen(true);
       return;
     }
 
-    // s -> — : clear local chip
     if (next === null) clearChipLS(gameId, entry.entry_id);
 
     await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
@@ -210,11 +243,9 @@ export default function App() {
     setChipOpen(false);
     setChipEntry(null);
 
-    // frontend-only save
     setChipLS(gameId, entry.entry_id, chip);
 
     try {
-      // backend only gets "s"
       await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
         method: "PATCH",
         body: JSON.stringify({ note_tag: "s" }),
@@ -253,7 +284,7 @@ export default function App() {
       const chip = getChipLS(gameId, entry.entry_id);
       return chip ? `s.${chip}` : "s";
     }
-    return t; // i oder m
+    return t;
   };
 
   // ===== Login page =====
@@ -291,6 +322,7 @@ export default function App() {
           userMenuOpen={userMenuOpen}
           setUserMenuOpen={setUserMenuOpen}
           openPwModal={openPwModal}
+          openDesignModal={openDesignModal}
           doLogout={doLogout}
           newGame={newGame}
         />
@@ -320,6 +352,9 @@ export default function App() {
           ))}
         </div>
 
+        {/* Sieger ganz unten */}
+        <WinnerCard value={winnerName} setValue={setWinnerName} onSave={saveWinner} />
+
         <div style={{ height: 24 }} />
       </div>
 
@@ -335,11 +370,17 @@ export default function App() {
         savePassword={savePassword}
       />
 
-      <ChipModal
-        chipOpen={chipOpen}
-        closeChipModalToDash={closeChipModalToDash}
-        chooseChip={chooseChip}
+      <DesignModal
+        open={designOpen}
+        onClose={() => setDesignOpen(false)}
+        themeKey={themeKey}
+        onSelect={(k) => {
+          selectTheme(k);
+          setDesignOpen(false);
+        }}
       />
+
+      <ChipModal chipOpen={chipOpen} closeChipModalToDash={closeChipModalToDash} chooseChip={chooseChip} />
     </div>
   );
 }

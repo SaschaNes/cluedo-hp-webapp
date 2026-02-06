@@ -7,44 +7,20 @@ export default function TopBar({
   userMenuOpen,
   setUserMenuOpen,
   openPwModal,
+  openDesignModal,
   doLogout,
   newGame,
 }) {
   return (
     <div style={styles.topBar}>
-      {/* LINKS: nur Rolle */}
       <div>
-        <div style={{ fontWeight: 900, color: stylesTokens.textGold }}>
-          Notizbogen
-        </div>
-        <div
-          style={{
-            fontSize: 12,
-            opacity: 0.8,
-            color: stylesTokens.textDim,
-          }}
-        >
-          {me.email}
-        </div>
+        <div style={{ fontWeight: 900, color: stylesTokens.textGold }}>Notizbogen</div>
+        <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>{me.email}</div>
       </div>
 
-      {/* RECHTS: Account + Neues Spiel */}
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          alignItems: "center",
-          flexWrap: "nowrap",
-        }}
-        data-user-menu
-      >
-        {/* Account Dropdown */}
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "nowrap" }} data-user-menu>
         <div style={{ position: "relative" }}>
-          <button
-            onClick={() => setUserMenuOpen((v) => !v)}
-            style={styles.userBtn}
-            title="User Menü"
-          >
+          <button onClick={() => setUserMenuOpen((v) => !v)} style={styles.userBtn} title="User Menü">
             <span style={{ fontSize: 16 }}>👤</span>
             <span>User</span>
             <span style={{ opacity: 0.7 }}>▾</span>
@@ -52,7 +28,6 @@ export default function TopBar({
 
           {userMenuOpen && (
             <div style={styles.userDropdown}>
-              {/* Email Info */}
               <div
                 style={{
                   padding: "10px 12px",
@@ -65,9 +40,12 @@ export default function TopBar({
                 {me.email}
               </div>
 
-              {/* Actions */}
               <button onClick={openPwModal} style={styles.userDropdownItem}>
                 Passwort setzen
+              </button>
+
+              <button onClick={openDesignModal} style={styles.userDropdownItem}>
+                Design ändern
               </button>
 
               <div style={styles.userDropdownDivider} />
@@ -77,10 +55,7 @@ export default function TopBar({
                   setUserMenuOpen(false);
                   doLogout();
                 }}
-                style={{
-                  ...styles.userDropdownItem,
-                  color: "#ffb3b3",
-                }}
+                style={{ ...styles.userDropdownItem, color: "#ffb3b3" }}
               >
                 Logout
               </button>
@@ -88,7 +63,6 @@ export default function TopBar({
           )}
         </div>
 
-        {/* Neues Spiel Button */}
         <button onClick={newGame} style={styles.primaryBtn}>
           ✦ New Game
         </button>

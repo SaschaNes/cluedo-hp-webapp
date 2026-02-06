@@ -1,5 +1,8 @@
 import { useEffect } from "react";
 import { stylesTokens } from "../theme";
+import { applyTheme } from "../themes";
+
+
 
 export function useHpGlobalStyles() {
   // Google Fonts
@@ -80,5 +83,10 @@ export function useHpGlobalStyles() {
       * { -webkit-tap-highlight-color: transparent; }
     `;
     document.head.appendChild(style);
+  }, []);
+
+  // Ensure a theme is applied once (fallback)
+  useEffect(() => {
+    applyTheme("default");
   }, []);
 }
