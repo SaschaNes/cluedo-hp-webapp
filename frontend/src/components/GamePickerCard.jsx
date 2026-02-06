@@ -18,7 +18,7 @@ export default function GamePickerCard({
     const isMe = !!(me?.id && String(me.id) === String(m.id));
     const isHost = !!(hostUserId && String(hostUserId) === String(m.id));
 
-    const suffix = `${isHost ? " ⭐" : ""}${isMe ? " (du)" : ""}`;
+    const suffix = `${isHost ? " " : ""}${isMe ? " (du)" : ""}`;
     return base + suffix;
   };
 
