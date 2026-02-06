@@ -82,11 +82,6 @@ export default function GamePickerCard({
             <div>
               Code: <b style={{ color: stylesTokens.textGold }}>{cur.code}</b>
             </div>
-
-            {/* Mini hint rechts (optional) */}
-            <div style={{ fontSize: 11, opacity: 0.75 }}>
-              teilen
-            </div>
           </div>
         )}
 
