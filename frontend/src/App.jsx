@@ -4,7 +4,8 @@ import React, { useEffect, useState } from "react";
 import { api } from "./api/client";
 import { cycleTag } from "./utils/cycleTag";
 import { getChipLS, setChipLS, clearChipLS } from "./utils/chipStorage";
-import { getWinner, setWinner as saveWinnerLS } from "./utils/winnerStorage";
+
+import { getWinnerLS, setWinnerLS, clearWinnerLS } from "./utils/winnerStorage";
 
 import { useHpGlobalStyles } from "./styles/hooks/useHpGlobalStyles";
 import { styles } from "./styles/styles";
@@ -21,6 +22,7 @@ import GamePickerCard from "./components/GamePickerCard";
 import SheetSection from "./components/SheetSection";
 import DesignModal from "./components/DesignModal";
 import WinnerCard from "./components/WinnerCard";
+import WinnerBadge from "./components/WinnerBadge";
 
 export default function App() {
   useHpGlobalStyles();
@@ -80,6 +82,8 @@ export default function App() {
     setSheet(sh);
   };
 
+  // ===== Effects =====
+
   // Dropdown outside click
   useEffect(() => {
     const onDown = (e) => {
@@ -102,15 +106,19 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // load sheet when game changes
+  // load sheet + winner when game changes
   useEffect(() => {
     (async () => {
       if (!gameId) return;
+
       try {
         await reloadSheet();
-      } catch {}
-      // Winner pro Game aus LS laden
-      setWinnerName(getWinner(gameId));
+      } catch {
+        // ignore
+      }
+
+      // Sieger pro Game aus localStorage laden
+      setWinnerName(getWinnerLS(gameId));
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId]);
@@ -188,15 +196,29 @@ export default function App() {
       method: "POST",
       body: JSON.stringify({ name: "Spiel " + new Date().toLocaleString() }),
     });
+
     const gs = await api("/games");
     setGames(gs);
     setGameId(g.id);
+
+    // Neues Spiel -> Sieger leer
+    clearWinnerLS(g.id);
+    setWinnerName("");
   };
 
   // ===== Winner actions =====
   const saveWinner = () => {
     if (!gameId) return;
-    saveWinnerLS(gameId, winnerName.trim());
+    const v = (winnerName || "").trim();
+
+    if (!v) {
+      clearWinnerLS(gameId);
+      setWinnerName("");
+      return;
+    }
+
+    setWinnerLS(gameId, v);
+    setWinnerName(v);
   };
 
   // ===== Sheet actions =====
@@ -338,6 +360,9 @@ export default function App() {
 
         <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
 
+        {/* Sieger Badge: nur wenn gesetzt */}
+        <WinnerBadge winner={(winnerName || "").trim()} />
+
         <div style={{ marginTop: 14, display: "grid", gap: 14 }}>
           {sections.map((sec) => (
             <SheetSection
@@ -380,7 +405,11 @@ export default function App() {
         }}
       />
 
-      <ChipModal chipOpen={chipOpen} closeChipModalToDash={closeChipModalToDash} chooseChip={chooseChip} />
+      <ChipModal
+        chipOpen={chipOpen}
+        closeChipModalToDash={closeChipModalToDash}
+        chooseChip={chooseChip}
+      />
     </div>
   );
 }
