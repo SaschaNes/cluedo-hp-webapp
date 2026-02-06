@@ -240,21 +240,23 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me?.id, gameId]);
 
-  // ✅ Winner Celebration Trigger:
-  // - beim ersten Load eines Spiels NICHT feiern
-  // - feiern nur, wenn winner_user_id sich danach ändert (Host speichert)
   useEffect(() => {
+    // wid kann auch "" sein (kein Sieger)
     const wid = gameMeta?.winner_user_id ? String(gameMeta.winner_user_id) : "";
-    if (!wid) return;
 
+    // Baseline beim ersten Meta-Load setzen – egal ob Winner existiert oder nicht
     if (!winnerBaselineRef.current) {
       winnerBaselineRef.current = true;
-      lastWinnerIdRef.current = wid;
+      lastWinnerIdRef.current = wid; // kann "" sein
       return;
     }
 
+    // Nur reagieren, wenn sich wid ändert
     if (lastWinnerIdRef.current !== wid) {
       lastWinnerIdRef.current = wid;
+
+      // wenn wid leer wird (reset), nicht feiern
+      if (!wid) return;
 
       const name =
         (gameMeta?.winner_display_name || "").trim() ||
@@ -265,6 +267,7 @@ export default function App() {
       setCelebrateOpen(true);
     }
   }, [gameMeta?.winner_user_id, gameMeta?.winner_display_name, gameMeta?.winner_email]);
+
 
   // ===== Auth actions =====
   const doLogin = async () => {
