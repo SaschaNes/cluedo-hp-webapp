@@ -40,7 +40,8 @@ def me(req: Request, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == uid).first()
     if not user:
         raise HTTPException(status_code=401, detail="not logged in")
-    return {"id": user.id, "email": user.email, "role": user.role, "theme_key": user.theme_key}
+    return {"id": user.id, "email": user.email, "role": user.role, "display_name": user.display_name}
+    
 
 
 @router.patch("/password")

@@ -7,6 +7,7 @@ export default function AdminPanel() {
   const [users, setUsers] = useState([]);
 
   const [open, setOpen] = useState(false);
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
@@ -22,6 +23,7 @@ export default function AdminPanel() {
   }, []);
 
   const resetForm = () => {
+    setDisplayName("");
     setEmail("");
     setPassword("");
     setRole("user");
@@ -32,7 +34,7 @@ export default function AdminPanel() {
     try {
       await api("/admin/users", {
         method: "POST",
-        body: JSON.stringify({ email, password, role }),
+        body: JSON.stringify({ display_name: displayName, email, password, role }),
       });
       setMsg("✅ User erstellt.");
       await loadUsers();
@@ -40,6 +42,16 @@ export default function AdminPanel() {
       setOpen(false);
     } catch (e) {
       setMsg("❌ Fehler: " + (e?.message || "unknown"));
+    }
+  };
+
+  const deleteUser = async (u) => {
+    if (!window.confirm(`User wirklich löschen (deaktivieren)?\n\n${u.display_name || u.email}`)) return;
+    try {
+      await api(`/admin/users/${u.id}`, { method: "DELETE" });
+      await loadUsers();
+    } catch (e) {
+      alert("Fehler: " + (e?.message || "unknown"));
     }
   };
 
@@ -63,14 +75,39 @@ export default function AdminPanel() {
 
       <div style={{ marginTop: 8, display: "grid", gap: 8 }}>
         {users.map((u) => (
-          <div key={u.id} style={styles.userRow}>
-            <div style={{ color: stylesTokens.textMain }}>{u.email}</div>
+          <div
+            key={u.id}
+            style={{
+              ...styles.userRow,
+              gridTemplateColumns: "1fr 1fr 80px 90px 92px",
+              alignItems: "center",
+            }}
+          >
+            <div style={{ color: stylesTokens.textMain, fontWeight: 900 }}>
+              {u.display_name || "—"}
+            </div>
+            <div style={{ color: stylesTokens.textDim, fontSize: 13 }}>{u.email}</div>
             <div style={{ textAlign: "center", fontWeight: 900, color: stylesTokens.textGold }}>
               {u.role}
             </div>
             <div style={{ textAlign: "center", opacity: 0.85, color: stylesTokens.textMain }}>
               {u.disabled ? "disabled" : "active"}
             </div>
+
+            <button
+              onClick={() => deleteUser(u)}
+              style={{
+                ...styles.secondaryBtn,
+                padding: "8px 10px",
+                borderRadius: 12,
+                color: "#ffb3b3",
+                opacity: u.role === "admin" ? 0.4 : 1,
+                pointerEvents: u.role === "admin" ? "none" : "auto",
+              }}
+              title={u.role === "admin" ? "Admin kann nicht gelöscht werden" : "User löschen (deaktivieren)"}
+            >
+              Löschen
+            </button>
           </div>
         ))}
       </div>
@@ -89,12 +126,20 @@ export default function AdminPanel() {
 
             <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
               <input
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Name (z.B. Sascha)"
+                style={styles.input}
+                autoFocus
+              />
+
+              <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email"
                 style={styles.input}
-                autoFocus
               />
+
               <input
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -102,6 +147,7 @@ export default function AdminPanel() {
                 type="password"
                 style={styles.input}
               />
+
               <select value={role} onChange={(e) => setRole(e.target.value)} style={styles.input}>
                 <option value="user">user</option>
                 <option value="admin">admin</option>
@@ -125,7 +171,7 @@ export default function AdminPanel() {
               </div>
 
               <div style={{ fontSize: 12, opacity: 0.75, color: stylesTokens.textDim }}>
-                Tipp: Klick auf Item: Grün → Rot → Grau → Leer
+                Tipp: Name wird in TopBar & Siegeranzeige genutzt.
               </div>
             </div>
           </div>

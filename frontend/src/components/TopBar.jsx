@@ -2,6 +2,8 @@ import React from "react";
 import { styles } from "../styles/styles";
 import { stylesTokens } from "../styles/theme";
 
+const displayName = (me?.display_name || "").trim() || me.email;
+
 export default function TopBar({
   me,
   userMenuOpen,
@@ -18,7 +20,7 @@ export default function TopBar({
           Notizbogen
         </div>
         <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>
-          {me.email}
+          {displayName}
         </div>
       </div>
 

@@ -86,6 +86,14 @@ Very small, pragmatic auto-migration (no alembic).
 - supports old schema (join_code/chip_code) and new schema (code/chip)
 """
 
+    # --- users.display_name ---
+    if not _has_column(db, "users", "display_name"):
+        try:
+            db.execute(text("ALTER TABLE users ADD COLUMN display_name VARCHAR DEFAULT ''"))
+            db.commit()
+        except Exception:
+            db.rollback()
+
     # --- users.theme_key ---
     if not _has_column(db, "users", "theme_key"):
         try:
@@ -279,6 +287,7 @@ def ensure_admin(db: Session):
                 password_hash=hash_password(admin_pw),
                 role=Role.admin.value,
                 theme_key="default",
+                display_name="Admin",
             )
         )
         db.commit()
