@@ -207,7 +207,7 @@ Very small, pragmatic auto-migration (no alembic).
     # --- backfill host_user_id: default to owner_user_id ---
     try:
         if _has_column(db, "games", "host_user_id"):
-            db.execute(text("UPDATE games SET host_user_id = owner_user_id WHERE host_user_id IS NULL OR host_user_id = ''"))
+            db.execute(text("UPDATE games SET host_user_id = host_user_id WHERE host_user_id IS NULL OR host_user_id = ''"))
             db.commit()
     except Exception:
         db.rollback()
@@ -217,13 +217,16 @@ Very small, pragmatic auto-migration (no alembic).
     try:
         all_games = db.query(Game).all()
         for g in all_games:
+            host_id = getattr(g, "host_user_id", None)
+            if not host_id:
+                continue
             exists = (
                 db.query(GameMember)
-                .filter(GameMember.game_id == g.id, GameMember.user_id == g.owner_user_id)
+                .filter(GameMember.game_id == g.id, GameMember.user_id == host_id)
                 .first()
             )
             if not exists:
-                db.add(GameMember(game_id=g.id, user_id=g.owner_user_id))
+                db.add(GameMember(game_id=g.id, user_id=host_id))
         db.commit()
     except Exception:
         db.rollback()
