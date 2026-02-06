@@ -124,15 +124,15 @@ export default function GamePickerCard({
 
                 return (
                   <div key={m.id} style={pillStyle(isHost, isMe)} title={label}>
-                    {isHost && <span style={{ color: stylesTokens.textGold }}>⭐</span>}
-                    <span>{label.replace(" ⭐", "")}</span>
+                    {isHost && <span style={{ color: stylesTokens.textGold }}>👑</span>}
+                    <span>{label.replace(" 👑", "")}</span>
                   </div>
                 );
               })}
             </div>
 
             <div style={{ marginTop: 6, fontSize: 11, opacity: 0.7, color: stylesTokens.textDim }}>
-              ⭐ = Host &nbsp;&nbsp;•&nbsp;&nbsp; (du) = du
+              👑 = Host
             </div>
           </div>
         )}
