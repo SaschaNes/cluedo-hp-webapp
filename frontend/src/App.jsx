@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { api } from "./api/client";
 import { cycleTag } from "./utils/cycleTag";
@@ -7,6 +7,7 @@ import { getChipLS, setChipLS, clearChipLS } from "./utils/chipStorage";
 import { useHpGlobalStyles } from "./styles/hooks/useHpGlobalStyles";
 import { styles } from "./styles/styles";
 import { applyTheme, DEFAULT_THEME_KEY } from "./styles/themes";
+import { stylesTokens } from "./styles/theme";
 
 import AdminPanel from "./components/AdminPanel";
 import LoginPage from "./components/LoginPage";
@@ -69,6 +70,30 @@ export default function App() {
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState("");
 
+  // ===== Join Snack (bottom toast) =====
+  const [snack, setSnack] = useState("");
+  const snackTimerRef = useRef(null);
+
+  // track members to detect joins
+  const lastMemberIdsRef = useRef(new Set());
+  const membersBaselineRef = useRef(false);
+
+  const showSnack = (msg) => {
+    setSnack(msg);
+    if (snackTimerRef.current) clearTimeout(snackTimerRef.current);
+    snackTimerRef.current = setTimeout(() => setSnack(""), 1800);
+  };
+
+  const vibrate = (pattern) => {
+    try {
+      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+        navigator.vibrate(pattern);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
   const load = async () => {
     const m = await api("/auth/me");
     setMe(m);
@@ -91,12 +116,46 @@ export default function App() {
 
   const loadGameMeta = async () => {
     if (!gameId) return;
+
     const meta = await api(`/games/${gameId}`);
     setGameMeta(meta);
     setWinnerUserId(meta?.winner_user_id || "");
 
     const mem = await api(`/games/${gameId}/members`);
     setMembers(mem);
+
+    // ✅ detect new members (join notifications for everyone)
+    try {
+      const prev = lastMemberIdsRef.current;
+      const nowIds = new Set((mem || []).map((m) => String(m.id)));
+
+      if (!membersBaselineRef.current) {
+        // first load for this game -> set baseline, no notification
+        membersBaselineRef.current = true;
+        lastMemberIdsRef.current = nowIds;
+        return;
+      }
+
+      const added = (mem || []).filter((m) => !prev.has(String(m.id)));
+
+      if (added.length > 0) {
+        const names = added
+          .map((m) => ((m.display_name || "").trim() || (m.email || "").trim() || "Jemand"))
+          .slice(0, 3);
+
+        const msg =
+          added.length === 1
+            ? `✨ ${names[0]} ist beigetreten`
+            : `✨ ${names.join(", ")} ${added.length > 3 ? `(+${added.length - 3}) ` : ""}sind beigetreten`;
+
+        showSnack(msg);
+        vibrate(25); // dezent & kurz
+      }
+
+      lastMemberIdsRef.current = nowIds;
+    } catch {
+      // ignore snack errors
+    }
   };
 
   // Dropdown outside click
@@ -121,6 +180,10 @@ export default function App() {
 
   // on game change
   useEffect(() => {
+    // reset join detection baseline when switching games
+    membersBaselineRef.current = false;
+    lastMemberIdsRef.current = new Set();
+
     (async () => {
       if (!gameId) return;
       try {
@@ -263,12 +326,14 @@ export default function App() {
 
   // ===== New game flow =====
   const createGame = async () => {
-    // ✅ wichtig: alten Game-State weg, damit nix "hängen" bleibt
+    // ✅ alten Game-State komplett loswerden, damit nix am alten Spiel "hängen bleibt"
     setSheet(null);
     setGameMeta(null);
     setMembers([]);
     setWinnerUserId("");
     setPulseId(null);
+
+    // auch Chip-Modal-State resetten
     setChipOpen(false);
     setChipEntry(null);
 
@@ -280,7 +345,7 @@ export default function App() {
     const gs = await api("/games");
     setGames(gs);
 
-    // ✅ auf neues Spiel wechseln (triggered dann reloadSheet/loadGameMeta via effect)
+    // ✅ auf neues Game wechseln (triggert reloadSheet/loadGameMeta via effect)
     setGameId(g.id);
 
     return g; // includes code
@@ -532,6 +597,34 @@ export default function App() {
         loading={statsLoading}
         error={statsError}
       />
+
+      {/* Bottom snack for joins */}
+      {snack && (
+        <div
+          style={{
+            position: "fixed",
+            left: "50%",
+            bottom: 14,
+            transform: "translateX(-50%)",
+            maxWidth: "92vw",
+            padding: "10px 12px",
+            borderRadius: 14,
+            border: `1px solid ${stylesTokens.panelBorder}`,
+            background: stylesTokens.panelBg,
+            color: stylesTokens.textMain,
+            boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
+            backdropFilter: "blur(6px)",
+            fontWeight: 900,
+            fontSize: 13,
+            textAlign: "center",
+            zIndex: 2147483647,
+            pointerEvents: "none",
+            animation: "fadeIn 120ms ease-out",
+          }}
+        >
+          {snack}
+        </div>
+      )}
     </div>
   );
 }
