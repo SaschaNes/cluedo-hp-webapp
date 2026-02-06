@@ -3,15 +3,6 @@ import React from "react";
 import { styles } from "../styles/styles";
 import { stylesTokens } from "../styles/theme";
 
-/**
- * props:
- * - title: string
- * - entries: array
- * - pulseId: number | null
- * - onCycleStatus(entry): fn
- * - onToggleTag(entry): fn
- * - displayTag(entry): string
- */
 export default function SheetSection({
   title,
   entries,
@@ -20,18 +11,18 @@ export default function SheetSection({
   onToggleTag,
   displayTag,
 }) {
-  // --- helpers (lokal, weil sie rein UI sind) ---
   const getRowBg = (status) => {
-    if (status === 1) return "rgba(255, 35, 35, 0.16)";
-    if (status === 2) return "rgba(0, 190, 80, 0.16)";
-    if (status === 3) return "rgba(140, 140, 140, 0.12)";
-    return "rgba(255,255,255,0.06)";
+    if (status === 1) return stylesTokens.rowNoBg;
+    if (status === 2) return stylesTokens.rowOkBg;
+    if (status === 3) return stylesTokens.rowMaybeBg;
+    if (status === 0) return stylesTokens.rowEmptyBg;
+    return stylesTokens.rowDefaultBg;
   };
 
   const getNameColor = (status) => {
-    if (status === 1) return "#ffb3b3";
-    if (status === 2) return "#baf3c9";
-    if (status === 3) return "rgba(233,216,166,0.78)";
+    if (status === 1) return stylesTokens.rowNoText;
+    if (status === 2) return stylesTokens.rowOkText;
+    if (status === 3) return stylesTokens.rowMaybeText;
     return stylesTokens.textMain;
   };
 
@@ -43,11 +34,17 @@ export default function SheetSection({
   };
 
   const getStatusBadge = (status) => {
-    if (status === 2) return { color: "#baf3c9", background: "rgba(0,190,80,0.18)" };
-    if (status === 1) return { color: "#ffb3b3", background: "rgba(255,35,35,0.18)" };
-    if (status === 3)
-      return { color: "rgba(233,216,166,0.85)", background: "rgba(140,140,140,0.14)" };
-    return { color: "rgba(233,216,166,0.75)", background: "rgba(255,255,255,0.08)" };
+    if (status === 2) return { color: stylesTokens.badgeOkText, background: stylesTokens.badgeOkBg };
+    if (status === 1) return { color: stylesTokens.badgeNoText, background: stylesTokens.badgeNoBg };
+    if (status === 3) return { color: stylesTokens.badgeMaybeText, background: stylesTokens.badgeMaybeBg };
+    return { color: stylesTokens.badgeEmptyText, background: stylesTokens.badgeEmptyBg };
+  };
+
+  const getBorderLeft = (status) => {
+    if (status === 2) return `4px solid ${stylesTokens.rowOkBorder}`;
+    if (status === 1) return `4px solid ${stylesTokens.rowNoBorder}`;
+    if (status === 3) return `4px solid ${stylesTokens.rowMaybeBorder}`;
+    return `4px solid ${stylesTokens.rowEmptyBorder}`;
   };
 
   return (
@@ -56,7 +53,6 @@ export default function SheetSection({
 
       <div style={{ display: "grid" }}>
         {entries.map((e) => {
-          // UI "rot" wenn note_tag i/m/s (Backend s wird als s.XX angezeigt)
           const isIorMorS = e.note_tag === "i" || e.note_tag === "m" || e.note_tag === "s";
           const effectiveStatus = e.status === 0 && isIorMorS ? 1 : e.status;
 
@@ -70,14 +66,7 @@ export default function SheetSection({
                 ...styles.row,
                 background: getRowBg(effectiveStatus),
                 animation: pulseId === e.entry_id ? "rowPulse 220ms ease-out" : "none",
-                borderLeft:
-                  effectiveStatus === 2
-                    ? "4px solid rgba(0,190,80,0.55)"
-                    : effectiveStatus === 1
-                    ? "4px solid rgba(255,35,35,0.55)"
-                    : effectiveStatus === 3
-                    ? "4px solid rgba(233,216,166,0.22)"
-                    : "4px solid rgba(0,0,0,0)",
+                borderLeft: getBorderLeft(effectiveStatus),
               }}
             >
               <div

@@ -49,8 +49,11 @@ export const styles = {
     fontFamily: '"Cinzel Decorative", "IM Fell English", system-ui',
     letterSpacing: 1.0,
     color: stylesTokens.textGold,
-    background: "linear-gradient(180deg, rgba(32,32,36,0.92), rgba(14,14,16,0.92))",
-    borderBottom: `1px solid ${stylesTokens.goldLine}`,
+
+    // WICHTIG: Header-Farben aus Theme-Tokens, nicht hart codiert
+    background: `linear-gradient(180deg, ${stylesTokens.headerBgTop}, ${stylesTokens.headerBgBottom})`,
+    borderBottom: `1px solid ${stylesTokens.headerBorder}`,
+
     textTransform: "uppercase",
     textShadow: "0 1px 0 rgba(0,0,0,0.6)",
   },
@@ -418,7 +421,7 @@ export const styles = {
   bgMap: {
     position: "absolute",
     inset: 0,
-    backgroundImage: 'url("/bg/marauders-map-blur.jpg")',
+    backgroundImage: stylesTokens.bgImage,
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
