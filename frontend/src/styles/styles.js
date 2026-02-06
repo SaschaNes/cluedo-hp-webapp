@@ -421,7 +421,7 @@ export const styles = {
   bgMap: {
     position: "absolute",
     inset: 0,
-    backgroundImage: 'url("/bg/marauders-map-blur.jpg")',
+    backgroundImage: stylesTokens.bgImage,
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",

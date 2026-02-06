@@ -30,4 +30,7 @@ export const stylesTokens = {
   rowEmptyBg: "var(--hp-rowEmptyBg)",
   rowEmptyText: "var(--hp-rowEmptyText)",
   rowEmptyBorder: "var(--hp-rowEmptyBorder)",
+
+  // Background
+  bgImage: "var(--hp-bgImage)",
 };

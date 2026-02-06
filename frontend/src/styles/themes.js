@@ -34,6 +34,9 @@ export const THEMES = {
       rowEmptyBg: "rgba(255,255,255,0.06)",
       rowEmptyText: "rgba(233,216,166,0.75)",
       rowEmptyBorder: "rgba(0,0,0,0)",
+
+      // Background
+      bgImage: "url('/bg/marauders-map-blur.jpg')",
     },
   },
 
@@ -69,6 +72,9 @@ export const THEMES = {
       rowEmptyBg: "rgba(255,255,255,0.06)",
       rowEmptyText: "rgba(255,210,170,0.75)",
       rowEmptyBorder: "rgba(0,0,0,0)",
+
+      // Background
+      bgImage: "url('/bg/gryffindor.png')",
     },
   },
 
@@ -104,6 +110,9 @@ export const THEMES = {
       rowEmptyBg: "rgba(255,255,255,0.06)",
       rowEmptyText: "rgba(175,240,210,0.75)",
       rowEmptyBorder: "rgba(0,0,0,0)",
+
+      // Background
+      bgImage: "url('/bg/slytherin.png')",
     },
   },
 
@@ -139,6 +148,9 @@ export const THEMES = {
       rowEmptyBg: "rgba(255,255,255,0.06)",
       rowEmptyText: "rgba(180,205,255,0.78)",
       rowEmptyBorder: "rgba(0,0,0,0)",
+
+      // Background
+      bgImage: "url('/bg/ravenclaw.png')",
     },
   },
 
@@ -174,6 +186,9 @@ export const THEMES = {
       rowEmptyBg: "rgba(255,255,255,0.06)",
       rowEmptyText: "rgba(255,240,180,0.78)",
       rowEmptyBorder: "rgba(0,0,0,0)",
+
+      // Background
+      bgImage: "url('/bg/hufflepuff.png')",
     },
   },
 };
