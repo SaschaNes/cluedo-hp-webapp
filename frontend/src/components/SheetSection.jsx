@@ -22,16 +22,17 @@ export default function SheetSection({
 }) {
   // --- helpers (lokal, weil sie rein UI sind) ---
   const getRowBg = (status) => {
-    if (status === 1) return "rgba(255, 35, 35, 0.16)";
-    if (status === 2) return "rgba(0, 190, 80, 0.16)";
-    if (status === 3) return "rgba(140, 140, 140, 0.12)";
-    return "rgba(255,255,255,0.06)";
+    if (status === 1) return stylesTokens.rowNoBg;
+    if (status === 2) return stylesTokens.rowOkBg;
+    if (status === 3) return stylesTokens.rowMaybeBg;
+    if (status === 0) return stylesTokens.rowEmptyBg;
+    return stylesTokens.rowDefaultBg;
   };
 
   const getNameColor = (status) => {
-    if (status === 1) return "#ffb3b3";
-    if (status === 2) return "#baf3c9";
-    if (status === 3) return "rgba(233,216,166,0.78)";
+    if (status === 1) return stylesTokens.rowNoText;
+    if (status === 2) return stylesTokens.rowOkText;
+    if (status === 3) return stylesTokens.rowMaybeText;
     return stylesTokens.textMain;
   };
 
@@ -43,11 +44,10 @@ export default function SheetSection({
   };
 
   const getStatusBadge = (status) => {
-    if (status === 2) return { color: "#baf3c9", background: "rgba(0,190,80,0.18)" };
-    if (status === 1) return { color: "#ffb3b3", background: "rgba(255,35,35,0.18)" };
-    if (status === 3)
-      return { color: "rgba(233,216,166,0.85)", background: "rgba(140,140,140,0.14)" };
-    return { color: "rgba(233,216,166,0.75)", background: "rgba(255,255,255,0.08)" };
+    if (status === 2) return { color: stylesTokens.rowOkText, background: stylesTokens.rowOkBg };
+    if (status === 1) return { color: stylesTokens.rowNoText, background: stylesTokens.rowNoBg };
+    if (status === 3) return { color: stylesTokens.rowMaybeText, background: stylesTokens.rowMaybeBg };
+    return { color: stylesTokens.rowEmptyText, background: stylesTokens.rowEmptyBg };
   };
 
   return (
@@ -72,12 +72,12 @@ export default function SheetSection({
                 animation: pulseId === e.entry_id ? "rowPulse 220ms ease-out" : "none",
                 borderLeft:
                   effectiveStatus === 2
-                    ? "4px solid rgba(0,190,80,0.55)"
+                    ? `4px solid ${stylesTokens.rowOkBorder}`
                     : effectiveStatus === 1
-                    ? "4px solid rgba(255,35,35,0.55)"
+                    ? `4px solid ${stylesTokens.rowNoBorder}`
                     : effectiveStatus === 3
-                    ? "4px solid rgba(233,216,166,0.22)"
-                    : "4px solid rgba(0,0,0,0)",
+                    ? `4px solid ${stylesTokens.rowMaybeBorder}`
+                    : `4px solid ${stylesTokens.rowEmptyBorder}`,
               }}
             >
               <div
