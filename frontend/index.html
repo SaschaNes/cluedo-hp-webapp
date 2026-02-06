@@ -2,10 +2,7 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#000000" />
     <title>Cluedo Sheet</title>
 
@@ -17,33 +14,49 @@
       rel="stylesheet"
     />
 
-    <!-- Fallback Background (vor CSS/JS) -->
+    <!-- Fallback Background (IMMER sichtbar, kein Schwarz) -->
     <style>
-      html {
-        background: #000;
-      }
-
+      html,
       body {
         margin: 0;
+        height: 100%;
         background: radial-gradient(
           ellipse at top,
-          rgba(30, 30, 30, 0.9),
+          rgba(30, 30, 30, 0.95),
           #000
         );
       }
 
-      /* 🔒 Preload Lock */
-      body.preload {
-        opacity: 0;
+      /* Splash Overlay */
+      #app-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483647;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(
+          ellipse at top,
+          rgba(30, 30, 30, 0.95),
+          #000
+        );
+        transition: opacity 160ms ease;
       }
 
-      body.ready {
-        opacity: 1;
-        transition: opacity 140ms ease;
+      #app-splash.hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #app-splash .title {
+        font-family: "Cinzel Decorative", serif;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: rgba(233, 216, 166, 0.85);
+        font-size: 18px;
       }
     </style>
 
-    <!-- Theme-Key sofort setzen (kein FOUC) -->
+    <!-- Theme-Key sofort setzen -->
     <script>
       try {
         const k = localStorage.getItem("hpTheme:guest") || "default";
@@ -52,7 +65,12 @@
     </script>
   </head>
 
-  <body class="preload">
+  <body>
+    <!-- ✅ Splash ist sichtbar, App lädt dahinter -->
+    <div id="app-splash">
+      <div class="title">Zauber-Detektiv Notizbogen</div>
+    </div>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

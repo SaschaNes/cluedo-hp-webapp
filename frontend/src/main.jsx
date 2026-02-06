@@ -13,27 +13,29 @@ async function bootstrap() {
     applyTheme(DEFAULT_THEME_KEY);
   }
 
-  // ✅ Warten bis ALLE Fonts geladen sind
+  // ✅ Fonts abwarten (kein Layout-Jump)
   try {
-    if (document.fonts && document.fonts.ready) {
+    if (document.fonts?.ready) {
       await document.fonts.ready;
     }
-  } catch {
-    // ignore
-  }
+  } catch {}
 
-  // ✅ Erst JETZT sichtbar machen
-  document.body.classList.remove("preload");
-  document.body.classList.add("ready");
-
+  // React rendern
   ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 
-  // ✅ Service Worker – KEIN Auto-Reload mehr
+  // ✅ Splash sauber ausblenden (KEIN Schwarz)
+  const splash = document.getElementById("app-splash");
+  if (splash) {
+    requestAnimationFrame(() => splash.classList.add("hide"));
+    setTimeout(() => splash.remove(), 220);
+  }
+
+  // ✅ Service Worker ohne Reload-Flash
   registerSW({
     immediate: true,
     onNeedRefresh() {
-      console.info("Neue Version verfügbar – Reload manuell");
-      // optional: später Toast „Update verfügbar“
+      console.info("Neue Version verfügbar");
+      // später Toast möglich
     },
   });
 }
