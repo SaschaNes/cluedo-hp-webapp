@@ -2,8 +2,6 @@ import React from "react";
 import { styles } from "../styles/styles";
 import { stylesTokens } from "../styles/theme";
 
-const displayName = (me?.display_name || "").trim() || me.email;
-
 export default function TopBar({
   me,
   userMenuOpen,
@@ -11,8 +9,12 @@ export default function TopBar({
   openPwModal,
   openDesignModal,
   doLogout,
-  onOpenNewGame, // NEW
+  onOpenNewGame,
 }) {
+  const displayName = me
+    ? ((me.display_name || "").trim() || me.email)
+    : "";
+
   return (
     <div style={styles.topBar}>
       <div>
@@ -47,7 +49,7 @@ export default function TopBar({
                   borderBottom: "1px solid rgba(233,216,166,0.12)",
                 }}
               >
-                {me.email}
+                {me?.email || ""}
               </div>
 
               <button onClick={openPwModal} style={styles.userDropdownItem}>
