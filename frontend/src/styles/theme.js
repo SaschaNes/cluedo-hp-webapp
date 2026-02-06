@@ -10,30 +10,41 @@ export const stylesTokens = {
 
   goldLine: "var(--hp-goldLine)",
 
-  // ===== NEW: Row/Table colors so themes affect tables =====
+  // ===== Section Header (NEW) =====
+  sectionHeaderBgTop: "var(--hp-sectionHeaderBgTop)",
+  sectionHeaderBgBottom: "var(--hp-sectionHeaderBgBottom)",
+  sectionHeaderText: "var(--hp-sectionHeaderText)",
+  sectionHeaderBorder: "var(--hp-sectionHeaderBorder)",
+
+  // ===== Row/Table colors =====
   rowDefaultBg: "var(--hp-rowDefaultBg)",
 
   rowOkBg: "var(--hp-rowOkBg)",
   rowOkBorder: "var(--hp-rowOkBorder)",
   rowOkText: "var(--hp-rowOkText)",
-  badgeOkBg: "var(--hp-badgeOkBg)",
-  badgeOkText: "var(--hp-badgeOkText)",
 
   rowNoBg: "var(--hp-rowNoBg)",
   rowNoBorder: "var(--hp-rowNoBorder)",
   rowNoText: "var(--hp-rowNoText)",
-  badgeNoBg: "var(--hp-badgeNoBg)",
-  badgeNoText: "var(--hp-badgeNoText)",
 
   rowMaybeBg: "var(--hp-rowMaybeBg)",
   rowMaybeBorder: "var(--hp-rowMaybeBorder)",
   rowMaybeText: "var(--hp-rowMaybeText)",
-  badgeMaybeBg: "var(--hp-badgeMaybeBg)",
-  badgeMaybeText: "var(--hp-badgeMaybeText)",
 
   rowEmptyBg: "var(--hp-rowEmptyBg)",
   rowEmptyBorder: "var(--hp-rowEmptyBorder)",
   rowEmptyText: "var(--hp-rowEmptyText)",
+
+  // ===== Badge colors (NEW: getrennt von row*) =====
+  badgeOkBg: "var(--hp-badgeOkBg)",
+  badgeOkText: "var(--hp-badgeOkText)",
+
+  badgeNoBg: "var(--hp-badgeNoBg)",
+  badgeNoText: "var(--hp-badgeNoText)",
+
+  badgeMaybeBg: "var(--hp-badgeMaybeBg)",
+  badgeMaybeText: "var(--hp-badgeMaybeText)",
+
   badgeEmptyBg: "var(--hp-badgeEmptyBg)",
   badgeEmptyText: "var(--hp-badgeEmptyText)",
 };

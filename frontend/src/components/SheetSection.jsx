@@ -3,15 +3,6 @@ import React from "react";
 import { styles } from "../styles/styles";
 import { stylesTokens } from "../styles/theme";
 
-/**
- * props:
- * - title: string
- * - entries: array
- * - pulseId: number | null
- * - onCycleStatus(entry): fn
- * - onToggleTag(entry): fn
- * - displayTag(entry): string
- */
 export default function SheetSection({
   title,
   entries,
@@ -20,7 +11,6 @@ export default function SheetSection({
   onToggleTag,
   displayTag,
 }) {
-  // --- helpers (lokal, weil sie rein UI sind) ---
   const getRowBg = (status) => {
     if (status === 1) return stylesTokens.rowNoBg;
     if (status === 2) return stylesTokens.rowOkBg;
@@ -44,10 +34,17 @@ export default function SheetSection({
   };
 
   const getStatusBadge = (status) => {
-    if (status === 2) return { color: stylesTokens.rowOkText, background: stylesTokens.rowOkBg };
-    if (status === 1) return { color: stylesTokens.rowNoText, background: stylesTokens.rowNoBg };
-    if (status === 3) return { color: stylesTokens.rowMaybeText, background: stylesTokens.rowMaybeBg };
-    return { color: stylesTokens.rowEmptyText, background: stylesTokens.rowEmptyBg };
+    if (status === 2) return { color: stylesTokens.badgeOkText, background: stylesTokens.badgeOkBg };
+    if (status === 1) return { color: stylesTokens.badgeNoText, background: stylesTokens.badgeNoBg };
+    if (status === 3) return { color: stylesTokens.badgeMaybeText, background: stylesTokens.badgeMaybeBg };
+    return { color: stylesTokens.badgeEmptyText, background: stylesTokens.badgeEmptyBg };
+  };
+
+  const getBorderLeft = (status) => {
+    if (status === 2) return `4px solid ${stylesTokens.rowOkBorder}`;
+    if (status === 1) return `4px solid ${stylesTokens.rowNoBorder}`;
+    if (status === 3) return `4px solid ${stylesTokens.rowMaybeBorder}`;
+    return `4px solid ${stylesTokens.rowEmptyBorder}`;
   };
 
   return (
@@ -56,7 +53,6 @@ export default function SheetSection({
 
       <div style={{ display: "grid" }}>
         {entries.map((e) => {
-          // UI "rot" wenn note_tag i/m/s (Backend s wird als s.XX angezeigt)
           const isIorMorS = e.note_tag === "i" || e.note_tag === "m" || e.note_tag === "s";
           const effectiveStatus = e.status === 0 && isIorMorS ? 1 : e.status;
 
@@ -70,14 +66,7 @@ export default function SheetSection({
                 ...styles.row,
                 background: getRowBg(effectiveStatus),
                 animation: pulseId === e.entry_id ? "rowPulse 220ms ease-out" : "none",
-                borderLeft:
-                  effectiveStatus === 2
-                    ? `4px solid ${stylesTokens.rowOkBorder}`
-                    : effectiveStatus === 1
-                    ? `4px solid ${stylesTokens.rowNoBorder}`
-                    : effectiveStatus === 3
-                    ? `4px solid ${stylesTokens.rowMaybeBorder}`
-                    : `4px solid ${stylesTokens.rowEmptyBorder}`,
+                borderLeft: getBorderLeft(effectiveStatus),
               }}
             >
               <div
