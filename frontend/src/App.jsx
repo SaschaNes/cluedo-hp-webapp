@@ -263,6 +263,15 @@ export default function App() {
 
   // ===== New game flow =====
   const createGame = async () => {
+    // ✅ wichtig: alten Game-State weg, damit nix "hängen" bleibt
+    setSheet(null);
+    setGameMeta(null);
+    setMembers([]);
+    setWinnerUserId("");
+    setPulseId(null);
+    setChipOpen(false);
+    setChipEntry(null);
+
     const g = await api("/games", {
       method: "POST",
       body: JSON.stringify({ name: "Spiel " + new Date().toLocaleString() }),
@@ -270,9 +279,10 @@ export default function App() {
 
     const gs = await api("/games");
     setGames(gs);
+
+    // ✅ auf neues Spiel wechseln (triggered dann reloadSheet/loadGameMeta via effect)
     setGameId(g.id);
 
-    // meta/members will load via gameId effect
     return g; // includes code
   };
 
@@ -503,6 +513,9 @@ export default function App() {
         onClose={() => setNewGameOpen(false)}
         onCreate={createGame}
         onJoin={joinGame}
+        currentCode={gameMeta?.code || ""}
+        gameFinished={!!gameMeta?.winner_user_id}
+        hasGame={!!gameId}
       />
 
       <ChipModal

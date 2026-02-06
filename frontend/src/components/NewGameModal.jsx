@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { styles } from "../styles/styles";
 import { stylesTokens } from "../styles/theme";
 
@@ -7,14 +7,37 @@ export default function NewGameModal({
   onClose,
   onCreate,
   onJoin,
+
+  // ✅ neu:
+  currentCode = "",
+  gameFinished = false,
+  hasGame = false,
 }) {
-  const [mode, setMode] = useState("choice"); // choice | create | join
+  // modes: running | choice | create | join
+  const [mode, setMode] = useState("choice");
   const [joinCode, setJoinCode] = useState("");
   const [err, setErr] = useState("");
   const [created, setCreated] = useState(null); // { code }
   const [toast, setToast] = useState("");
 
   const canJoin = useMemo(() => joinCode.trim().length >= 4, [joinCode]);
+
+  // ✅ wichtig: beim Öffnen entscheidet der Modus anhand "läuft vs beendet"
+  useEffect(() => {
+    if (!open) return;
+
+    setErr("");
+    setToast("");
+    setJoinCode("");
+    setCreated(null);
+
+    // Wenn ein Spiel läuft (und nicht finished) -> nur Code anzeigen
+    if (hasGame && !gameFinished) {
+      setMode("running");
+    } else {
+      setMode("choice");
+    }
+  }, [open, hasGame, gameFinished]);
 
   if (!open) return null;
 
@@ -44,14 +67,18 @@ export default function NewGameModal({
     }
   };
 
-  const copyCode = async () => {
+  const copyText = async (text, okMsg = "✅ Code kopiert") => {
     try {
-      await navigator.clipboard.writeText(created?.code || "");
-      showToast("✅ Code kopiert");
+      await navigator.clipboard.writeText(text || "");
+      showToast(okMsg);
     } catch {
       showToast("❌ Copy nicht möglich");
     }
   };
+
+  const codeToShow =
+    (created?.code || "").trim() ||
+    (currentCode || "").trim();
 
   return (
     <div style={styles.modalOverlay} onMouseDown={onClose}>
@@ -85,6 +112,63 @@ export default function NewGameModal({
         )}
 
         <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+          {/* ✅ RUNNING: Nur Code anzeigen, keine Choice */}
+          {mode === "running" && (
+            <>
+              <div style={{ color: stylesTokens.textMain, opacity: 0.92 }}>
+                Das Spiel läuft noch. Hier ist der <b>Join-Code</b>:
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gap: 8,
+                  padding: 12,
+                  borderRadius: 16,
+                  border: `1px solid ${stylesTokens.panelBorder}`,
+                  background: stylesTokens.panelBg,
+                  textAlign: "center",
+                }}
+              >
+                <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>
+                  Spiel-Code
+                </div>
+
+                <div
+                  style={{
+                    fontSize: 28,
+                    fontWeight: 1100,
+                    letterSpacing: 2,
+                    color: stylesTokens.textGold,
+                    fontFamily: '"Cinzel Decorative", "IM Fell English", system-ui',
+                  }}
+                >
+                  {codeToShow || "—"}
+                </div>
+
+                <button
+                  onClick={() => copyText(codeToShow)}
+                  style={styles.primaryBtn}
+                  disabled={!codeToShow}
+                  title={!codeToShow ? "Kein Code verfügbar" : "Code kopieren"}
+                >
+                  ⧉ Code kopieren
+                </button>
+              </div>
+
+              <div style={{ fontSize: 12, opacity: 0.75, color: stylesTokens.textDim }}>
+                Sobald ein Sieger gesetzt wurde, kannst du hier ein neues Spiel erstellen oder beitreten.
+              </div>
+
+              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                <button onClick={onClose} style={styles.primaryBtn}>
+                  Fertig
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* ✅ CHOICE: nur wenn Spiel beendet oder kein Spiel selected */}
           {mode === "choice" && (
             <>
               <div style={{ color: stylesTokens.textMain, opacity: 0.92 }}>
@@ -159,7 +243,7 @@ export default function NewGameModal({
                   {created.code}
                 </div>
 
-                <button onClick={copyCode} style={styles.primaryBtn}>
+                <button onClick={() => copyText(created?.code || "")} style={styles.primaryBtn}>
                   ⧉ Code kopieren
                 </button>
               </div>
