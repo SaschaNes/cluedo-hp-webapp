@@ -131,6 +131,36 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId]);
 
+  // ✅ Live refresh (Members/Meta) – damit neue Joiner ohne Reload sichtbar sind
+  // Für 5–6 Spieler reicht 2.5s völlig, ist "live genug" und schont Backend.
+  useEffect(() => {
+    if (!me || !gameId) return;
+
+    let alive = true;
+
+    const tick = async () => {
+      try {
+        await loadGameMeta(); // refresh members + winner meta
+      } catch {
+        // ignore
+      }
+    };
+
+    // sofort einmal ziehen
+    tick();
+
+    const id = setInterval(() => {
+      if (!alive) return;
+      tick();
+    }, 2500);
+
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me?.id, gameId]);
+
   // ===== Auth actions =====
   const doLogin = async () => {
     await api("/auth/login", {
