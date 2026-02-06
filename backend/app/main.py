@@ -40,22 +40,33 @@ def _rand_join_code(n: int = 6) -> str:
 
 def _has_column(db: Session, table: str, col: str) -> bool:
     """
-SQLite + Postgres friendly check.
-We use a pragma first (SQLite), fallback to information_schema.
+Postgres + SQLite friendly check without spamming Postgres logs.
+- SQLite: PRAGMA table_info
+- Postgres: information_schema
     """
+    dialect = None
     try:
-        rows = db.execute(text(f"PRAGMA table_info({table})")).all()
-        return any(r[1] == col for r in rows)  # pragma: column name is at index 1
+        dialect = db.get_bind().dialect.name  # "postgresql" | "sqlite" | ...
     except Exception:
-        db.rollback()
+        dialect = None
 
+    if dialect == "sqlite":
+        try:
+            rows = db.execute(text(f"PRAGMA table_info({table})")).all()
+            return any(r[1] == col for r in rows)
+        except Exception:
+            db.rollback()
+            return False
+
+    # default: Postgres (or others) via information_schema
     try:
         rows = db.execute(
             text(
                 """
-SELECT column_name
+SELECT 1
 FROM information_schema.columns
 WHERE table_name = :t AND column_name = :c
+LIMIT 1
                 """
             ),
             {"t": table, "c": col},
@@ -64,6 +75,7 @@ WHERE table_name = :t AND column_name = :c
     except Exception:
         db.rollback()
         return False
+        
 
 
 def _auto_migrate(db: Session):

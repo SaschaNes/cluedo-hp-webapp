@@ -16,6 +16,8 @@ export const styles = {
   },
 
   topBar: {
+    position: "relative",
+    zIndex: 50,
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
@@ -153,6 +155,8 @@ export const styles = {
 
   // Admin
   adminWrap: {
+    position: "relative",
+    zIndex: 1,
     marginTop: 14,
     padding: 12,
     borderRadius: 16,
@@ -471,7 +475,7 @@ export const styles = {
     background: "linear-gradient(180deg, rgba(20,20,24,0.96), rgba(12,12,14,0.92))",
     boxShadow: "0 18px 55px rgba(0,0,0,0.70)",
     overflow: "hidden",
-    zIndex: 10000,
+    zIndex: 99999,
     backdropFilter: "blur(8px)",
   },
 
