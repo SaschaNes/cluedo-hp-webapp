@@ -1,43 +1,27 @@
-// src/components/WinnerBadge.jsx
 import React from "react";
-import { styles } from "../styles/styles";
 import { stylesTokens } from "../styles/theme";
 
-export default function WinnerBadge({ winner }) {
-  const w = (winner || "").trim();
-  if (!w) return null;
+export default function WinnerBadge({ winnerEmail }) {
+  if (!winnerEmail) return null;
 
   return (
-    <div style={{ marginTop: 14 }}>
-      <div
-        style={{
-          ...styles.card,
-          padding: 12,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 10,
-        }}
-      >
-        <div>
-          <div style={{ fontWeight: 1000, color: stylesTokens.textGold }}>🏆 Sieger</div>
-          <div style={{ marginTop: 2, color: stylesTokens.textMain, opacity: 0.95 }}>{w}</div>
-        </div>
-
-        <div
-          style={{
-            padding: "8px 12px",
-            borderRadius: 999,
-            border: `1px solid ${stylesTokens.panelBorder}`,
-            background: stylesTokens.panelBg,
-            color: stylesTokens.textGold,
-            fontWeight: 1000,
-            whiteSpace: "nowrap",
-          }}
-        >
-          Gewonnen
-        </div>
-      </div>
+    <div
+      style={{
+        marginTop: 14,
+        padding: "12px 14px",
+        borderRadius: 16,
+        border: `1px solid ${stylesTokens.panelBorder}`,
+        background: stylesTokens.panelBg,
+        boxShadow: "0 12px 30px rgba(0,0,0,0.45)",
+        backdropFilter: "blur(6px)",
+        display: "flex",
+        gap: 10,
+        alignItems: "center",
+      }}
+    >
+      <span style={{ fontSize: 16 }}>🏆</span>
+      <span style={{ fontWeight: 1000, color: stylesTokens.textGold }}>Sieger:</span>
+      <span style={{ color: stylesTokens.textMain }}>{winnerEmail}</span>
     </div>
   );
 }

@@ -1,13 +1,9 @@
 // src/components/GamePickerCard.jsx
 import React from "react";
 import { styles } from "../styles/styles";
+import { stylesTokens } from "../styles/theme";
 
-export default function GamePickerCard({
-  games,
-  gameId,
-  setGameId,
-  onOpenHelp,
-}) {
+export default function GamePickerCard({ games, gameId, setGameId, joinCode, onOpenHelp }) {
   return (
     <div style={{ marginTop: 14 }}>
       <div style={styles.card}>
@@ -30,6 +26,19 @@ export default function GamePickerCard({
             Hilfe
           </button>
         </div>
+
+        {!!joinCode && (
+          <div
+            style={{
+              padding: "0 12px 12px",
+              fontSize: 12,
+              opacity: 0.85,
+              color: stylesTokens.textDim,
+            }}
+          >
+            Spiel-Code: <b style={{ color: stylesTokens.textGold }}>{joinCode}</b>
+          </div>
+        )}
       </div>
     </div>
   );
