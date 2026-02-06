@@ -195,6 +195,32 @@ export const THEMES = {
 
 export const DEFAULT_THEME_KEY = "default";
 
+export function setThemeColorMeta(color) {
+  try {
+    const safe = typeof color === "string" ? color.trim() : "";
+    if (!safe) return;
+
+    // only allow solid colors (hex, rgb, hsl); ignore urls/gradients/rgba overlays
+    const looksSolid =
+      safe.startsWith("#") ||
+      safe.startsWith("rgb(") ||
+      safe.startsWith("hsl(") ||
+      safe.startsWith("oklch(");
+
+    if (!looksSolid) return;
+
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.setAttribute("name", "theme-color");
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute("content", safe);
+  } catch {
+    // ignore
+  }
+}
+
 export function applyTheme(themeKey) {
   const t = THEMES[themeKey] || THEMES[DEFAULT_THEME_KEY];
   const root = document.documentElement;
@@ -202,6 +228,10 @@ export function applyTheme(themeKey) {
   for (const [k, v] of Object.entries(t.tokens)) {
     root.style.setProperty(`--hp-${k}`, v);
   }
+
+  // ✅ PWA/Android Statusbar dynamisch an Theme anpassen
+  // Nimmt (falls vorhanden) statusBarColor, sonst pageBg
+  setThemeColorMeta(t.tokens.statusBarColor || t.tokens.pageBg || "#000000");
 }
 
 export function themeStorageKey(email) {
