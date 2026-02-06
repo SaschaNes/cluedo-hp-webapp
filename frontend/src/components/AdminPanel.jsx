@@ -4,17 +4,6 @@ import { styles } from "../styles/styles";
 import { stylesTokens } from "../styles/theme";
 import { createPortal } from "react-dom";
 
-
-useEffect(() => {
-    if (!open) return;
-
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [open]);
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
 
@@ -24,6 +13,17 @@ export default function AdminPanel() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
   const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    if (!open) return;
+
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
 
   const loadUsers = async () => {
     const u = await api("/admin/users");
