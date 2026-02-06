@@ -25,7 +25,7 @@ export default function WinnerCard({
             <option value="">— kein Sieger —</option>
             {members.map((m) => (
               <option key={m.id} value={m.id}>
-                {m.email}
+                {m.display_name}
               </option>
             ))}
           </select>

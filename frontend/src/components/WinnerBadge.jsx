@@ -49,7 +49,7 @@ export default function WinnerBadge({ winner, winnerEmail }) {
 
           {showEmail && (
             <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>
-              {winner.displayName}
+              {winner.display_name}
             </div>
           )}
         </div>

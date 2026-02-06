@@ -20,6 +20,7 @@ import DesignModal from "./components/DesignModal";
 import WinnerCard from "./components/WinnerCard";
 import WinnerBadge from "./components/WinnerBadge";
 import NewGameModal from "./components/NewGameModal";
+import StatsModal from "./components/StatsModal";
 
 export default function App() {
   useHpGlobalStyles();
@@ -61,6 +62,12 @@ export default function App() {
 
   // New Game Modal
   const [newGameOpen, setNewGameOpen] = useState(false);
+
+  // ===== Stats Modal =====
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [stats, setStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsError, setStatsError] = useState("");
 
   const load = async () => {
     const m = await api("/auth/me");
@@ -199,6 +206,29 @@ export default function App() {
     } catch {
       // theme locally already applied; ignore backend error
     }
+  };
+
+  // ===== Stats (always fresh on open) =====
+  const openStatsModal = async () => {
+    setUserMenuOpen(false);
+    setStatsOpen(true);
+    setStatsError("");
+    setStatsLoading(true);
+
+    try {
+      const s = await api("/auth/me/stats");
+      setStats(s);
+    } catch (e) {
+      setStats(null);
+      setStatsError("❌ Fehler: " + (e?.message || "unknown"));
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  const closeStatsModal = () => {
+    setStatsOpen(false);
+    setStatsError("");
   };
 
   // ===== New game flow =====
@@ -366,6 +396,7 @@ export default function App() {
           setUserMenuOpen={setUserMenuOpen}
           openPwModal={openPwModal}
           openDesignModal={openDesignModal}
+          openStatsModal={openStatsModal}
           doLogout={doLogout}
           onOpenNewGame={() => setNewGameOpen(true)}
         />
@@ -443,6 +474,15 @@ export default function App() {
         chipOpen={chipOpen}
         closeChipModalToDash={closeChipModalToDash}
         chooseChip={chooseChip}
+      />
+
+      <StatsModal
+        open={statsOpen}
+        onClose={closeStatsModal}
+        me={me}
+        stats={stats}
+        loading={statsLoading}
+        error={statsError}
       />
     </div>
   );

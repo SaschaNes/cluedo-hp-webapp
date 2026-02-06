@@ -8,19 +8,16 @@ export default function TopBar({
   setUserMenuOpen,
   openPwModal,
   openDesignModal,
+  openStatsModal,
   doLogout,
   onOpenNewGame,
 }) {
-  const displayName = me
-    ? ((me.display_name || "").trim() || me.email)
-    : "";
+  const displayName = me ? ((me.display_name || "").trim() || me.email) : "";
 
   return (
     <div style={styles.topBar}>
       <div>
-        <div style={{ fontWeight: 900, color: stylesTokens.textGold }}>
-          Notizbogen
-        </div>
+        <div style={{ fontWeight: 900, color: stylesTokens.textGold }}>Notizbogen</div>
         <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>
           {displayName}
         </div>
@@ -51,6 +48,18 @@ export default function TopBar({
               >
                 {me?.email || ""}
               </div>
+
+              <button
+                onClick={() => {
+                  setUserMenuOpen(false);
+                  openStatsModal?.();
+                }}
+                style={styles.userDropdownItem}
+              >
+                Statistik
+              </button>
+
+              <div style={styles.userDropdownDivider} />
 
               <button onClick={openPwModal} style={styles.userDropdownItem}>
                 Passwort setzen

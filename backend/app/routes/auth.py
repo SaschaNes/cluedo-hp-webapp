@@ -43,6 +43,41 @@ def me(req: Request, db: Session = Depends(get_db)):
     return {"id": user.id, "email": user.email, "role": user.role, "display_name": user.display_name}
     
 
+@router.get("/me/stats")
+def my_stats(req: Request, db: Session = Depends(get_db)):
+    uid = get_session_user_id(req)
+    if not uid:
+        raise HTTPException(status_code=401, detail="not logged in")
+
+    # "played" = games where user is member AND winner is set (finished games)
+    from sqlalchemy import func
+    from ..models import Game, GameMember
+
+    played = (
+        db.query(func.count(Game.id))
+        .join(GameMember, GameMember.game_id == Game.id)
+        .filter(GameMember.user_id == uid, Game.winner_user_id != None)
+        .scalar()
+        or 0
+    )
+
+    wins = (
+        db.query(func.count(Game.id))
+        .join(GameMember, GameMember.game_id == Game.id)
+        .filter(GameMember.user_id == uid, Game.winner_user_id == uid)
+        .scalar()
+        or 0
+    )
+
+    losses = max(int(played) - int(wins), 0)
+    winrate = (float(wins) / float(played) * 100.0) if played else 0.0
+
+    return {
+        "played": int(played),
+        "wins": int(wins),
+        "losses": int(losses),
+        "winrate": round(winrate, 1),
+    }
 
 @router.patch("/password")
 def set_password(data: dict, req: Request, db: Session = Depends(get_db)):
