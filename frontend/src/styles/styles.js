@@ -188,17 +188,15 @@ export const styles = {
   // Modal
   modalOverlay: {
     position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: "100vw",
-    height: "100vh",
+    inset: 0,                  // statt top/left/right/bottom
+    width: "100%",             // ✅ NICHT 100vw
+    height: "100%",            // ✅ NICHT 100vh
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: 12,
-    zIndex: 2147483647, // wirklich ganz oben
+    padding: "calc(12px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))",
+    boxSizing: "border-box",   // wichtig bei padding
+    zIndex: 2147483647,
     background: "rgba(0,0,0,0.72)",
     overflowY: "auto",
   },
