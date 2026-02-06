@@ -7,7 +7,13 @@
     <title>Cluedo Sheet</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">    
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+    <script>
+      try {
+        const k = localStorage.getItem("hpTheme:guest") || "default";
+        document.documentElement.setAttribute("data-theme", k);
+      } catch {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
