@@ -48,9 +48,12 @@ export const styles = {
     fontWeight: 1000,
     fontFamily: '"Cinzel Decorative", "IM Fell English", system-ui',
     letterSpacing: 1.0,
-    color: stylesTokens.sectionHeaderText,
-    background: `linear-gradient(180deg, ${stylesTokens.sectionHeaderBgTop}, ${stylesTokens.sectionHeaderBgBottom})`,
-    borderBottom: `1px solid ${stylesTokens.sectionHeaderBorder}`,
+    color: stylesTokens.textGold,
+
+    // WICHTIG: Header-Farben aus Theme-Tokens, nicht hart codiert
+    background: `linear-gradient(180deg, ${stylesTokens.headerBgTop}, ${stylesTokens.headerBgBottom})`,
+    borderBottom: `1px solid ${stylesTokens.headerBorder}`,
+
     textTransform: "uppercase",
     textShadow: "0 1px 0 rgba(0,0,0,0.6)",
   },
