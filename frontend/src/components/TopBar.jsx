@@ -8,19 +8,28 @@ export default function TopBar({
   setUserMenuOpen,
   openPwModal,
   openDesignModal,
+  openStatsModal,
   doLogout,
-  newGame,
+  onOpenNewGame,
 }) {
+  const displayName = me ? ((me.display_name || "").trim() || me.email) : "";
+
   return (
     <div style={styles.topBar}>
       <div>
         <div style={{ fontWeight: 900, color: stylesTokens.textGold }}>Notizbogen</div>
-        <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>{me.email}</div>
+        <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>
+          {displayName}
+        </div>
       </div>
 
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "nowrap" }} data-user-menu>
         <div style={{ position: "relative" }}>
-          <button onClick={() => setUserMenuOpen((v) => !v)} style={styles.userBtn} title="User Menü">
+          <button
+            onClick={() => setUserMenuOpen((v) => !v)}
+            style={styles.userBtn}
+            title="User Menü"
+          >
             <span style={{ fontSize: 16 }}>👤</span>
             <span>User</span>
             <span style={{ opacity: 0.7 }}>▾</span>
@@ -37,8 +46,20 @@ export default function TopBar({
                   borderBottom: "1px solid rgba(233,216,166,0.12)",
                 }}
               >
-                {me.email}
+                {me?.email || ""}
               </div>
+
+              <button
+                onClick={() => {
+                  setUserMenuOpen(false);
+                  openStatsModal?.();
+                }}
+                style={styles.userDropdownItem}
+              >
+                Statistik
+              </button>
+
+              <div style={styles.userDropdownDivider} />
 
               <button onClick={openPwModal} style={styles.userDropdownItem}>
                 Passwort setzen
@@ -63,7 +84,7 @@ export default function TopBar({
           )}
         </div>
 
-        <button onClick={newGame} style={styles.primaryBtn}>
+        <button onClick={onOpenNewGame} style={styles.primaryBtn}>
           ✦ New Game
         </button>
       </div>

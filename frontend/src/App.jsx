@@ -1,16 +1,12 @@
-// src/App.jsx
 import React, { useEffect, useState } from "react";
 
 import { api } from "./api/client";
 import { cycleTag } from "./utils/cycleTag";
 import { getChipLS, setChipLS, clearChipLS } from "./utils/chipStorage";
 
-import { getWinnerLS, setWinnerLS, clearWinnerLS } from "./utils/winnerStorage";
-
 import { useHpGlobalStyles } from "./styles/hooks/useHpGlobalStyles";
 import { styles } from "./styles/styles";
-
-import { applyTheme, loadThemeKey, saveThemeKey, DEFAULT_THEME_KEY } from "./styles/themes";
+import { applyTheme, DEFAULT_THEME_KEY } from "./styles/themes";
 
 import AdminPanel from "./components/AdminPanel";
 import LoginPage from "./components/LoginPage";
@@ -23,6 +19,8 @@ import SheetSection from "./components/SheetSection";
 import DesignModal from "./components/DesignModal";
 import WinnerCard from "./components/WinnerCard";
 import WinnerBadge from "./components/WinnerBadge";
+import NewGameModal from "./components/NewGameModal";
+import StatsModal from "./components/StatsModal";
 
 export default function App() {
   useHpGlobalStyles();
@@ -39,15 +37,17 @@ export default function App() {
   const [sheet, setSheet] = useState(null);
   const [pulseId, setPulseId] = useState(null);
 
-  // Winner (per game)
-  const [winnerName, setWinnerName] = useState("");
+  // Game meta
+  const [gameMeta, setGameMeta] = useState(null); // {code, host_user_id, winner_email, winner_user_id}
+  const [members, setMembers] = useState([]);
+
+  // Winner selection (host only)
+  const [winnerUserId, setWinnerUserId] = useState("");
 
   // Modals
   const [helpOpen, setHelpOpen] = useState(false);
-
   const [chipOpen, setChipOpen] = useState(false);
   const [chipEntry, setChipEntry] = useState(null);
-
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const [pwOpen, setPwOpen] = useState(false);
@@ -60,13 +60,20 @@ export default function App() {
   const [designOpen, setDesignOpen] = useState(false);
   const [themeKey, setThemeKey] = useState(DEFAULT_THEME_KEY);
 
-  // ===== Data loaders =====
+  // New Game Modal
+  const [newGameOpen, setNewGameOpen] = useState(false);
+
+  // ===== Stats Modal =====
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [stats, setStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsError, setStatsError] = useState("");
+
   const load = async () => {
     const m = await api("/auth/me");
     setMe(m);
 
-    // Theme pro User laden & anwenden
-    const tk = loadThemeKey(m?.email);
+    const tk = m?.theme_key || DEFAULT_THEME_KEY;
     setThemeKey(tk);
     applyTheme(tk);
 
@@ -82,7 +89,15 @@ export default function App() {
     setSheet(sh);
   };
 
-  // ===== Effects =====
+  const loadGameMeta = async () => {
+    if (!gameId) return;
+    const meta = await api(`/games/${gameId}`);
+    setGameMeta(meta);
+    setWinnerUserId(meta?.winner_user_id || "");
+
+    const mem = await api(`/games/${gameId}/members`);
+    setMembers(mem);
+  };
 
   // Dropdown outside click
   useEffect(() => {
@@ -94,34 +109,57 @@ export default function App() {
     return () => document.removeEventListener("mousedown", onDown);
   }, [userMenuOpen]);
 
-  // initial load (try session)
+  // initial load
   useEffect(() => {
     (async () => {
       try {
         await load();
-      } catch {
-        // not logged in
-      }
+      } catch {}
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // load sheet + winner when game changes
+  // on game change
   useEffect(() => {
     (async () => {
       if (!gameId) return;
-
       try {
         await reloadSheet();
-      } catch {
-        // ignore
-      }
-
-      // Sieger pro Game aus localStorage laden
-      setWinnerName(getWinnerLS(gameId));
+        await loadGameMeta();
+      } catch {}
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId]);
+
+  // ✅ Live refresh (Members/Meta) – damit neue Joiner ohne Reload sichtbar sind
+  // Für 5–6 Spieler reicht 2.5s völlig, ist "live genug" und schont Backend.
+  useEffect(() => {
+    if (!me || !gameId) return;
+
+    let alive = true;
+
+    const tick = async () => {
+      try {
+        await loadGameMeta(); // refresh members + winner meta
+      } catch {
+        // ignore
+      }
+    };
+
+    // sofort einmal ziehen
+    tick();
+
+    const id = setInterval(() => {
+      if (!alive) return;
+      tick();
+    }, 2500);
+
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me?.id, gameId]);
 
   // ===== Auth actions =====
   const doLogin = async () => {
@@ -138,10 +176,12 @@ export default function App() {
     setGames([]);
     setGameId(null);
     setSheet(null);
-    setWinnerName("");
+    setGameMeta(null);
+    setMembers([]);
+    setWinnerUserId("");
   };
 
-  // ===== Password change =====
+  // ===== Password =====
   const openPwModal = () => {
     setPwMsg("");
     setPw1("");
@@ -178,20 +218,60 @@ export default function App() {
     }
   };
 
-  // ===== Theme actions =====
+  // ===== Theme =====
   const openDesignModal = () => {
     setDesignOpen(true);
     setUserMenuOpen(false);
   };
 
-  const selectTheme = (key) => {
+  const selectTheme = async (key) => {
     setThemeKey(key);
     applyTheme(key);
-    saveThemeKey(me?.email, key);
+
+    try {
+      await api("/auth/theme", {
+        method: "PATCH",
+        body: JSON.stringify({ theme_key: key }),
+      });
+    } catch {
+      // theme locally already applied; ignore backend error
+    }
   };
 
-  // ===== Game actions =====
-  const newGame = async () => {
+  // ===== Stats (always fresh on open) =====
+  const openStatsModal = async () => {
+    setUserMenuOpen(false);
+    setStatsOpen(true);
+    setStatsError("");
+    setStatsLoading(true);
+
+    try {
+      const s = await api("/auth/me/stats");
+      setStats(s);
+    } catch (e) {
+      setStats(null);
+      setStatsError("❌ Fehler: " + (e?.message || "unknown"));
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  const closeStatsModal = () => {
+    setStatsOpen(false);
+    setStatsError("");
+  };
+
+  // ===== New game flow =====
+  const createGame = async () => {
+    // ✅ wichtig: alten Game-State weg, damit nix "hängen" bleibt
+    setSheet(null);
+    setGameMeta(null);
+    setMembers([]);
+    setWinnerUserId("");
+    setPulseId(null);
+    setChipOpen(false);
+    setChipEntry(null);
+
     const g = await api("/games", {
       method: "POST",
       body: JSON.stringify({ name: "Spiel " + new Date().toLocaleString() }),
@@ -199,26 +279,32 @@ export default function App() {
 
     const gs = await api("/games");
     setGames(gs);
+
+    // ✅ auf neues Spiel wechseln (triggered dann reloadSheet/loadGameMeta via effect)
     setGameId(g.id);
 
-    // Neues Spiel -> Sieger leer
-    clearWinnerLS(g.id);
-    setWinnerName("");
+    return g; // includes code
   };
 
-  // ===== Winner actions =====
-  const saveWinner = () => {
+  const joinGame = async (code) => {
+    const res = await api("/games/join", {
+      method: "POST",
+      body: JSON.stringify({ code }),
+    });
+
+    const gs = await api("/games");
+    setGames(gs);
+    setGameId(res.id);
+  };
+
+  // ===== Winner =====
+  const saveWinner = async () => {
     if (!gameId) return;
-    const v = (winnerName || "").trim();
-
-    if (!v) {
-      clearWinnerLS(gameId);
-      setWinnerName("");
-      return;
-    }
-
-    setWinnerLS(gameId, v);
-    setWinnerName(v);
+    await api(`/games/${gameId}/winner`, {
+      method: "PATCH",
+      body: JSON.stringify({ winner_user_id: winnerUserId || null }),
+    });
+    await loadGameMeta();
   };
 
   // ===== Sheet actions =====
@@ -252,7 +338,7 @@ export default function App() {
 
     await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
       method: "PATCH",
-      body: JSON.stringify({ note_tag: next }),
+      body: JSON.stringify({ note_tag: next, chip: null }),
     });
 
     await reloadSheet();
@@ -270,7 +356,7 @@ export default function App() {
     try {
       await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
         method: "PATCH",
-        body: JSON.stringify({ note_tag: "s" }),
+        body: JSON.stringify({ note_tag: "s", chip }),
       });
     } finally {
       await reloadSheet();
@@ -292,7 +378,7 @@ export default function App() {
     try {
       await api(`/games/${gameId}/sheet/${entry.entry_id}`, {
         method: "PATCH",
-        body: JSON.stringify({ note_tag: null }),
+        body: JSON.stringify({ note_tag: null, chip: null }),
       });
     } finally {
       await reloadSheet();
@@ -302,11 +388,14 @@ export default function App() {
   const displayTag = (entry) => {
     const t = entry.note_tag;
     if (!t) return "—";
+
     if (t === "s") {
-      const chip = getChipLS(gameId, entry.entry_id);
+      // Prefer backend chip, fallback localStorage
+      const chip = entry.chip || getChipLS(gameId, entry.entry_id);
       return chip ? `s.${chip}` : "s";
     }
-    return t;
+
+    return t; // i oder m
   };
 
   // ===== Login page =====
@@ -332,6 +421,8 @@ export default function App() {
       ]
     : [];
 
+  const isHost = !!(me?.id && gameMeta?.host_user_id && me.id === gameMeta.host_user_id);
+
   return (
     <div style={styles.page}>
       <div style={styles.bgFixed} aria-hidden="true">
@@ -345,8 +436,9 @@ export default function App() {
           setUserMenuOpen={setUserMenuOpen}
           openPwModal={openPwModal}
           openDesignModal={openDesignModal}
+          openStatsModal={openStatsModal}
           doLogout={doLogout}
-          newGame={newGame}
+          onOpenNewGame={() => setNewGameOpen(true)}
         />
 
         {me.role === "admin" && <AdminPanel />}
@@ -358,10 +450,15 @@ export default function App() {
           onOpenHelp={() => setHelpOpen(true)}
         />
 
-        <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
+        {/* Sieger Badge: zwischen Spiel und Verdächtigte Person */}
+        <WinnerBadge
+          winner={{
+            display_name: gameMeta?.winner_display_name || "",
+            email: gameMeta?.winner_email || "",
+          }}
+        />
 
-        {/* Sieger Badge: nur wenn gesetzt */}
-        <WinnerBadge winner={(winnerName || "").trim()} />
+        <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
 
         <div style={{ marginTop: 14, display: "grid", gap: 14 }}>
           {sections.map((sec) => (
@@ -377,8 +474,14 @@ export default function App() {
           ))}
         </div>
 
-        {/* Sieger ganz unten */}
-        <WinnerCard value={winnerName} setValue={setWinnerName} onSave={saveWinner} />
+        {/* Host-only Winner Auswahl */}
+        <WinnerCard
+          isHost={isHost}
+          members={members}
+          winnerUserId={winnerUserId}
+          setWinnerUserId={setWinnerUserId}
+          onSave={saveWinner}
+        />
 
         <div style={{ height: 24 }} />
       </div>
@@ -405,10 +508,29 @@ export default function App() {
         }}
       />
 
+      <NewGameModal
+        open={newGameOpen}
+        onClose={() => setNewGameOpen(false)}
+        onCreate={createGame}
+        onJoin={joinGame}
+        currentCode={gameMeta?.code || ""}
+        gameFinished={!!gameMeta?.winner_user_id}
+        hasGame={!!gameId}
+      />
+
       <ChipModal
         chipOpen={chipOpen}
         closeChipModalToDash={closeChipModalToDash}
         chooseChip={chooseChip}
+      />
+
+      <StatsModal
+        open={statsOpen}
+        onClose={closeStatsModal}
+        me={me}
+        stats={stats}
+        loading={statsLoading}
+        error={statsError}
       />
     </div>
   );

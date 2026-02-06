@@ -16,6 +16,8 @@ export const styles = {
   },
 
   topBar: {
+    position: "relative",
+    zIndex: 50,
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
@@ -120,13 +122,13 @@ export const styles = {
 
   input: {
     width: "100%",
-    padding: 10,
-    borderRadius: 12,
+    padding: "10px 12px",
+    borderRadius: 14,
     border: `1px solid rgba(233,216,166,0.18)`,
     background: "rgba(10,10,12,0.55)",
     color: stylesTokens.textMain,
     outline: "none",
-    fontSize: 16,
+    fontSize: 15,
   },
 
   primaryBtn: {
@@ -153,6 +155,8 @@ export const styles = {
 
   // Admin
   adminWrap: {
+    position: "relative",
+    zIndex: 1,
     marginTop: 14,
     padding: 12,
     borderRadius: 16,
@@ -184,26 +188,28 @@ export const styles = {
   // Modal
   modalOverlay: {
     position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.65)",
+    inset: 0,                  // statt top/left/right/bottom
+    width: "100%",             // ✅ NICHT 100vw
+    height: "100%",            // ✅ NICHT 100vh
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: 16,
-    zIndex: 9999,
-    animation: "fadeIn 160ms ease-out",
+    padding: "calc(12px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))",
+    boxSizing: "border-box",   // wichtig bei padding
+    zIndex: 2147483647,
+    background: "rgba(0,0,0,0.72)",
+    overflowY: "auto",
   },
+
   modalCard: {
-    width: "100%",
-    maxWidth: 560,
+    width: "min(560px, 100%)",
     borderRadius: 18,
     border: `1px solid rgba(233,216,166,0.18)`,
-    background: "linear-gradient(180deg, rgba(20,20,24,0.92), rgba(12,12,14,0.86))",
+    background: "rgba(12,12,14,0.96)",
     boxShadow: "0 18px 55px rgba(0,0,0,0.70)",
     padding: 14,
-    backdropFilter: "blur(6px)",
-    animation: "popIn 160ms ease-out",
-    color: stylesTokens.textMain,
+    maxHeight: "calc(100vh - 32px)",
+    overflow: "auto",
   },
   modalHeader: {
     display: "flex",
@@ -471,7 +477,7 @@ export const styles = {
     background: "linear-gradient(180deg, rgba(20,20,24,0.96), rgba(12,12,14,0.92))",
     boxShadow: "0 18px 55px rgba(0,0,0,0.70)",
     overflow: "hidden",
-    zIndex: 10000,
+    zIndex: 99999,
     backdropFilter: "blur(8px)",
   },
 

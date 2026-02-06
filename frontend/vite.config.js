@@ -28,6 +28,9 @@ export default defineConfig({
       workbox: {
         // Caching-Default: die App-Shell wird offline verfügbar
         globPatterns: ["**/*.{js,css,html,ico,png,jpg,jpeg,svg,webp}"],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
       }
     })
   ]
