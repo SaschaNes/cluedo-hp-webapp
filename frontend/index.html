@@ -2,12 +2,48 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
     <meta name="theme-color" content="#000000" />
     <title>Cluedo Sheet</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Fallback Background (vor CSS/JS) -->
+    <style>
+      html {
+        background: #000;
+      }
+
+      body {
+        margin: 0;
+        background: radial-gradient(
+          ellipse at top,
+          rgba(30, 30, 30, 0.9),
+          #000
+        );
+      }
+
+      /* 🔒 Preload Lock */
+      body.preload {
+        opacity: 0;
+      }
+
+      body.ready {
+        opacity: 1;
+        transition: opacity 140ms ease;
+      }
+    </style>
+
+    <!-- Theme-Key sofort setzen (kein FOUC) -->
     <script>
       try {
         const k = localStorage.getItem("hpTheme:guest") || "default";
@@ -15,7 +51,8 @@
       } catch {}
     </script>
   </head>
-  <body>
+
+  <body class="preload">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
