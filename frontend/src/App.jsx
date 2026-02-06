@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { api } from "./api/client";
 import { cycleTag } from "./utils/cycleTag";
@@ -581,6 +582,7 @@ export default function App() {
         currentCode={gameMeta?.code || ""}
         gameFinished={!!gameMeta?.winner_user_id}
         hasGame={!!gameId}
+        currentMembers={members}
       />
 
       <ChipModal
@@ -599,32 +601,34 @@ export default function App() {
       />
 
       {/* Bottom snack for joins */}
-      {snack && (
-        <div
-          style={{
-            position: "fixed",
-            left: "50%",
-            bottom: 14,
-            transform: "translateX(-50%)",
-            maxWidth: "92vw",
-            padding: "10px 12px",
-            borderRadius: 14,
-            border: `1px solid ${stylesTokens.panelBorder}`,
-            background: stylesTokens.panelBg,
-            color: stylesTokens.textMain,
-            boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
-            backdropFilter: "blur(6px)",
-            fontWeight: 900,
-            fontSize: 13,
-            textAlign: "center",
-            zIndex: 2147483647,
-            pointerEvents: "none",
-            animation: "fadeIn 120ms ease-out",
-          }}
-        >
-          {snack}
-        </div>
-      )}
+      {snack &&
+        createPortal(
+          <div
+            style={{
+              position: "fixed",
+              left: "50%",
+              bottom: 14,
+              transform: "translateX(-50%)",
+              maxWidth: "92vw",
+              padding: "10px 12px",
+              borderRadius: 14,
+              border: `1px solid ${stylesTokens.panelBorder}`,
+              background: stylesTokens.panelBg,
+              color: stylesTokens.textMain,
+              boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
+              backdropFilter: "blur(6px)",
+              fontWeight: 900,
+              fontSize: 13,
+              textAlign: "center",
+              zIndex: 2147483647,
+              pointerEvents: "none",
+            }}
+          >
+            {snack}
+          </div>,
+          document.body
+        )
+      }
     </div>
   );
 }
