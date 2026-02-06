@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import WinnerCelebration from "./components/WinnerCelebration";
 
 import { api } from "./api/client";
 import { cycleTag } from "./utils/cycleTag";
@@ -78,6 +79,14 @@ export default function App() {
   // track members to detect joins
   const lastMemberIdsRef = useRef(new Set());
   const membersBaselineRef = useRef(false);
+
+  // ===== Winner Celebration =====
+  const [celebrateOpen, setCelebrateOpen] = useState(false);
+  const [celebrateName, setCelebrateName] = useState("");
+
+  // baseline per game: beim ersten Meta-Load NICHT feiern
+  const winnerBaselineRef = useRef(false);
+  const lastWinnerIdRef = useRef(null);
 
   const showSnack = (msg) => {
     setSnack(msg);
@@ -185,6 +194,12 @@ export default function App() {
     membersBaselineRef.current = false;
     lastMemberIdsRef.current = new Set();
 
+    // reset winner celebration baseline when switching games
+    winnerBaselineRef.current = false;
+    lastWinnerIdRef.current = null;
+    setCelebrateOpen(false);
+    setCelebrateName("");
+
     (async () => {
       if (!gameId) return;
       try {
@@ -225,6 +240,32 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me?.id, gameId]);
 
+  // ✅ Winner Celebration Trigger:
+  // - beim ersten Load eines Spiels NICHT feiern
+  // - feiern nur, wenn winner_user_id sich danach ändert (Host speichert)
+  useEffect(() => {
+    const wid = gameMeta?.winner_user_id ? String(gameMeta.winner_user_id) : "";
+    if (!wid) return;
+
+    if (!winnerBaselineRef.current) {
+      winnerBaselineRef.current = true;
+      lastWinnerIdRef.current = wid;
+      return;
+    }
+
+    if (lastWinnerIdRef.current !== wid) {
+      lastWinnerIdRef.current = wid;
+
+      const name =
+        (gameMeta?.winner_display_name || "").trim() ||
+        (gameMeta?.winner_email || "").trim() ||
+        "Jemand";
+
+      setCelebrateName(name);
+      setCelebrateOpen(true);
+    }
+  }, [gameMeta?.winner_user_id, gameMeta?.winner_display_name, gameMeta?.winner_email]);
+
   // ===== Auth actions =====
   const doLogin = async () => {
     await api("/auth/login", {
@@ -243,6 +284,12 @@ export default function App() {
     setGameMeta(null);
     setMembers([]);
     setWinnerUserId("");
+
+    // reset winner celebration on logout
+    winnerBaselineRef.current = false;
+    lastWinnerIdRef.current = null;
+    setCelebrateOpen(false);
+    setCelebrateName("");
   };
 
   // ===== Password =====
@@ -337,6 +384,12 @@ export default function App() {
     // auch Chip-Modal-State resetten
     setChipOpen(false);
     setChipEntry(null);
+
+    // reset winner celebration baseline for the new game
+    winnerBaselineRef.current = false;
+    lastWinnerIdRef.current = null;
+    setCelebrateOpen(false);
+    setCelebrateName("");
 
     const g = await api("/games", {
       method: "POST",
@@ -491,6 +544,13 @@ export default function App() {
 
   return (
     <div style={styles.page}>
+      {/* Winner Celebration Overlay */}
+      <WinnerCelebration
+        open={celebrateOpen}
+        winnerName={celebrateName}
+        onClose={() => setCelebrateOpen(false)}
+      />
+
       <div style={styles.bgFixed} aria-hidden="true">
         <div style={styles.bgMap} />
       </div>
@@ -630,8 +690,7 @@ export default function App() {
             {snack}
           </div>,
           document.body
-        )
-      }
+        )}
     </div>
   );
 }
