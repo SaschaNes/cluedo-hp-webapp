@@ -123,9 +123,13 @@ def get_game_meta(req: Request, game_id: str, db: Session = Depends(get_db)):
     g = require_game_member(db, game_id, uid)
 
     winner_email = None
+    winner_display_name = None
+
     if g.winner_user_id:
         wu = db.query(User).filter(User.id == g.winner_user_id).first()
-        winner_email = wu.email if wu else None
+        if wu:
+            winner_email = wu.email
+            winner_display_name = wu.display_name
 
     return {
         "id": g.id,
@@ -134,6 +138,7 @@ def get_game_meta(req: Request, game_id: str, db: Session = Depends(get_db)):
         "host_user_id": g.host_user_id,
         "winner_user_id": g.winner_user_id,
         "winner_email": winner_email,
+        "winner_display_name": winner_display_name,
     }
 
 
@@ -150,7 +155,7 @@ def list_members(req: Request, game_id: str, db: Session = Depends(get_db)):
         .order_by(User.email.asc())
         .all()
     )
-    return [{"id": u.id, "email": u.email} for u in members]
+    return [{"id": u.id, "email": u.email, "display_name": u.display_name} for u in members]
 
 
 @router.patch("/{game_id}/winner")

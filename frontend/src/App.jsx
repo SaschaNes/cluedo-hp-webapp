@@ -411,7 +411,12 @@ export default function App() {
         />
 
         {/* Sieger Badge: zwischen Spiel und Verdächtigte Person */}
-        <WinnerBadge winnerEmail={gameMeta?.winner_email || ""} />
+        <WinnerBadge
+          winner={{
+            display_name: gameMeta?.winner_display_name || "",
+            email: gameMeta?.winner_email || "",
+          }}
+        />
 
         <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
 
