@@ -12,7 +12,6 @@ export default function NewGameModal({
   currentCode = "",
   gameFinished = false,
   hasGame = false,
-  currentMembers = [],
 }) {
   // modes: running | choice | create | join
   const [mode, setMode] = useState("choice");
@@ -167,46 +166,6 @@ export default function NewGameModal({
                 </button>
               </div>
             </>
-          )}
-
-          {currentMembers?.length > 0 && (
-            <div
-              style={{
-                marginTop: 10,
-                padding: 10,
-                borderRadius: 14,
-                border: `1px solid ${stylesTokens.panelBorder}`,
-                background: stylesTokens.panelBg,
-                display: "grid",
-                gap: 8,
-              }}
-            >
-              <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>
-                Aktuelle Spieler ({currentMembers.length})
-              </div>
-
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {currentMembers.map((m) => {
-                  const name = ((m.display_name || "").trim() || (m.email || "").trim() || "—");
-                  return (
-                    <div
-                      key={m.id}
-                      style={{
-                        padding: "6px 10px",
-                        borderRadius: 999,
-                        border: `1px solid rgba(233,216,166,0.18)`,
-                        background: "rgba(10,10,12,0.35)",
-                        color: stylesTokens.textMain,
-                        fontSize: 13,
-                        fontWeight: 900,
-                      }}
-                    >
-                      {name}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
           )}
 
 

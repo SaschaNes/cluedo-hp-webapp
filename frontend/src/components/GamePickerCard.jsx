@@ -2,7 +2,7 @@ import React from "react";
 import { styles } from "../styles/styles";
 import { stylesTokens } from "../styles/theme";
 
-export default function GamePickerCard({ games, gameId, setGameId, onOpenHelp }) {
+export default function GamePickerCard({ games, gameId, setGameId, onOpenHelp, members = [] }) {
   return (
     <div style={{ marginTop: 14 }}>
       <div style={styles.card}>
@@ -36,6 +36,37 @@ export default function GamePickerCard({ games, gameId, setGameId, onOpenHelp })
             </div>
           );
         })()}
+
+        {members?.length > 0 && (
+          <div style={{ marginTop: 8 }}>
+            <div style={{ fontSize: 12, opacity: 0.8, color: stylesTokens.textDim }}>
+              Spieler ({members.length})
+            </div>
+
+            <div style={{ marginTop: 6, display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {members.map((m) => {
+                const name = ((m.display_name || "").trim() || (m.email || "").trim() || "—");
+                return (
+                  <div
+                    key={m.id}
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: 999,
+                      border: "1px solid rgba(233,216,166,0.18)",
+                      background: "rgba(10,10,12,0.35)",
+                      color: stylesTokens.textMain,
+                      fontSize: 13,
+                      fontWeight: 900,
+                    }}
+                  >
+                    {name}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

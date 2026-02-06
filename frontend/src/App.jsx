@@ -514,6 +514,7 @@ export default function App() {
           gameId={gameId}
           setGameId={setGameId}
           onOpenHelp={() => setHelpOpen(true)}
+          members={members}
         />
 
         {/* Sieger Badge: zwischen Spiel und Verdächtigte Person */}
