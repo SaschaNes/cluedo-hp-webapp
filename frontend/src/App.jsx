@@ -557,6 +557,7 @@ export default function App() {
         minWidth: 0,
         display: "grid",
         alignItems: "center",
+        overflow: "visible",
       }}
     >
       {/* Slot-Container: bleibt ruhig, Karte darf drüber schauen */}
@@ -627,6 +628,7 @@ export default function App() {
               transform: "scale(1.02)",
               filter: "contrast(1.02) saturate(1.06)",
               display: "block",
+              overflow: "visble",
             }}
           />
 
