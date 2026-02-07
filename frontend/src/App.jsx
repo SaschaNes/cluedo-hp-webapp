@@ -543,6 +543,172 @@ export default function App() {
   );
 };
 
+  const PlayerIdentityCard = ({
+  name = "Harry Potter",
+  houseLabel = "Signature of Holder",
+  borderColor = "#7c4dff",
+  img = "/player_cards/harry.png",
+}) => {
+  return (
+    <div
+      style={{
+        height: "100%",
+        minHeight: 0,
+        minWidth: 0,
+        display: "grid",
+        alignItems: "center",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          minHeight: 0,
+          borderRadius: 18,
+          border: `1px solid ${stylesTokens.panelBorder}`,
+          background: stylesTokens.panelBg,
+          boxShadow: "0 14px 40px rgba(0,0,0,0.45)",
+          backdropFilter: "blur(10px)",
+          padding: 12,
+          overflow: "hidden",
+          display: "grid",
+        }}
+      >
+        {/* Card itself (like a real identity card) */}
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            minHeight: 0,
+            borderRadius: 16,
+            border: `2px solid ${borderColor}`,
+            boxShadow: `0 0 0 1px rgba(255,255,255,0.06), 0 16px 50px rgba(0,0,0,0.45)`,
+            overflow: "hidden",
+            position: "relative",
+            background: `
+              radial-gradient(120% 140% at 20% 10%, rgba(255,255,255,0.10), transparent 55%),
+              linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.28))
+            `,
+            display: "grid",
+            gridTemplateRows: "1fr",
+          }}
+        >
+          {/* Subtle gloss */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(120deg, rgba(255,255,255,0.08) 0%, transparent 35%, transparent 65%, rgba(255,255,255,0.04) 100%)",
+              pointerEvents: "none",
+              opacity: 0.8,
+            }}
+          />
+
+          {/* Image fill */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "grid",
+              placeItems: "center",
+              background: "rgba(0,0,0,0.20)",
+            }}
+          >
+            <img
+              src={img}
+              alt={name}
+              draggable={false}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                transform: "scale(1.02)",
+                filter: "contrast(1.02) saturate(1.05)",
+              }}
+            />
+          </div>
+
+          {/* Bottom label plate */}
+          <div
+            style={{
+              position: "absolute",
+              left: 10,
+              right: 10,
+              bottom: 10,
+              borderRadius: 12,
+              background: "rgba(0,0,0,0.42)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              backdropFilter: "blur(6px)",
+              padding: "10px 12px",
+              display: "grid",
+              gap: 4,
+            }}
+          >
+            <div
+              style={{
+                color: stylesTokens.textMain,
+                fontWeight: 900,
+                fontSize: 14,
+                letterSpacing: 0.3,
+                lineHeight: 1.1,
+                textShadow: "0 10px 30px rgba(0,0,0,0.55)",
+              }}
+            >
+              {name}
+            </div>
+
+            <div
+              style={{
+                color: stylesTokens.textDim,
+                fontSize: 11.5,
+                opacity: 0.92,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 999,
+                  background: borderColor,
+                  boxShadow: `0 0 16px ${borderColor}`,
+                  opacity: 0.9,
+                }}
+              />
+              {houseLabel}
+            </div>
+          </div>
+
+          {/* Tiny corner stamp */}
+          <div
+            style={{
+              position: "absolute",
+              top: 10,
+              right: 10,
+              fontSize: 10.5,
+              fontWeight: 900,
+              letterSpacing: 1.2,
+              padding: "4px 8px",
+              borderRadius: 999,
+              color: "rgba(255,255,255,0.72)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              background: "rgba(0,0,0,0.28)",
+              backdropFilter: "blur(6px)",
+              textTransform: "uppercase",
+            }}
+          >
+            Identity
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
   return (
     <div style={styles.page}>
       <div style={styles.bgFixed} aria-hidden="true">
@@ -609,7 +775,12 @@ export default function App() {
 
           {/* Bottom: Player HUD */}
           <div className="playerHud">
-            <PlaceholderCard title="Spielerkarte (User)" variant="tile" />
+            <PlayerIdentityCard
+              name="Harry Potter"
+              houseLabel="Signature of Holder"
+              borderColor="#7c4dff"
+              img="/player_cards/harry.png"
+            />
 
             <div className="playerHudMiddle">
               <PlaceholderCard title="Meine Geheimkarten" variant="tile" />
