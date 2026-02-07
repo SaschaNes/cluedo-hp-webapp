@@ -393,20 +393,22 @@ export default function App() {
                 subtitle="Platzhalter – hier kommt später das Board + Figuren rein."
                 variant="panel"
               >
+                {/* 👇 DAS ist neu */}
                 <div
                   style={{
-                    height: "100%",
+                    flex: 1,
                     minHeight: 0,
                     borderRadius: 18,
                     border: `1px dashed ${stylesTokens.panelBorder}`,
-                    opacity: 0.8,
+                    opacity: 0.35,
                   }}
                 />
-                {/* Dice overlay: under the board slightly right */}
-                <div className="diceOverlay">
-                  <PlaceholderCard title="Würfel" variant="compact" />
-                </div>
               </PlaceholderCard>
+
+              {/* Dice overlay bleibt gleich */}
+              <div className="diceOverlay">
+                <PlaceholderCard title="Würfel" variant="compact" />
+              </div>
             </div>
 
             {/* Right of board: player rail */}
