@@ -559,77 +559,88 @@ export default function App() {
         alignItems: "center",
       }}
     >
+      {/* Slot-Container: bleibt ruhig, Karte darf drüber schauen */}
       <div
         style={{
-          width: "100%",
           height: "100%",
           minHeight: 0,
+          minWidth: 0,
           borderRadius: 18,
           border: `1px solid ${stylesTokens.panelBorder}`,
-          background: stylesTokens.panelBg,
-          boxShadow: "0 14px 40px rgba(0,0,0,0.45)",
-          backdropFilter: "blur(10px)",
+          background: "rgba(0,0,0,0.10)",
+          backdropFilter: "blur(8px)",
+          boxShadow: "0 12px 30px rgba(0,0,0,0.30)",
           padding: 12,
-          overflow: "hidden",
+          overflow: "visible", // ✅ Karte darf raus ragen
+          position: "relative",
           display: "grid",
+          alignItems: "center",
+          justifyItems: "start",
         }}
       >
-        {/* Card itself (like a real identity card) */}
+        {/* Die Karte selbst (kleiner als Container) */}
         <div
           style={{
-            width: "100%",
-            height: "100%",
-            minHeight: 0,
+            width: "78%",              // ✅ nicht volle Breite
+            maxWidth: 320,
+            aspectRatio: "63 / 88",    // typisch Kartenformat
             borderRadius: 16,
             border: `2px solid ${borderColor}`,
-            boxShadow: `0 0 0 1px rgba(255,255,255,0.06), 0 16px 50px rgba(0,0,0,0.45)`,
+            boxShadow: `0 18px 55px rgba(0,0,0,0.55), 0 0 26px rgba(124,77,255,0.22)`,
             overflow: "hidden",
             position: "relative",
-            background: `
-              radial-gradient(120% 140% at 20% 10%, rgba(255,255,255,0.10), transparent 55%),
-              linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.28))
-            `,
-            display: "grid",
-            gridTemplateRows: "1fr",
+            background: "rgba(0,0,0,0.15)",
+            transform: "translateY(-10px) rotate(-0.6deg)", // ✅ schaut leicht raus
+            transformOrigin: "center bottom",
+            transition: "transform 180ms ease, box-shadow 180ms ease",
+            cursor: "pointer",
+          }}
+          onMouseMove={(e) => {
+            // einfacher Tilt ohne extra libs
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width;  // 0..1
+            const y = (e.clientY - rect.top) / rect.height;  // 0..1
+            const rx = (0.5 - y) * 6; // tilt range
+            const ry = (x - 0.5) * 8;
+
+            e.currentTarget.style.transform = `translateY(-16px) rotate(-0.6deg) perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(-10px) rotate(-0.6deg)";
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-18px) rotate(-0.6deg)";
+            e.currentTarget.style.boxShadow = `0 26px 70px rgba(0,0,0,0.62), 0 0 34px ${borderColor}`;
           }}
         >
-          {/* Subtle gloss */}
+          {/* Image */}
+          <img
+            src={img}
+            alt={name}
+            draggable={false}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              transform: "scale(1.02)",
+              filter: "contrast(1.02) saturate(1.06)",
+              display: "block",
+            }}
+          />
+
+          {/* Gloss */}
           <div
             style={{
               position: "absolute",
               inset: 0,
               background:
-                "linear-gradient(120deg, rgba(255,255,255,0.08) 0%, transparent 35%, transparent 65%, rgba(255,255,255,0.04) 100%)",
+                "linear-gradient(120deg, rgba(255,255,255,0.10) 0%, transparent 35%, transparent 70%, rgba(255,255,255,0.06) 100%)",
               pointerEvents: "none",
-              opacity: 0.8,
+              opacity: 0.7,
             }}
           />
 
-          {/* Image fill */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "grid",
-              placeItems: "center",
-              background: "rgba(0,0,0,0.20)",
-            }}
-          >
-            <img
-              src={img}
-              alt={name}
-              draggable={false}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                transform: "scale(1.02)",
-                filter: "contrast(1.02) saturate(1.05)",
-              }}
-            />
-          </div>
-
-          {/* Bottom label plate */}
+          {/* Bottom label glass */}
           <div
             style={{
               position: "absolute",
@@ -637,7 +648,7 @@ export default function App() {
               right: 10,
               bottom: 10,
               borderRadius: 12,
-              background: "rgba(0,0,0,0.42)",
+              background: "rgba(0,0,0,0.45)",
               border: "1px solid rgba(255,255,255,0.10)",
               backdropFilter: "blur(6px)",
               padding: "10px 12px",
@@ -650,7 +661,7 @@ export default function App() {
                 color: stylesTokens.textMain,
                 fontWeight: 900,
                 fontSize: 14,
-                letterSpacing: 0.3,
+                letterSpacing: 0.2,
                 lineHeight: 1.1,
                 textShadow: "0 10px 30px rgba(0,0,0,0.55)",
               }}
@@ -682,7 +693,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* Tiny corner stamp */}
+          {/* Corner tag */}
           <div
             style={{
               position: "absolute",
@@ -693,8 +704,8 @@ export default function App() {
               letterSpacing: 1.2,
               padding: "4px 8px",
               borderRadius: 999,
-              color: "rgba(255,255,255,0.72)",
-              border: "1px solid rgba(255,255,255,0.12)",
+              color: "rgba(255,255,255,0.75)",
+              border: "1px solid rgba(255,255,255,0.14)",
               background: "rgba(0,0,0,0.28)",
               backdropFilter: "blur(6px)",
               textTransform: "uppercase",
@@ -703,10 +714,27 @@ export default function App() {
             Identity
           </div>
         </div>
+
+        {/* optional: kleiner Slot-Titel (kannst du löschen) */}
+        <div
+          style={{
+            position: "absolute",
+            left: 14,
+            top: 12,
+            fontSize: 12,
+            fontWeight: 900,
+            color: stylesTokens.textDim,
+            opacity: 0.85,
+            pointerEvents: "none",
+          }}
+        >
+          Spielerkarte
+        </div>
       </div>
     </div>
   );
 };
+
 
 
   return (
