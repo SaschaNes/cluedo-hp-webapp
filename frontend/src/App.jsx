@@ -1,3 +1,4 @@
+// frontend/src/App.jsx
 import React, { useEffect, useRef, useState } from "react";
 
 import { api } from "./api/client";
@@ -241,6 +242,7 @@ export default function App() {
     variant = "tile",
     icon = null,
     children = null,
+    overflow = "hidden", // ✅ FIX: allow some tiles to not clip neighbors
   }) => {
     const v = variant;
 
@@ -256,7 +258,7 @@ export default function App() {
       boxShadow: v === "panel" ? "0 20px 70px rgba(0,0,0,0.45)" : "0 12px 30px rgba(0,0,0,0.35)",
       backdropFilter: "blur(10px)",
       padding: pad,
-      overflow: "hidden",
+      overflow, // ✅ FIX: default hidden, but can be visible where needed
       minWidth: 0,
       position: "relative",
     };
@@ -292,16 +294,17 @@ export default function App() {
       opacity: 0.75,
     };
 
-    const glowLine = v === "panel"
-      ? {
-          content: '""',
-          position: "absolute",
-          inset: 0,
-          background: `linear-gradient(90deg, transparent, ${stylesTokens.goldLine}, transparent)`,
-          opacity: 0.18,
-          pointerEvents: "none",
-        }
-      : null;
+    const glowLine =
+      v === "panel"
+        ? {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            background: `linear-gradient(90deg, transparent, ${stylesTokens.goldLine}, transparent)`,
+            opacity: 0.18,
+            pointerEvents: "none",
+          }
+        : null;
 
     return (
       <div style={base}>
@@ -424,306 +427,295 @@ export default function App() {
   };
 
   const HogwartsPointsCard = ({ value = 0 }) => {
-  const GOLD = "#f2d27a";
+    const GOLD = "#f2d27a";
 
-  return (
-    <div
-      style={{
-        height: "100%",
-        minHeight: 0,
-        minWidth: 0,
-        background: "transparent",
-        border: "none",
-        boxShadow: "none",
-        display: "grid",
-        alignItems: "center",     // ✅ dünnes Paper in der HUD-Zelle schön mittig
-        justifyItems: "stretch",
-        padding: 0,
-      }}
-    >
-      {/* Dünnes Pergament */}
-      <div
-        style={{
-          height: 96,             // ✅ "dünn" (kannst du 80–96 spielen)
-          width: "90%",
-          borderRadius: 16,
-          background: `
-            radial-gradient(140% 160% at 15% 10%, rgba(235,215,175,0.88), rgba(215,185,135,0.82) 55%, rgba(165,125,75,0.75)),
-            radial-gradient(120% 120% at 85% 85%, rgba(255,255,255,0.10), transparent 60%),
-            linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.26))
-          `,
-          boxShadow:
-            "inset 0 0 0 1px rgba(0,0,0,0.20), inset 0 18px 40px rgba(0,0,0,0.18), 0 16px 40px rgba(0,0,0,0.40)",
-          position: "relative",
-          overflow: "hidden",
-          display: "grid",
-          placeItems: "center",
-          padding: "14px 16px",
-        }}
-      >
-        {/* Papier-Flecken */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: `
-              radial-gradient(circle at 22% 36%, rgba(90,60,25,0.14), transparent 42%),
-              radial-gradient(circle at 70% 30%, rgba(90,60,25,0.10), transparent 38%),
-              radial-gradient(circle at 58% 76%, rgba(255,255,255,0.08), transparent 46%)
-            `,
-            opacity: 0.65,
-            pointerEvents: "none",
-          }}
-        />
-
-        {/* Innere Goldlinie */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 10,
-            borderRadius: 12,
-            border: "1px solid rgba(202,162,74,0.40)",
-            boxShadow: "inset 0 0 0 1px rgba(242,210,122,0.14)",
-            pointerEvents: "none",
-          }}
-        />
-
-        {/* Wert */}
-        <div style={{ display: "flex", alignItems: "baseline", gap: 10, position: "relative" }}>
-          <div
-            style={{
-              color: GOLD,
-              fontWeight: 900,
-              fontSize: 44,
-              letterSpacing: 0.6,
-              lineHeight: 1,
-              textShadow: "0 1px 0 rgba(0,0,0,0.38), 0 0 20px rgba(242,210,122,0.28)",
-            }}
-          >
-            {value}
-          </div>
-
-          <div
-            style={{
-              color: GOLD,
-              fontWeight: 900,
-              fontSize: 18,
-              letterSpacing: 1.4,
-              transform: "translateY(-6px)",
-              textShadow: "0 1px 0 rgba(0,0,0,0.32), 0 0 14px rgba(242,210,122,0.22)",
-              opacity: 0.95,
-            }}
-          >
-            HP
-          </div>
-        </div>
-
-        {/* Siegel */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 10,
-            right: 12,
-            color: "rgba(60,40,18,0.55)",
-            fontSize: 11,
-            fontWeight: 900,
-            letterSpacing: 1.6,
-            textTransform: "uppercase",
-            transform: "rotate(-6deg)",
-            border: "1px solid rgba(60,40,18,0.25)",
-            borderRadius: 999,
-            padding: "3px 8px",
-            background: "rgba(255,255,255,0.10)",
-          }}
-        >
-          SCORE
-        </div>
-      </div>
-    </div>
-  );
-};
-
-  const PlayerIdentityCard = ({
-  name = "Harry Potter",
-  houseLabel = "Gryffindor",
-  borderColor = "#7c4dff",
-  img = "/player_cards/harry.png",
-}) => {
-  return (
-    <div
-      style={{
-        height: "100%",
-        minHeight: 0,
-        minWidth: 0,
-        display: "grid",
-        alignItems: "center",
-        overflow: "visible",
-      }}
-    >
-      {/* Slot-Container: bleibt ruhig, Karte darf drüber schauen */}
+    return (
       <div
         style={{
           height: "100%",
           minHeight: 0,
           minWidth: 0,
-          borderRadius: 18,
-          border: "none",
           background: "transparent",
-          backdropFilter: "none",
+          border: "none",
           boxShadow: "none",
-          padding: 12,
-          overflow: "visible", // ✅ Karte darf raus ragen
-          position: "relative",
           display: "grid",
           alignItems: "center",
-          justifyItems: "start",
+          justifyItems: "stretch",
+          padding: 0,
         }}
       >
-        {/* Die Karte selbst (kleiner als Container) */}
         <div
           style={{
-            width: "48%",              // ✅ nicht volle Breite
-            zIndex: 50,
-            maxWidth: 220,
-            aspectRatio: "63 / 88",    // typisch Kartenformat
+            height: 96,
+            width: "90%",
             borderRadius: 16,
-            border: `2px solid ${borderColor}`,
-            boxShadow: `0 18px 55px rgba(0,0,0,0.55), 0 0 26px rgba(124,77,255,0.22)`,
-            overflow: "visible",
+            background: `
+              radial-gradient(140% 160% at 15% 10%, rgba(235,215,175,0.88), rgba(215,185,135,0.82) 55%, rgba(165,125,75,0.75)),
+              radial-gradient(120% 120% at 85% 85%, rgba(255,255,255,0.10), transparent 60%),
+              linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.26))
+            `,
+            boxShadow:
+              "inset 0 0 0 1px rgba(0,0,0,0.20), inset 0 18px 40px rgba(0,0,0,0.18), 0 16px 40px rgba(0,0,0,0.40)",
             position: "relative",
-            background: "rgba(0,0,0,0.15)",
-            transform: "translateY(-10px) rotate(-0.6deg)", // ✅ schaut leicht raus
-            transformOrigin: "center bottom",
-            transition: "transform 180ms ease, box-shadow 180ms ease",
-            cursor: "pointer",
-            marginLeft: 20,
-          }}
-          onMouseMove={(e) => {
-            // einfacher Tilt ohne extra libs
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / rect.width;  // 0..1
-            const y = (e.clientY - rect.top) / rect.height;  // 0..1
-            const rx = (0.5 - y) * 6; // tilt range
-            const ry = (x - 0.5) * 8;
-
-            e.currentTarget.style.transform = `translateY(-16px) rotate(-0.6deg) perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg)`;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(-10px) rotate(-0.6deg)";
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translateY(-18px) rotate(-0.6deg)";
-            e.currentTarget.style.boxShadow = `0 26px 70px rgba(0,0,0,0.62), 0 0 34px ${borderColor}`;
+            overflow: "hidden",
+            display: "grid",
+            placeItems: "center",
+            padding: "14px 16px",
           }}
         >
-          {/* Image */}
-          <img
-            src={img}
-            alt={name}
-            draggable={false}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              transform: "scale(1.02)",
-              filter: "contrast(1.02) saturate(1.06)",
-              display: "block",
-              overflow: "visble",
-            }}
-          />
-
-          {/* Gloss */}
           <div
             style={{
               position: "absolute",
               inset: 0,
-              background:
-                "linear-gradient(120deg, rgba(255,255,255,0.10) 0%, transparent 35%, transparent 70%, rgba(255,255,255,0.06) 100%)",
+              background: `
+                radial-gradient(circle at 22% 36%, rgba(90,60,25,0.14), transparent 42%),
+                radial-gradient(circle at 70% 30%, rgba(90,60,25,0.10), transparent 38%),
+                radial-gradient(circle at 58% 76%, rgba(255,255,255,0.08), transparent 46%)
+              `,
+              opacity: 0.65,
               pointerEvents: "none",
-              opacity: 0.7,
             }}
           />
 
-          {/* Bottom label glass */}
           <div
             style={{
               position: "absolute",
-              left: 10,
-              right: 10,
-              bottom: 10,
+              inset: 10,
               borderRadius: 12,
-              background: "rgba(0,0,0,0.45)",
-              border: "1px solid rgba(255,255,255,0.10)",
-              backdropFilter: "blur(6px)",
-              padding: "10px 12px",
-              display: "grid",
-              gap: 4,
+              border: "1px solid rgba(202,162,74,0.40)",
+              boxShadow: "inset 0 0 0 1px rgba(242,210,122,0.14)",
+              pointerEvents: "none",
             }}
-          >
+          />
+
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10, position: "relative" }}>
             <div
               style={{
-                color: stylesTokens.textMain,
+                color: GOLD,
                 fontWeight: 900,
-                fontSize: 14,
-                letterSpacing: 0.2,
-                lineHeight: 1.1,
-                textShadow: "0 10px 30px rgba(0,0,0,0.55)",
+                fontSize: 44,
+                letterSpacing: 0.6,
+                lineHeight: 1,
+                textShadow: "0 1px 0 rgba(0,0,0,0.38), 0 0 20px rgba(242,210,122,0.28)",
               }}
             >
-              {name}
+              {value}
             </div>
 
             <div
               style={{
-                color: stylesTokens.textDim,
-                fontSize: 11.5,
-                opacity: 0.92,
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
+                color: GOLD,
+                fontWeight: 900,
+                fontSize: 18,
+                letterSpacing: 1.4,
+                transform: "translateY(-6px)",
+                textShadow: "0 1px 0 rgba(0,0,0,0.32), 0 0 14px rgba(242,210,122,0.22)",
+                opacity: 0.95,
               }}
             >
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: 999,
-                  background: borderColor,
-                  boxShadow: `0 0 16px ${borderColor}`,
-                  opacity: 0.9,
-                }}
-              />
-              {houseLabel}
+              HP
             </div>
           </div>
 
-          {/* Corner tag */}
           <div
             style={{
               position: "absolute",
-              top: 10,
-              right: 10,
-              fontSize: 10.5,
+              bottom: 10,
+              right: 12,
+              color: "rgba(60,40,18,0.55)",
+              fontSize: 11,
               fontWeight: 900,
-              letterSpacing: 1.2,
-              padding: "4px 8px",
-              borderRadius: 999,
-              color: "rgba(255,255,255,0.75)",
-              border: "1px solid rgba(255,255,255,0.14)",
-              background: "rgba(0,0,0,0.28)",
-              backdropFilter: "blur(6px)",
+              letterSpacing: 1.6,
               textTransform: "uppercase",
+              transform: "rotate(-6deg)",
+              border: "1px solid rgba(60,40,18,0.25)",
+              borderRadius: 999,
+              padding: "3px 8px",
+              background: "rgba(255,255,255,0.10)",
             }}
           >
-            Identity
+            SCORE
           </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
+  const PlayerIdentityCard = ({
+    name = "Harry Potter",
+    houseLabel = "Gryffindor",
+    borderColor = "#7c4dff",
+    img = "/player_cards/harry.png",
+  }) => {
+    return (
+      <div
+        style={{
+          height: "100%",
+          minHeight: 0,
+          minWidth: 0,
+          display: "grid",
+          alignItems: "center",
+          overflow: "visible",
+          position: "relative", // ✅ FIX: enable clean stacking context
+          zIndex: 5, // ✅ FIX: sit above neighbors
+        }}
+      >
+        <div
+          style={{
+            height: "100%",
+            minHeight: 0,
+            minWidth: 0,
+            borderRadius: 18,
+            border: "none",
+            background: "transparent",
+            backdropFilter: "none",
+            boxShadow: "none",
+            padding: 12,
+            overflow: "visible",
+            position: "relative",
+            zIndex: 5, // ✅ FIX
+            display: "grid",
+            alignItems: "center",
+            justifyItems: "start",
+          }}
+        >
+          <div
+            style={{
+              width: "48%",
+              maxWidth: 220,
+              aspectRatio: "63 / 88",
+              borderRadius: 16,
+              border: `2px solid ${borderColor}`,
+              boxShadow: `0 18px 55px rgba(0,0,0,0.55), 0 0 26px rgba(124,77,255,0.22)`,
+              overflow: "hidden", // ✅ important: crop image to rounded corners
+              position: "relative",
+              background: "rgba(0,0,0,0.15)",
+              transform: "translateY(-10px) rotate(-0.6deg)",
+              transformOrigin: "center bottom",
+              transition: "transform 180ms ease, box-shadow 180ms ease",
+              cursor: "pointer",
+              marginLeft: 20,
+              zIndex: 50, // ✅ keep above other tiles
+            }}
+            onMouseMove={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = (e.clientX - rect.left) / rect.width;
+              const y = (e.clientY - rect.top) / rect.height;
+              const rx = (0.5 - y) * 6;
+              const ry = (x - 0.5) * 8;
 
+              e.currentTarget.style.transform = `translateY(-16px) rotate(-0.6deg) perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(-10px) rotate(-0.6deg)";
+              e.currentTarget.style.boxShadow = `0 18px 55px rgba(0,0,0,0.55), 0 0 26px rgba(124,77,255,0.22)`;
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-18px) rotate(-0.6deg)";
+              e.currentTarget.style.boxShadow = `0 26px 70px rgba(0,0,0,0.62), 0 0 34px ${borderColor}`;
+            }}
+          >
+            <img
+              src={img}
+              alt={name}
+              draggable={false}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                transform: "scale(1.02)",
+                filter: "contrast(1.02) saturate(1.06)",
+                display: "block",
+              }}
+            />
+
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "linear-gradient(120deg, rgba(255,255,255,0.10) 0%, transparent 35%, transparent 70%, rgba(255,255,255,0.06) 100%)",
+                pointerEvents: "none",
+                opacity: 0.7,
+              }}
+            />
+
+            <div
+              style={{
+                position: "absolute",
+                left: 10,
+                right: 10,
+                bottom: 10,
+                borderRadius: 12,
+                background: "rgba(0,0,0,0.45)",
+                border: "1px solid rgba(255,255,255,0.10)",
+                backdropFilter: "blur(6px)",
+                padding: "10px 12px",
+                display: "grid",
+                gap: 4,
+              }}
+            >
+              <div
+                style={{
+                  color: stylesTokens.textMain,
+                  fontWeight: 900,
+                  fontSize: 14,
+                  letterSpacing: 0.2,
+                  lineHeight: 1.1,
+                  textShadow: "0 10px 30px rgba(0,0,0,0.55)",
+                }}
+              >
+                {name}
+              </div>
+
+              <div
+                style={{
+                  color: stylesTokens.textDim,
+                  fontSize: 11.5,
+                  opacity: 0.92,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 999,
+                    background: borderColor,
+                    boxShadow: `0 0 16px ${borderColor}`,
+                    opacity: 0.9,
+                  }}
+                />
+                {houseLabel}
+              </div>
+            </div>
+
+            <div
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                fontSize: 10.5,
+                fontWeight: 900,
+                letterSpacing: 1.2,
+                padding: "4px 8px",
+                borderRadius: 999,
+                color: "rgba(255,255,255,0.75)",
+                border: "1px solid rgba(255,255,255,0.14)",
+                background: "rgba(0,0,0,0.28)",
+                backdropFilter: "blur(6px)",
+                textTransform: "uppercase",
+              }}
+            >
+              Identity
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div style={styles.page}>
@@ -757,7 +749,6 @@ export default function App() {
                 subtitle="Platzhalter – hier kommt später das Board + Figuren rein."
                 variant="panel"
               >
-                {/* 👇 DAS ist neu */}
                 <div
                   style={{
                     flex: 1,
@@ -769,7 +760,6 @@ export default function App() {
                 />
               </PlaceholderCard>
 
-              {/* Dice overlay bleibt gleich */}
               <div className="diceOverlay">
                 <PlaceholderCard title="Würfel" variant="compact" />
               </div>
@@ -799,8 +789,9 @@ export default function App() {
             />
 
             <div className="playerHudMiddle">
-              <PlaceholderCard title="Meine Geheimkarten" variant="tile" />
-              <PlaceholderCard title="Meine Hilfkarte(n)" variant="tile" />
+              {/* ✅ FIX: these were clipping your hovering/overlapping player card */}
+              <PlaceholderCard title="Meine Geheimkarten" variant="tile" overflow="visible" />
+              <PlaceholderCard title="Meine Hilfkarte(n)" variant="tile" overflow="visible" />
             </div>
 
             <HogwartsPointsCard value={60} />
@@ -820,9 +811,7 @@ export default function App() {
           }}
         >
           <div>
-            <div style={{ fontWeight: 900, color: stylesTokens.textMain, fontSize: 14 }}>
-              Notizen
-            </div>
+            <div style={{ fontWeight: 900, color: stylesTokens.textMain, fontSize: 14 }}>Notizen</div>
             <div style={{ marginTop: 6, color: stylesTokens.textDim, fontSize: 12 }}>
               Nur die 3 Tabellen (Verdächtige / Gegenstände / Orte).
             </div>
@@ -846,11 +835,7 @@ export default function App() {
         </aside>
       </div>
 
-      <ChipModal
-        chipOpen={chipOpen}
-        closeChipModalToDash={closeChipModalToDash}
-        chooseChip={chooseChip}
-      />
+      <ChipModal chipOpen={chipOpen} closeChipModalToDash={closeChipModalToDash} chooseChip={chooseChip} />
     </div>
   );
 }

@@ -1,3 +1,4 @@
+/* frontend/src/AppLayout.css */
 html, body, #root {
   height: 100%;
 }
@@ -100,14 +101,14 @@ body {
   justify-items: center;
   gap: 10px;
 
-  overflow: visible; /* 🔥 wichtig */
+  overflow: visible;
 }
 
 .playerRailInner {
   width: 100%;
   height: 100%;
-  overflow: visible;        /* hier wird wieder sauber gecropped */
-  border-radius: 18px;     /* etwas kleiner als außen */
+  overflow: visible;
+  border-radius: 18px;
   display: grid;
   justify-items: center;
 }
