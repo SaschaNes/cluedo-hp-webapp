@@ -594,7 +594,7 @@ export default function App() {
             transformOrigin: "center bottom",
             transition: "transform 180ms ease, box-shadow 180ms ease",
             cursor: "pointer",
-            marginLeft: 6,
+            marginLeft: 20,
           }}
           onMouseMove={(e) => {
             // einfacher Tilt ohne extra libs
