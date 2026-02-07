@@ -581,8 +581,8 @@ export default function App() {
         {/* Die Karte selbst (kleiner als Container) */}
         <div
           style={{
-            width: "78%",              // ✅ nicht volle Breite
-            maxWidth: 320,
+            width: "48%",              // ✅ nicht volle Breite
+            maxWidth: 220,
             aspectRatio: "63 / 88",    // typisch Kartenformat
             borderRadius: 16,
             border: `2px solid ${borderColor}`,
