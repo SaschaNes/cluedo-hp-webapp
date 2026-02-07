@@ -41,7 +41,7 @@ body {
 /* MAIN: Tools | Board | PlayerRail */
 .mainRow {
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   display: grid;
 
   /* Tools bewusst schmaler, Board bekommt Bühne */
@@ -106,7 +106,7 @@ body {
 .playerRailInner {
   width: 100%;
   height: 100%;
-  overflow: hidden;        /* hier wird wieder sauber gecropped */
+  overflow: visible;        /* hier wird wieder sauber gecropped */
   border-radius: 18px;     /* etwas kleiner als außen */
   display: grid;
   justify-items: center;
@@ -120,7 +120,7 @@ body {
 
 .playerRailList {
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   display: grid;
   gap: 10px;
   align-content: start;
