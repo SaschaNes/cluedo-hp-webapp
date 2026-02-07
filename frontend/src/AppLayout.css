@@ -167,6 +167,15 @@ body {
   padding-right: 4px;
 }
 
+.diceOverlay {
+  position: absolute;
+  bottom: 14px;
+  right: 18px;
+  width: 220px;
+  pointer-events: auto; /* ✅ damit Hover/Clicks für Würfel gehen */
+  opacity: 0.98;
+}
+
 /* --- Responsive: shrink gracefully (no scroll outside notes) --- */
 @media (max-height: 860px) {
   .leftPane {
