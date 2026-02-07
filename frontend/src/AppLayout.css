@@ -1,0 +1,89 @@
+/* Desktop-only layout: left fixed (no scroll), right notes scroll only */
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  overflow: hidden; /* no page scroll, only notes panel scrolls */
+}
+
+.appRoot {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(720px, 1fr) clamp(380px, 32vw, 520px);
+  gap: 14px;
+  padding: 14px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.leftPane {
+  overflow: hidden;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: 72px minmax(340px, 1fr) 160px 110px; /* top / board / hud / extra */
+  gap: 14px;
+}
+
+.topBarRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  min-width: 0;
+}
+
+.boardWrap {
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 22px;
+}
+
+.bottomHud {
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1.15fr 0.9fr 1.15fr;
+  gap: 14px;
+}
+
+.extraRow {
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.notesPane {
+  overflow: hidden;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.notesScroll {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
+/* Make it shrink gracefully on smaller viewports */
+@media (max-height: 860px) {
+  .leftPane {
+    grid-template-rows: 64px minmax(280px, 1fr) 140px 96px;
+  }
+}
+
+@media (max-width: 1280px) {
+  .appRoot {
+    grid-template-columns: minmax(620px, 1fr) clamp(340px, 34vw, 480px);
+  }
+}
+
+@media (max-width: 1120px) {
+  .appRoot {
+    grid-template-columns: 1fr clamp(320px, 36vw, 440px);
+  }
+}

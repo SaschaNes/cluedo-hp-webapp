@@ -2,8 +2,6 @@ import { useEffect } from "react";
 import { stylesTokens } from "../theme";
 import { applyTheme } from "../themes";
 
-
-
 export function useHpGlobalStyles() {
   // Google Fonts
   useEffect(() => {
@@ -76,8 +74,7 @@ export function useHpGlobalStyles() {
         color: ${stylesTokens.textMain};
       }
       body {
-        overflow-x: hidden;
-        -webkit-overflow-scrolling: touch;
+        overflow: hidden;
       }
       #root { background: transparent; }
       * { -webkit-tap-highlight-color: transparent; }

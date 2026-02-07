@@ -13,6 +13,8 @@ import LoginPage from "./components/LoginPage";
 import SheetSection from "./components/SheetSection";
 import ChipModal from "./components/ChipModal";
 
+import "./AppLayout.css";
+
 export default function App() {
   useHpGlobalStyles();
 
@@ -263,36 +265,26 @@ export default function App() {
         <div style={styles.bgMap} />
       </div>
 
-      {/* Layout: Links Game/Board, Rechts Notizen */}
-      <div
-        style={{
-          ...styles.shell,
-          display: "grid",
-          gridTemplateColumns: "1fr clamp(420px, 28vw, 560px)",
-          gap: 14,
-          alignItems: "start",
-        }}
-      >
-        {/* LEFT: Game Area (Placeholders) */}
-        <div style={{ display: "grid", gap: 14 }}>
+      {/* Layout: Links Game/Board (fix), Rechts Notizen (scroll) */}
+      <div className="appRoot">
+        {/* LEFT: Game Area */}
+        <section className="leftPane">
           {/* Top bar placeholders (User + Settings) */}
-          <div style={{ display: "flex", gap: 10, justifyContent: "space-between" }}>
+          <div className="topBarRow">
             <PlaceholderCard title="User Dropdown" hint="(placeholder)" />
             <PlaceholderCard title="Einstellungen" hint="(placeholder)" />
           </div>
 
           {/* Center Board */}
           <div
+            className="boardWrap"
             style={{
-              borderRadius: 22,
               border: `1px solid ${stylesTokens.panelBorder}`,
               background: stylesTokens.panelBg,
               boxShadow: "0 20px 70px rgba(0,0,0,0.45)",
               backdropFilter: "blur(10px)",
               padding: 12,
               position: "relative",
-              overflow: "hidden",
-              minHeight: 420,
             }}
           >
             <div
@@ -304,7 +296,7 @@ export default function App() {
                 pointerEvents: "none",
               }}
             />
-            <div style={{ position: "relative" }}>
+            <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column" }}>
               <div style={{ fontWeight: 900, color: stylesTokens.textMain, fontSize: 14 }}>
                 3D Board / Game View
               </div>
@@ -315,72 +307,67 @@ export default function App() {
               <div
                 style={{
                   marginTop: 10,
-                  height: 360,
+                  flex: 1,
                   borderRadius: 18,
                   border: `1px dashed ${stylesTokens.panelBorder}`,
                   opacity: 0.85,
+                  minHeight: 0,
                 }}
               />
             </div>
           </div>
 
-          {/* Bottom row placeholders */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1.1fr 0.8fr 1.1fr",
-              gap: 14,
-            }}
-          >
+          {/* Bottom HUD */}
+          <div className="bottomHud">
             <PlaceholderCard title="Meine Geheimkarten" hint="(placeholder)" />
             <PlaceholderCard title="Würfel + Hogwarts Points" hint="(placeholder)" />
             <PlaceholderCard title="Spielerkarte / Turn" hint="(placeholder)" />
           </div>
 
           {/* Extra: Hilfskarten / Deck */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div className="extraRow">
             <PlaceholderCard title="Dunkles Deck" hint="(placeholder)" />
             <PlaceholderCard title="Hilfskarten" hint="(placeholder)" />
           </div>
-        </div>
+        </section>
 
         {/* RIGHT: Notes Panel */}
-        <div
+        <aside
+          className="notesPane"
           style={{
-            position: "sticky",
-            top: 14,
-            alignSelf: "start",
             borderRadius: 22,
             border: `1px solid ${stylesTokens.panelBorder}`,
             background: stylesTokens.panelBg,
             boxShadow: "0 22px 90px rgba(0,0,0,0.55)",
             backdropFilter: "blur(10px)",
             padding: 12,
-            maxHeight: "calc(100vh - 28px)",
-            overflow: "auto",
           }}
         >
-          <div style={{ fontWeight: 900, color: stylesTokens.textMain, fontSize: 14 }}>
-            Notizen
-          </div>
-          <div style={{ marginTop: 6, color: stylesTokens.textDim, fontSize: 12 }}>
-            Nur die 3 Tabellen (Verdächtige / Gegenstände / Orte).
+          <div>
+            <div style={{ fontWeight: 900, color: stylesTokens.textMain, fontSize: 14 }}>
+              Notizen
+            </div>
+            <div style={{ marginTop: 6, color: stylesTokens.textDim, fontSize: 12 }}>
+              Nur die 3 Tabellen (Verdächtige / Gegenstände / Orte).
+            </div>
           </div>
 
-          <div style={{ marginTop: 12, display: "grid", gap: 14 }}>
-            {sections.map((sec) => (
-              <SheetSection
-                key={sec.key}
-                title={sec.title}
-                entries={sec.entries}
-                pulseId={pulseId}
-                onCycleStatus={cycleStatus}
-                onToggleTag={toggleTag}
-                displayTag={displayTag}
-              />
-            ))}
+          <div className="notesScroll">
+            <div style={{ marginTop: 12, display: "grid", gap: 14 }}>
+              {sections.map((sec) => (
+                <SheetSection
+                  key={sec.key}
+                  title={sec.title}
+                  entries={sec.entries}
+                  pulseId={pulseId}
+                  onCycleStatus={cycleStatus}
+                  onToggleTag={toggleTag}
+                  displayTag={displayTag}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        </aside>
       </div>
 
       <ChipModal
