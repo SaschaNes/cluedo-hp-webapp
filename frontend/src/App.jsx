@@ -476,10 +476,13 @@ export default function App() {
             {/* Right of board: player rail */}
             <div className="playerRail">
               <div className="playerRailTitle">Spieler</div>
-              <div className="playerRailList">
-                {players.map((p) => (
-                  <PlayerIcon key={p.id} player={p} />
-                ))}
+
+              <div className="playerRailInner">
+                <div className="playerRailList">
+                  {players.map((p) => (
+                    <PlayerIcon key={p.id} player={p} />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
