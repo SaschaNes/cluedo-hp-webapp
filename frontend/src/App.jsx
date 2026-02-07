@@ -340,34 +340,88 @@ export default function App() {
 
   // Player rail placeholder (rechts vom Board, vor Notizen)
   const players = [
-    { id: "p1", label: "A", active: true },
-    { id: "p2", label: "B" },
-    { id: "p3", label: "C" },
-    { id: "p4", label: "D" },
-    { id: "p5", label: "E" },
+    {
+      id: "harry",
+      name: "Harry Potter",
+      img: "/players/harry.jpg",
+      color: "#7c4dff", // Lila
+      active: true,
+    },
+    {
+      id: "ginny",
+      name: "Ginny Weasley",
+      img: "/players/ginny.jpg",
+      color: "#3b82f6", // Blau
+    },
+    {
+      id: "hermione",
+      name: "Hermine Granger",
+      img: "/players/hermione.jpg",
+      color: "#ef4444", // Rot
+    },
+    {
+      id: "luna",
+      name: "Luna Lovegood",
+      img: "/players/luna.jpg",
+      color: "#e5e7eb", // Weiß
+    },
+    {
+      id: "neville",
+      name: "Neville Longbottom",
+      img: "/players/neville.jpg",
+      color: "#22c55e", // Grün
+    },
+    {
+      id: "ron",
+      name: "Ron Weasley",
+      img: "/players/ron.jpg",
+      color: "#facc15", // Gelb
+    },
   ];
 
-  const PlayerIcon = ({ label, active }) => (
-    <div
-      style={{
-        width: active ? 46 : 36,
-        height: active ? 46 : 36,
-        borderRadius: 999,
-        border: `1px solid ${stylesTokens.panelBorder}`,
-        background: stylesTokens.panelBg,
-        boxShadow: active ? "0 16px 40px rgba(0,0,0,0.55)" : "0 10px 28px rgba(0,0,0,0.35)",
-        display: "grid",
-        placeItems: "center",
-        color: active ? stylesTokens.textGold : stylesTokens.textMain,
-        fontWeight: 900,
-        fontSize: active ? 14 : 12,
-        transition: "transform 120ms ease, width 120ms ease, height 120ms ease",
-      }}
-      title={active ? "Aktiver Spieler" : "Spieler"}
-    >
-      {label}
-    </div>
-  );
+  const PlayerIcon = ({ player }) => {
+    const size = player.active ? 56 : 40;
+
+    return (
+      <div
+        title={player.name}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: "50%",
+          padding: 3,
+          background: player.color,
+          boxShadow: player.active
+            ? `0 0 0 2px ${player.color}, 0 0 22px ${player.color}`
+            : `0 0 0 1px ${player.color}, 0 8px 20px rgba(0,0,0,.35)`,
+          transition: "all 160ms ease",
+          opacity: player.active ? 1 : 0.75,
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            borderRadius: "50%",
+            overflow: "hidden",
+            background: "#000",
+          }}
+        >
+          <img
+            src={player.img}
+            alt={player.name}
+            draggable={false}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              filter: player.active ? "none" : "grayscale(40%)",
+            }}
+          />
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div style={styles.page}>
@@ -424,7 +478,7 @@ export default function App() {
               <div className="playerRailTitle">Spieler</div>
               <div className="playerRailList">
                 {players.map((p) => (
-                  <PlayerIcon key={p.id} label={p.label} active={!!p.active} />
+                  <PlayerIcon key={p.id} player={p} />
                 ))}
               </div>
             </div>
