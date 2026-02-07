@@ -544,16 +544,47 @@ export default function App() {
   // App.jsx (füge diese Komponente irgendwo unter deinen anderen Komponenten ein)
 // ✅ 3 Würfel: 2x d6 + 1x Spezial (Häuser + Hilfkarte + Dunkles Deck)
 
-const DicePanel = () => {
+const DicePanel = ({ onRoll }) => {
+  const [d1, setD1] = useState(4);
+  const [d2, setD2] = useState(2);
+  const [special, setSpecial] = useState("gryffindor");
+  const [rolling, setRolling] = useState(false);
+
+  const specialFaces = ["gryffindor", "slytherin", "ravenclaw", "hufflepuff", "help", "dark"];
+
+  const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+  const rollAll = () => {
+    if (rolling) return;
+    setRolling(true);
+
+    // Während der Animation kurz "flackern" lassen (optional, wirkt lebendiger)
+    const flickerId = setInterval(() => {
+      setD1(randInt(1, 6));
+      setD2(randInt(1, 6));
+      setSpecial(specialFaces[randInt(0, specialFaces.length - 1)]);
+    }, 90);
+
+    // Finales Ergebnis nach Animation
+    setTimeout(() => {
+      clearInterval(flickerId);
+
+      const nd1 = randInt(1, 6);
+      const nd2 = randInt(1, 6);
+      const ns = specialFaces[randInt(0, specialFaces.length - 1)];
+
+      setD1(nd1);
+      setD2(nd2);
+      setSpecial(ns);
+
+      setRolling(false);
+
+      onRoll?.({ d1: nd1, d2: nd2, special: ns });
+    }, 820); // muss zur CSS Animation passen
+  };
+
   return (
-    <div
-      style={{
-        pointerEvents: "auto", // overlay ist sonst pointer-events none im CSS
-        display: "grid",
-        gap: 10,
-        alignContent: "start",
-      }}
-    >
+    <div style={{ pointerEvents: "auto" }}>
       <div
         style={{
           borderRadius: 18,
@@ -566,70 +597,84 @@ const DicePanel = () => {
           minWidth: 0,
         }}
       >
-        <div
-          style={{
-            fontWeight: 900,
-            color: stylesTokens.textMain,
-            fontSize: 13,
-            letterSpacing: 0.2,
-            lineHeight: 1.15,
-          }}
-        >
-          Würfel
-        </div>
-        <div style={{ marginTop: 6, color: stylesTokens.textDim, fontSize: 12, opacity: 0.95 }}>
-          2× d6 + 1× Spezial
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
+          <div>
+            <div
+              style={{
+                fontWeight: 900,
+                color: stylesTokens.textMain,
+                fontSize: 13,
+                letterSpacing: 0.2,
+                lineHeight: 1.15,
+              }}
+            >
+              Würfel
+            </div>
+            <div style={{ marginTop: 6, color: stylesTokens.textDim, fontSize: 12, opacity: 0.95 }}>
+              Klicken zum Rollen
+            </div>
+          </div>
+
+          <div
+            style={{
+              fontSize: 11.5,
+              fontWeight: 900,
+              color: stylesTokens.textDim,
+              opacity: rolling ? 1 : 0.7,
+              letterSpacing: 0.7,
+            }}
+          >
+            {rolling ? "ROLL…" : "READY"}
+          </div>
         </div>
 
         <div
+          className="diceRow3d"
           style={{
             marginTop: 10,
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
             gap: 10,
             alignItems: "center",
+            justifyItems: "center",
           }}
         >
-          <DieD6 value={4} />
-          <DieD6 value={2} />
-          <HouseDie face="gryffindor" />
+          <DieD6 value={d1} rolling={rolling} onClick={rollAll} />
+          <DieD6 value={d2} rolling={rolling} onClick={rollAll} />
+          <HouseDie face={special} rolling={rolling} onClick={rollAll} />
         </div>
       </div>
     </div>
   );
 };
 
-const DieShell = ({ children, ringColor = "rgba(255,255,255,0.10)" }) => {
+const DieShell = ({ children, ringColor = "rgba(255,255,255,0.10)", rolling = false, onClick }) => {
   return (
-    <div
+    <button
+      type="button"
+      onClick={onClick}
+      className={`die3d ${rolling ? "die3dRolling" : ""}`}
       style={{
-        width: 62,
-        height: 62,
+        width: 64,
+        height: 64,
         borderRadius: 18,
         border: `1px solid ${stylesTokens.panelBorder}`,
         background:
-          "radial-gradient(120% 120% at 20% 10%, rgba(255,255,255,0.10), rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.55))",
+          "radial-gradient(120% 120% at 20% 10%, rgba(255,255,255,0.12), rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.62))",
         boxShadow: "0 18px 50px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.06)",
         position: "relative",
         overflow: "hidden",
         display: "grid",
         placeItems: "center",
-        cursor: "pointer",
+        cursor: rolling ? "default" : "pointer",
         transition: "transform 160ms ease, box-shadow 160ms ease",
+        padding: 0,
+        outline: "none",
       }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-3px) rotate(-1deg)";
-        e.currentTarget.style.boxShadow =
-          "0 26px 70px rgba(0,0,0,0.65), inset 0 0 0 1px rgba(255,255,255,0.08)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0px) rotate(0deg)";
-        e.currentTarget.style.boxShadow =
-          "0 18px 50px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.06)";
-      }}
-      title="Würfel (placeholder)"
+      disabled={rolling}
+      title={rolling ? "Rolling…" : "Roll"}
     >
-      {/* subtle inner ring */}
+      {/* inner ring */}
       <div
         style={{
           position: "absolute",
@@ -641,25 +686,37 @@ const DieShell = ({ children, ringColor = "rgba(255,255,255,0.10)" }) => {
         }}
       />
 
-      {/* gloss */}
+      {/* bevel light */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(135deg, rgba(255,255,255,0.16) 0%, transparent 36%, transparent 64%, rgba(0,0,0,0.22) 100%)",
+          opacity: 0.9,
+          pointerEvents: "none",
+          mixBlendMode: "screen",
+        }}
+      />
+
+      {/* gloss stripe */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           background:
             "linear-gradient(120deg, rgba(255,255,255,0.10) 0%, transparent 38%, transparent 70%, rgba(255,255,255,0.06) 100%)",
-          opacity: 0.75,
+          opacity: 0.8,
           pointerEvents: "none",
         }}
       />
 
       {children}
-    </div>
+    </button>
   );
 };
 
-const DieD6 = ({ value = 1 }) => {
-  // pip layout positions on 3x3 grid
+const DieD6 = ({ value = 1, rolling = false, onClick }) => {
   const P = ({ x, y }) => (
     <div
       style={{
@@ -671,54 +728,28 @@ const DieD6 = ({ value = 1 }) => {
         height: 7.5,
         borderRadius: 999,
         background: "rgba(245,245,245,0.92)",
-        boxShadow: "0 3px 10px rgba(0,0,0,0.35)",
+        boxShadow: "0 3px 10px rgba(0,0,0,0.35), inset 0 1px 2px rgba(0,0,0,0.20)",
       }}
     />
   );
 
   const faces = {
     1: [{ x: 1, y: 1 }],
-    2: [
-      { x: 0, y: 0 },
-      { x: 2, y: 2 },
-    ],
-    3: [
-      { x: 0, y: 0 },
-      { x: 1, y: 1 },
-      { x: 2, y: 2 },
-    ],
-    4: [
-      { x: 0, y: 0 },
-      { x: 2, y: 0 },
-      { x: 0, y: 2 },
-      { x: 2, y: 2 },
-    ],
-    5: [
-      { x: 0, y: 0 },
-      { x: 2, y: 0 },
-      { x: 1, y: 1 },
-      { x: 0, y: 2 },
-      { x: 2, y: 2 },
-    ],
-    6: [
-      { x: 0, y: 0 },
-      { x: 0, y: 1 },
-      { x: 0, y: 2 },
-      { x: 2, y: 0 },
-      { x: 2, y: 1 },
-      { x: 2, y: 2 },
-    ],
+    2: [{ x: 0, y: 0 }, { x: 2, y: 2 }],
+    3: [{ x: 0, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 2 }],
+    4: [{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }, { x: 2, y: 2 }],
+    5: [{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 2 }, { x: 2, y: 2 }],
+    6: [{ x: 0, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 2 }, { x: 2, y: 0 }, { x: 2, y: 1 }, { x: 2, y: 2 }],
   };
 
   return (
-    <DieShell ringColor="rgba(242,210,122,0.18)">
-      <div style={{ width: 44, height: 44, position: "relative" }}>
+    <DieShell ringColor="rgba(242,210,122,0.18)" rolling={rolling} onClick={onClick}>
+      <div style={{ width: 46, height: 46, position: "relative", transform: "translateZ(12px)" }}>
         {(faces[value] || faces[1]).map((p, idx) => (
           <P key={idx} x={p.x} y={p.y} />
         ))}
       </div>
 
-      {/* tiny label */}
       <div
         style={{
           position: "absolute",
@@ -728,6 +759,7 @@ const DieD6 = ({ value = 1 }) => {
           fontWeight: 900,
           color: "rgba(255,255,255,0.55)",
           letterSpacing: 0.6,
+          transform: "translateZ(10px)",
         }}
       >
         d6
@@ -736,33 +768,33 @@ const DieD6 = ({ value = 1 }) => {
   );
 };
 
-const HouseDie = ({ face = "gryffindor" }) => {
-  // 4 Häuser + Hilfkarte + Dunkles Deck
+const HouseDie = ({ face = "gryffindor", rolling = false, onClick }) => {
   const faces = {
     gryffindor: { label: "G", color: "#ef4444", sub: "Gryff." },
     slytherin: { label: "S", color: "#22c55e", sub: "Slyth." },
     ravenclaw: { label: "R", color: "#3b82f6", sub: "Raven." },
     hufflepuff: { label: "H", color: "#facc15", sub: "Huff." },
     help: { label: "?", color: "#f2d27a", sub: "Hilf" },
-    dark: { label: "☾", color: "rgba(255,255,255,0.70)", sub: "Dark" },
+    dark: { label: "☾", color: "rgba(255,255,255,0.78)", sub: "Dark" },
   };
 
   const f = faces[face] || faces.gryffindor;
 
   return (
-    <DieShell ringColor={`${f.color}55`}>
+    <DieShell ringColor={`${f.color}55`} rolling={rolling} onClick={onClick}>
       <div
         style={{
-          width: 44,
-          height: 44,
+          width: 46,
+          height: 46,
           borderRadius: 14,
           display: "grid",
           placeItems: "center",
           background:
-            "radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,0.10), rgba(0,0,0,0.35) 70%, rgba(0,0,0,0.55))",
-          border: `1px solid rgba(255,255,255,0.08)`,
+            "radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,0.10), rgba(0,0,0,0.35) 70%, rgba(0,0,0,0.60))",
+          border: "1px solid rgba(255,255,255,0.08)",
           boxShadow: `inset 0 0 0 1px ${f.color}22`,
           position: "relative",
+          transform: "translateZ(12px)",
         }}
       >
         <div
@@ -787,6 +819,7 @@ const HouseDie = ({ face = "gryffindor" }) => {
           fontWeight: 900,
           color: "rgba(255,255,255,0.55)",
           letterSpacing: 0.6,
+          transform: "translateZ(10px)",
         }}
       >
         Spezial
@@ -1016,7 +1049,13 @@ const HouseDie = ({ face = "gryffindor" }) => {
               </PlaceholderCard>
 
               <div className="diceOverlay">
-                <DicePanel />
+                <DicePanel
+                  onRoll={({ d1, d2, special }) => {
+                    console.log("Rolled:", { d1, d2, special });
+                    // später: API call / game action
+                    // api(`/games/${gameId}/roll`, { method:"POST", body: JSON.stringify({ d1,d2,special }) })
+                  }}
+                />
               </div>
             </div>
 
