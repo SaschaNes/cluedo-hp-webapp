@@ -435,11 +435,11 @@ export default function App() {
           minWidth: 0,
           borderRadius: 18,
           border: `1px solid ${stylesTokens.panelBorder}`,
-          background: "rgba(0,0,0,0.10)",   // sehr dezent, quasi unsichtbar
+          background: "rgba(0,0,0,0.10)",
           backdropFilter: "blur(8px)",
           boxShadow: "0 12px 30px rgba(0,0,0,0.30)",
-          padding: 12,                      // ✅ Abstand wie andere Elemente
-          overflow: "hidden",
+          padding: 12,
+          overflow: "visible",   // ✅ statt hidden
           display: "grid",
           placeItems: "stretch",
         }}

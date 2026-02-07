@@ -26,7 +26,7 @@ body {
   display: grid;
 
   /* Top | Main | HUD */
-  grid-template-rows: 68px minmax(360px, 1fr) 170px;
+  grid-template-rows: 68px minmax(360px, 1fr) minmax(160px, 190px);
 
   gap: 14px;
 }
