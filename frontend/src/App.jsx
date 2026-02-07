@@ -307,7 +307,15 @@ export default function App() {
       <div style={base}>
         {v === "panel" ? <div style={glowLine} /> : null}
 
-        <div style={{ position: "relative", height: v === "panel" ? "100%" : "auto" }}>
+        <div
+          style={{
+            position: "relative",
+            height: v === "panel" ? "100%" : "auto",
+            display: v === "panel" ? "flex" : "block",
+            flexDirection: "column",
+            minHeight: 0,
+          }}
+        >
           <div style={headerRow}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
               {icon ? <div style={{ opacity: 0.95 }}>{icon}</div> : null}
