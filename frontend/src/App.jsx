@@ -268,7 +268,7 @@ export default function App() {
         style={{
           ...styles.shell,
           display: "grid",
-          gridTemplateColumns: "1fr min(420px, 36vw)",
+          gridTemplateColumns: "1fr clamp(420px, 28vw, 560px)",
           gap: 14,
           alignItems: "start",
         }}
@@ -348,7 +348,7 @@ export default function App() {
         <div
           style={{
             position: "sticky",
-            top: 12,
+            top: 14,
             alignSelf: "start",
             borderRadius: 22,
             border: `1px solid ${stylesTokens.panelBorder}`,
@@ -356,7 +356,7 @@ export default function App() {
             boxShadow: "0 22px 90px rgba(0,0,0,0.55)",
             backdropFilter: "blur(10px)",
             padding: 12,
-            maxHeight: "calc(100dvh - 24px)",
+            maxHeight: "calc(100vh - 28px)",
             overflow: "auto",
           }}
         >
