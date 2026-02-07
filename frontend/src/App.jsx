@@ -582,6 +582,7 @@ export default function App() {
         <div
           style={{
             width: "48%",              // ✅ nicht volle Breite
+            zIndex: 50,
             maxWidth: 220,
             aspectRatio: "63 / 88",    // typisch Kartenformat
             borderRadius: 16,
