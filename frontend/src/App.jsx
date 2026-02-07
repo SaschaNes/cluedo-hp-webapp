@@ -445,7 +445,7 @@ export default function App() {
       <div
         style={{
           height: 88,             // ✅ "dünn" (kannst du 80–96 spielen)
-          width: "100%",
+          width: 88,
           borderRadius: 16,
           background: `
             radial-gradient(140% 160% at 15% 10%, rgba(235,215,175,0.88), rgba(215,185,135,0.82) 55%, rgba(165,125,75,0.75)),
