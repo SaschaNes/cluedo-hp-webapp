@@ -423,6 +423,130 @@ export default function App() {
     );
   };
 
+  const HogwartsPointsCard = ({ value = 0 }) => {
+    return (
+      <div
+        style={{
+          borderRadius: 18,
+          border: `1px solid ${stylesTokens.panelBorder}`,
+          boxShadow: "0 14px 40px rgba(0,0,0,0.45)",
+          overflow: "hidden",
+          position: "relative",
+          minWidth: 0,
+          background: stylesTokens.panelBg,
+          backdropFilter: "blur(10px)",
+        }}
+      >
+        {/* Pergament-Hintergrund */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: `
+              radial-gradient(120% 120% at 20% 10%, rgba(255, 232, 190, 0.22), transparent 55%),
+              radial-gradient(120% 120% at 90% 80%, rgba(255, 210, 150, 0.18), transparent 55%),
+              linear-gradient(180deg, rgba(80, 55, 30, 0.32), rgba(20, 15, 10, 0.08))
+            `,
+            opacity: 1,
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* Papier-Textur / Flecken */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: `
+              radial-gradient(circle at 18% 38%, rgba(255, 220, 170, 0.10), transparent 42%),
+              radial-gradient(circle at 72% 28%, rgba(255, 200, 140, 0.08), transparent 40%),
+              radial-gradient(circle at 60% 78%, rgba(255, 240, 210, 0.06), transparent 46%)
+            `,
+            mixBlendMode: "overlay",
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* goldene Linie */}
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 0,
+            height: 1,
+            background: stylesTokens.goldLine,
+            opacity: 0.45,
+            pointerEvents: "none",
+          }}
+        />
+
+        <div style={{ position: "relative", padding: 14, height: "100%", display: "grid", gridTemplateRows: "auto 1fr" }}>
+          <div style={{ fontWeight: 900, fontSize: 12.5, color: stylesTokens.textDim, opacity: 0.95 }}>
+            Hogwarts Points
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "center",
+              gap: 10,
+              marginTop: 8,
+            }}
+          >
+            <div
+              style={{
+                color: stylesTokens.textGold,
+                fontWeight: 900,
+                fontSize: 44,
+                letterSpacing: 0.5,
+                textShadow: "0 0 18px rgba(255, 215, 120, 0.18)",
+                lineHeight: 1,
+              }}
+            >
+              {value}
+            </div>
+
+            <div
+              style={{
+                color: stylesTokens.textGold,
+                fontWeight: 900,
+                fontSize: 18,
+                letterSpacing: 1.2,
+                opacity: 0.95,
+                transform: "translateY(-4px)",
+                textShadow: "0 0 14px rgba(255, 215, 120, 0.16)",
+              }}
+            >
+              HP
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 10,
+              display: "flex",
+              justifyContent: "center",
+              gap: 8,
+              opacity: 0.85,
+              color: stylesTokens.textDim,
+              fontSize: 11.5,
+            }}
+          >
+            <span style={{ border: `1px solid ${stylesTokens.panelBorder}`, borderRadius: 999, padding: "4px 8px", background: "rgba(0,0,0,0.12)" }}>
+              + / −
+            </span>
+            <span style={{ border: `1px solid ${stylesTokens.panelBorder}`, borderRadius: 999, padding: "4px 8px", background: "rgba(0,0,0,0.12)" }}>
+              Hauswertung
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+
   return (
     <div style={styles.page}>
       <div style={styles.bgFixed} aria-hidden="true">
@@ -496,7 +620,7 @@ export default function App() {
               <PlaceholderCard title="Meine Hilfkarte(n)" variant="tile" />
             </div>
 
-            <PlaceholderCard title="Hogwarts Points" variant="tile" />
+            <HogwartsPointsCard value={60} />
           </div>
         </section>
 
