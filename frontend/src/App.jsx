@@ -342,6 +342,14 @@ export default function App() {
     setThemeKey(key);
     applyTheme(key);
 
+    // ✅ sofort für nächsten Start merken (verhindert Flash)
+    try {
+      localStorage.setItem(`hpTheme:${(me?.email || "guest").toLowerCase()}`, key);
+      localStorage.setItem("hpTheme:guest", key); // fallback, falls noch nicht eingeloggt
+    } catch {
+      // ignore
+    }
+
     try {
       await api("/auth/theme", {
         method: "PATCH",
@@ -351,6 +359,7 @@ export default function App() {
       // theme locally already applied; ignore backend error
     }
   };
+  
 
   // ===== Stats (always fresh on open) =====
   const openStatsModal = async () => {
