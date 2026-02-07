@@ -545,7 +545,7 @@ export default function App() {
 
   const PlayerIdentityCard = ({
   name = "Harry Potter",
-  houseLabel = "Signature of Holder",
+  houseLabel = "Gryffindor",
   borderColor = "#7c4dff",
   img = "/player_cards/harry.png",
 }) => {
@@ -587,7 +587,7 @@ export default function App() {
             borderRadius: 16,
             border: `2px solid ${borderColor}`,
             boxShadow: `0 18px 55px rgba(0,0,0,0.55), 0 0 26px rgba(124,77,255,0.22)`,
-            overflow: "hidden",
+            overflow: "visible",
             position: "relative",
             background: "rgba(0,0,0,0.15)",
             transform: "translateY(-10px) rotate(-0.6deg)", // ✅ schaut leicht raus
@@ -713,22 +713,6 @@ export default function App() {
           >
             Identity
           </div>
-        </div>
-
-        {/* optional: kleiner Slot-Titel (kannst du löschen) */}
-        <div
-          style={{
-            position: "absolute",
-            left: 14,
-            top: 12,
-            fontSize: 12,
-            fontWeight: 900,
-            color: stylesTokens.textDim,
-            opacity: 0.85,
-            pointerEvents: "none",
-          }}
-        >
-          Spielerkarte
         </div>
       </div>
     </div>
