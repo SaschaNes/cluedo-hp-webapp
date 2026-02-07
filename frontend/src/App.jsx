@@ -228,38 +228,107 @@ export default function App() {
       ]
     : [];
 
-  const PlaceholderCard = ({ title, hint, compact = false }) => (
-    <div
-      style={{
-        borderRadius: 18,
-        border: `1px solid ${stylesTokens.panelBorder}`,
-        background: stylesTokens.panelBg,
-        boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
-        backdropFilter: "blur(8px)",
-        padding: compact ? 10 : 12,
-        overflow: "hidden",
-        minWidth: 0,
-      }}
-    >
-      <div style={{ fontWeight: 900, color: stylesTokens.textMain, fontSize: 13 }}>
-        {title}
-      </div>
-      {hint ? (
-        <div style={{ marginTop: 6, color: stylesTokens.textDim, fontSize: 12, opacity: 0.95 }}>
-          {hint}
+  /**
+   * ✅ Unified Placeholder system
+   * Variants:
+   * - "compact": small top / dice (low height)
+   * - "tile": normal cards (HUD, decks, etc.)
+   * - "panel": large container (Board)
+   */
+  const PlaceholderCard = ({
+    title,
+    subtitle = "(placeholder)",
+    variant = "tile",
+    icon = null,
+    children = null,
+  }) => {
+    const v = variant;
+
+    const pad = v === "compact" ? 10 : v === "panel" ? 14 : 12;
+    const titleSize = v === "compact" ? 12.5 : v === "panel" ? 14.5 : 13;
+    const subSize = v === "compact" ? 11.5 : 12;
+    const dashHeight = v === "compact" ? 46 : v === "panel" ? null : 64;
+
+    const base = {
+      borderRadius: 18,
+      border: `1px solid ${stylesTokens.panelBorder}`,
+      background: stylesTokens.panelBg,
+      boxShadow: v === "panel" ? "0 20px 70px rgba(0,0,0,0.45)" : "0 12px 30px rgba(0,0,0,0.35)",
+      backdropFilter: "blur(10px)",
+      padding: pad,
+      overflow: "hidden",
+      minWidth: 0,
+      position: "relative",
+    };
+
+    const headerRow = {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 10,
+    };
+
+    const titleStyle = {
+      fontWeight: 900,
+      color: stylesTokens.textMain,
+      fontSize: titleSize,
+      letterSpacing: 0.2,
+      lineHeight: 1.15,
+    };
+
+    const subStyle = {
+      marginTop: 6,
+      color: stylesTokens.textDim,
+      fontSize: subSize,
+      opacity: 0.95,
+      lineHeight: 1.25,
+    };
+
+    const dashStyle = {
+      marginTop: v === "compact" ? 8 : 10,
+      height: dashHeight,
+      borderRadius: 14,
+      border: `1px dashed ${stylesTokens.panelBorder}`,
+      opacity: 0.75,
+    };
+
+    const glowLine = v === "panel"
+      ? {
+          content: '""',
+          position: "absolute",
+          inset: 0,
+          background: `linear-gradient(90deg, transparent, ${stylesTokens.goldLine}, transparent)`,
+          opacity: 0.18,
+          pointerEvents: "none",
+        }
+      : null;
+
+    return (
+      <div style={base}>
+        {v === "panel" ? <div style={glowLine} /> : null}
+
+        <div style={{ position: "relative", height: v === "panel" ? "100%" : "auto" }}>
+          <div style={headerRow}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+              {icon ? <div style={{ opacity: 0.95 }}>{icon}</div> : null}
+              <div style={{ ...titleStyle, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {title}
+              </div>
+            </div>
+          </div>
+
+          {subtitle ? <div style={subStyle}>{subtitle}</div> : null}
+
+          {/* Content area */}
+          {children ? (
+            <div style={{ marginTop: v === "compact" ? 8 : 10, minHeight: 0 }}>{children}</div>
+          ) : v === "panel" ? null : (
+            <div style={dashStyle} />
+          )}
         </div>
-      ) : null}
-      <div
-        style={{
-          marginTop: compact ? 8 : 10,
-          height: compact ? 46 : 64,
-          borderRadius: 14,
-          border: `1px dashed ${stylesTokens.panelBorder}`,
-          opacity: 0.8,
-        }}
-      />
-    </div>
-  );
+      </div>
+    );
+  };
 
   // Player rail placeholder (rechts vom Board, vor Notizen)
   const players = [
@@ -303,69 +372,44 @@ export default function App() {
         <section className="leftPane">
           {/* Top: User + Settings adjacent */}
           <div className="topBarRow">
-            <PlaceholderCard title="User Dropdown" hint="(placeholder)" compact />
-            <PlaceholderCard title="Einstellungen" hint="(placeholder)" compact />
+            <PlaceholderCard title="User Dropdown" variant="compact" />
+            <PlaceholderCard title="Einstellungen" variant="compact" />
           </div>
 
           {/* Main: Tools | Board | Player Rail */}
           <div className="mainRow">
-            {/* Left of board: Hilfskarten-Deck + Dunkles Deck (Board decks) */}
+            {/* Left of board: Board decks */}
             <div className="leftTools">
               <div className="leftToolsRow">
-                <PlaceholderCard title="Hilfskarten (Deck)" hint="(placeholder)" />
-                <PlaceholderCard title="Dunkles Deck" hint="(placeholder)" />
+                <PlaceholderCard title="Hilfskarten (Deck)" variant="tile" />
+                <PlaceholderCard title="Dunkles Deck" variant="tile" />
               </div>
             </div>
 
             {/* Board: big */}
-            <div
-              className="boardWrap"
-              style={{
-                border: `1px solid ${stylesTokens.panelBorder}`,
-                background: stylesTokens.panelBg,
-                boxShadow: "0 20px 70px rgba(0,0,0,0.45)",
-                backdropFilter: "blur(10px)",
-                padding: 12,
-                position: "relative",
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: `linear-gradient(90deg, transparent, ${stylesTokens.goldLine}, transparent)`,
-                  opacity: 0.22,
-                  pointerEvents: "none",
-                }}
-              />
-
-              <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column" }}>
-                <div style={{ fontWeight: 900, color: stylesTokens.textMain, fontSize: 14 }}>
-                  3D Board / Game View
-                </div>
-                <div style={{ marginTop: 6, color: stylesTokens.textDim, fontSize: 12 }}>
-                  Platzhalter – hier kommt später das Board + Figuren rein.
-                </div>
-
+            <div className="boardWrap">
+              <PlaceholderCard
+                title="3D Board / Game View"
+                subtitle="Platzhalter – hier kommt später das Board + Figuren rein."
+                variant="panel"
+              >
                 <div
                   style={{
-                    marginTop: 10,
-                    flex: 1,
+                    height: "100%",
+                    minHeight: 0,
                     borderRadius: 18,
                     border: `1px dashed ${stylesTokens.panelBorder}`,
-                    opacity: 0.85,
-                    minHeight: 0,
+                    opacity: 0.8,
                   }}
                 />
-              </div>
-
-              {/* Dice: under the board slightly right (overlay) */}
-              <div className="diceOverlay">
-                <PlaceholderCard title="Würfel" hint="(placeholder)" compact />
-              </div>
+                {/* Dice overlay: under the board slightly right */}
+                <div className="diceOverlay">
+                  <PlaceholderCard title="Würfel" variant="compact" />
+                </div>
+              </PlaceholderCard>
             </div>
 
-            {/* Right of board: player rail, directly before notes */}
+            {/* Right of board: player rail */}
             <div className="playerRail">
               <div className="playerRailTitle">Spieler</div>
               <div className="playerRailList">
@@ -376,24 +420,20 @@ export default function App() {
             </div>
           </div>
 
-          {/* Bottom: Player HUD
-              Left: user card
-              Middle: secret cards + player's help-card slot next to it
-              Right: points
-          */}
+          {/* Bottom: Player HUD */}
           <div className="playerHud">
-            <PlaceholderCard title="Spielerkarte (User)" hint="(placeholder)" />
+            <PlaceholderCard title="Spielerkarte (User)" variant="tile" />
 
             <div className="playerHudMiddle">
-              <PlaceholderCard title="Meine Geheimkarten" hint="(placeholder)" />
-              <PlaceholderCard title="Meine Hilfkarte(n)" hint="(placeholder)" />
+              <PlaceholderCard title="Meine Geheimkarten" variant="tile" />
+              <PlaceholderCard title="Meine Hilfkarte(n)" variant="tile" />
             </div>
 
-            <PlaceholderCard title="Hogwarts Points" hint="(placeholder)" />
+            <PlaceholderCard title="Hogwarts Points" variant="tile" />
           </div>
         </section>
 
-        {/* RIGHT: Notes Panel (scroll only here) */}
+        {/* RIGHT: Notes Panel */}
         <aside
           className="notesPane"
           style={{
