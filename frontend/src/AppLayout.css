@@ -16,12 +16,12 @@ body {
   gap: 14px;
   padding: 14px;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* LEFT COLUMN */
 .leftPane {
-  overflow: hidden;
+  overflow: visible;
   min-width: 0;
   display: grid;
 
