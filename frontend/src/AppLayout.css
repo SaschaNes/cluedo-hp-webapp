@@ -42,12 +42,12 @@ body {
   min-height: 0;
   overflow: hidden;
   display: grid;
-  grid-template-columns: minmax(260px, 360px) minmax(520px, 1fr) 92px;
+  grid-template-columns: minmax(220px, 300px) minmax(520px, 1fr) 92px;
   gap: 14px;
   min-width: 0;
 }
 
-/* Left of board: two cards next to each other */
+/* Left of board: stack cards vertically (Hilfskarten over Dunkles Deck) */
 .leftTools {
   min-width: 0;
   overflow: hidden;
@@ -57,7 +57,7 @@ body {
 
 .leftToolsRow {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* Hilfskarten | Dunkles Deck */
+  grid-template-columns: 1fr; /* ✅ vertical */
   gap: 14px;
   min-width: 0;
 }
@@ -155,7 +155,7 @@ body {
     grid-template-columns: minmax(760px, 1fr) clamp(360px, 34vw, 480px);
   }
   .mainRow {
-    grid-template-columns: minmax(240px, 320px) minmax(480px, 1fr) 88px;
+    grid-template-columns: minmax(210px, 280px) minmax(480px, 1fr) 88px;
   }
 }
 
@@ -164,6 +164,6 @@ body {
     grid-template-columns: 1fr clamp(340px, 36vw, 460px);
   }
   .mainRow {
-    grid-template-columns: minmax(220px, 300px) minmax(420px, 1fr) 84px;
+    grid-template-columns: minmax(200px, 260px) minmax(420px, 1fr) 84px;
   }
 }
