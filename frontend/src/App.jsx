@@ -34,7 +34,6 @@ export default function App() {
   const [chipOpen, setChipOpen] = useState(false);
   const [chipEntry, setChipEntry] = useState(null);
 
-  // Live refresh (optional)
   const aliveRef = useRef(true);
 
   const load = async () => {
@@ -229,7 +228,7 @@ export default function App() {
       ]
     : [];
 
-  const PlaceholderCard = ({ title, hint }) => (
+  const PlaceholderCard = ({ title, hint, compact = false }) => (
     <div
       style={{
         borderRadius: 18,
@@ -237,25 +236,59 @@ export default function App() {
         background: stylesTokens.panelBg,
         boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
         backdropFilter: "blur(8px)",
-        padding: 12,
+        padding: compact ? 10 : 12,
         overflow: "hidden",
+        minWidth: 0,
       }}
     >
       <div style={{ fontWeight: 900, color: stylesTokens.textMain, fontSize: 13 }}>
         {title}
       </div>
-      <div style={{ marginTop: 6, color: stylesTokens.textDim, fontSize: 12, opacity: 0.95 }}>
-        {hint}
-      </div>
+      {hint ? (
+        <div style={{ marginTop: 6, color: stylesTokens.textDim, fontSize: 12, opacity: 0.95 }}>
+          {hint}
+        </div>
+      ) : null}
       <div
         style={{
-          marginTop: 10,
-          height: 64,
+          marginTop: compact ? 8 : 10,
+          height: compact ? 46 : 64,
           borderRadius: 14,
           border: `1px dashed ${stylesTokens.panelBorder}`,
           opacity: 0.8,
         }}
       />
+    </div>
+  );
+
+  // Player rail placeholder (rechts vom Board, vor Notizen)
+  const players = [
+    { id: "p1", label: "A", active: true },
+    { id: "p2", label: "B" },
+    { id: "p3", label: "C" },
+    { id: "p4", label: "D" },
+    { id: "p5", label: "E" },
+  ];
+
+  const PlayerIcon = ({ label, active }) => (
+    <div
+      style={{
+        width: active ? 46 : 36,
+        height: active ? 46 : 36,
+        borderRadius: 999,
+        border: `1px solid ${stylesTokens.panelBorder}`,
+        background: stylesTokens.panelBg,
+        boxShadow: active ? "0 16px 40px rgba(0,0,0,0.55)" : "0 10px 28px rgba(0,0,0,0.35)",
+        display: "grid",
+        placeItems: "center",
+        color: active ? stylesTokens.textGold : stylesTokens.textMain,
+        fontWeight: 900,
+        fontSize: active ? 14 : 12,
+        transition: "transform 120ms ease, width 120ms ease, height 120ms ease",
+      }}
+      title={active ? "Aktiver Spieler" : "Spieler"}
+    >
+      {label}
     </div>
   );
 
@@ -265,73 +298,93 @@ export default function App() {
         <div style={styles.bgMap} />
       </div>
 
-      {/* Layout: Links Game/Board (fix), Rechts Notizen (scroll) */}
       <div className="appRoot">
         {/* LEFT: Game Area */}
         <section className="leftPane">
-          {/* Top bar placeholders (User + Settings) */}
+          {/* Top: User + Settings adjacent */}
           <div className="topBarRow">
-            <PlaceholderCard title="User Dropdown" hint="(placeholder)" />
-            <PlaceholderCard title="Einstellungen" hint="(placeholder)" />
+            <PlaceholderCard title="User Dropdown" hint="(placeholder)" compact />
+            <PlaceholderCard title="Einstellungen" hint="(placeholder)" compact />
           </div>
 
-          {/* Center Board */}
-          <div
-            className="boardWrap"
-            style={{
-              border: `1px solid ${stylesTokens.panelBorder}`,
-              background: stylesTokens.panelBg,
-              boxShadow: "0 20px 70px rgba(0,0,0,0.45)",
-              backdropFilter: "blur(10px)",
-              padding: 12,
-              position: "relative",
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: `linear-gradient(90deg, transparent, ${stylesTokens.goldLine}, transparent)`,
-                opacity: 0.25,
-                pointerEvents: "none",
-              }}
-            />
-            <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column" }}>
-              <div style={{ fontWeight: 900, color: stylesTokens.textMain, fontSize: 14 }}>
-                3D Board / Game View
+          {/* Main: Tools | Board | Player Rail */}
+          <div className="mainRow">
+            {/* Left of board: Hilfskarten + Dunkles Deck side-by-side */}
+            <div className="leftTools">
+              <div className="leftToolsRow">
+                <PlaceholderCard title="Hilfskarten" hint="(placeholder)" />
+                <PlaceholderCard title="Dunkles Deck" hint="(placeholder)" />
               </div>
-              <div style={{ marginTop: 6, color: stylesTokens.textDim, fontSize: 12 }}>
-                Platzhalter – hier kommt später das Board + Figuren rein.
-              </div>
+            </div>
 
+            {/* Board: big */}
+            <div
+              className="boardWrap"
+              style={{
+                border: `1px solid ${stylesTokens.panelBorder}`,
+                background: stylesTokens.panelBg,
+                boxShadow: "0 20px 70px rgba(0,0,0,0.45)",
+                backdropFilter: "blur(10px)",
+                padding: 12,
+                position: "relative",
+              }}
+            >
               <div
                 style={{
-                  marginTop: 10,
-                  flex: 1,
-                  borderRadius: 18,
-                  border: `1px dashed ${stylesTokens.panelBorder}`,
-                  opacity: 0.85,
-                  minHeight: 0,
+                  position: "absolute",
+                  inset: 0,
+                  background: `linear-gradient(90deg, transparent, ${stylesTokens.goldLine}, transparent)`,
+                  opacity: 0.22,
+                  pointerEvents: "none",
                 }}
               />
+
+              <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column" }}>
+                <div style={{ fontWeight: 900, color: stylesTokens.textMain, fontSize: 14 }}>
+                  3D Board / Game View
+                </div>
+                <div style={{ marginTop: 6, color: stylesTokens.textDim, fontSize: 12 }}>
+                  Platzhalter – hier kommt später das Board + Figuren rein.
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 10,
+                    flex: 1,
+                    borderRadius: 18,
+                    border: `1px dashed ${stylesTokens.panelBorder}`,
+                    opacity: 0.85,
+                    minHeight: 0,
+                  }}
+                />
+              </div>
+
+              {/* Dice: under the board slightly right (overlay) */}
+              <div className="diceOverlay">
+                <PlaceholderCard title="Würfel" hint="(placeholder)" compact />
+              </div>
+            </div>
+
+            {/* Right of board: player rail, directly before notes */}
+            <div className="playerRail">
+              <div className="playerRailTitle">Spieler</div>
+              <div className="playerRailList">
+                {players.map((p) => (
+                  <PlayerIcon key={p.id} label={p.label} active={!!p.active} />
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Bottom HUD */}
-          <div className="bottomHud">
+          {/* Bottom: Player HUD (left user card, mid secret, right points) */}
+          <div className="playerHud">
+            <PlaceholderCard title="Spielerkarte (User)" hint="(placeholder)" />
             <PlaceholderCard title="Meine Geheimkarten" hint="(placeholder)" />
-            <PlaceholderCard title="Würfel + Hogwarts Points" hint="(placeholder)" />
-            <PlaceholderCard title="Spielerkarte / Turn" hint="(placeholder)" />
-          </div>
-
-          {/* Extra: Hilfskarten / Deck */}
-          <div className="extraRow">
-            <PlaceholderCard title="Dunkles Deck" hint="(placeholder)" />
-            <PlaceholderCard title="Hilfskarten" hint="(placeholder)" />
+            <PlaceholderCard title="Hogwarts Points" hint="(placeholder)" />
           </div>
         </section>
 
-        {/* RIGHT: Notes Panel */}
+        {/* RIGHT: Notes Panel (scroll only here) */}
         <aside
           className="notesPane"
           style={{

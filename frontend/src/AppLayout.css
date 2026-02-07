@@ -1,60 +1,129 @@
-/* Desktop-only layout: left fixed (no scroll), right notes scroll only */
+/* Desktop-only layout:
+   - Left: fixed, no scroll
+   - Right: notes scroll only
+*/
 
 html, body, #root {
   height: 100%;
 }
 
 body {
-  overflow: hidden; /* no page scroll, only notes panel scrolls */
+  overflow: hidden; /* prevent global scroll */
 }
 
 .appRoot {
   height: 100vh;
   display: grid;
-  grid-template-columns: minmax(720px, 1fr) clamp(380px, 32vw, 520px);
+  grid-template-columns: minmax(860px, 1fr) clamp(380px, 32vw, 520px);
   gap: 14px;
   padding: 14px;
   box-sizing: border-box;
   overflow: hidden;
 }
 
+/* LEFT COLUMN */
 .leftPane {
   overflow: hidden;
   min-width: 0;
   display: grid;
-  grid-template-rows: 72px minmax(340px, 1fr) 160px 110px; /* top / board / hud / extra */
+  grid-template-rows: 72px minmax(340px, 1fr) 160px; /* top | main | player HUD */
   gap: 14px;
 }
 
 .topBarRow {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr; /* User | Settings adjacent */
   gap: 14px;
   min-width: 0;
 }
 
+/* MIDDLE: Tools | Board | Player rail */
+.mainRow {
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(260px, 360px) minmax(520px, 1fr) 92px;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Left of board: two cards next to each other */
+.leftTools {
+  min-width: 0;
+  overflow: hidden;
+  display: grid;
+  align-content: start;
+}
+
+.leftToolsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Hilfskarten | Dunkles Deck */
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Board */
 .boardWrap {
   min-height: 0;
   overflow: hidden;
   border-radius: 22px;
+  min-width: 0;
+  position: relative;
 }
 
-.bottomHud {
+/* Dice overlay: under board slightly right */
+.diceOverlay {
+  position: absolute;
+  bottom: 14px;
+  right: 18px; /* "leicht rechts" */
+  width: 220px;
+  pointer-events: none; /* placeholder only */
+  opacity: 0.95;
+}
+
+/* Player rail: right of board, before notes */
+.playerRail {
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.18);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 16px 50px rgba(0,0,0,0.35);
+  padding: 10px 8px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  justify-items: center;
+  gap: 10px;
+}
+
+.playerRailTitle {
+  font-weight: 900;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.playerRailList {
   min-height: 0;
   overflow: hidden;
   display: grid;
-  grid-template-columns: 1.15fr 0.9fr 1.15fr;
-  gap: 14px;
+  gap: 10px;
+  align-content: start;
+  justify-items: center;
+  padding-top: 4px;
 }
 
-.extraRow {
+/* Bottom: Player HUD (User | Secret | Points) */
+.playerHud {
   min-height: 0;
   overflow: hidden;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.1fr 1.4fr 1.1fr;
   gap: 14px;
+  min-width: 0;
 }
 
+/* RIGHT COLUMN */
 .notesPane {
   overflow: hidden;
   min-width: 0;
@@ -69,21 +138,32 @@ body {
   padding-right: 4px;
 }
 
-/* Make it shrink gracefully on smaller viewports */
+/* graceful shrink */
 @media (max-height: 860px) {
   .leftPane {
-    grid-template-rows: 64px minmax(280px, 1fr) 140px 96px;
+    grid-template-rows: 64px minmax(280px, 1fr) 140px;
+  }
+  .diceOverlay {
+    bottom: 10px;
+    right: 12px;
+    width: 200px;
   }
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1400px) {
   .appRoot {
-    grid-template-columns: minmax(620px, 1fr) clamp(340px, 34vw, 480px);
+    grid-template-columns: minmax(760px, 1fr) clamp(360px, 34vw, 480px);
+  }
+  .mainRow {
+    grid-template-columns: minmax(240px, 320px) minmax(480px, 1fr) 88px;
   }
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 1220px) {
   .appRoot {
-    grid-template-columns: 1fr clamp(320px, 36vw, 440px);
+    grid-template-columns: 1fr clamp(340px, 36vw, 460px);
+  }
+  .mainRow {
+    grid-template-columns: minmax(220px, 300px) minmax(420px, 1fr) 84px;
   }
 }
