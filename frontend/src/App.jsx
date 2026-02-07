@@ -424,143 +424,124 @@ export default function App() {
   };
 
   const HogwartsPointsCard = ({ value = 0 }) => {
-    const GOLD = "#f2d27a";
+  const GOLD = "#f2d27a";
 
-    return (
-      // SLOT: gleiche "Card"-Geometrie wie deine Placeholders (Spacing/Radius)
+  return (
+    <div
+      style={{
+        height: "100%",
+        minHeight: 0,
+        minWidth: 0,
+        background: "transparent",
+        border: "none",
+        boxShadow: "none",
+        display: "grid",
+        alignItems: "center",     // ✅ dünnes Paper in der HUD-Zelle schön mittig
+        justifyItems: "stretch",
+        padding: 0,
+      }}
+    >
+      {/* Dünnes Pergament */}
       <div
         style={{
-          height: "100%",
-          minHeight: 0,
-          minWidth: 0,
-          borderRadius: 18,
-          border: `1px solid ${stylesTokens.panelBorder}`,
-          background: "rgba(0,0,0,0.10)",
-          backdropFilter: "blur(8px)",
-          boxShadow: "0 12px 30px rgba(0,0,0,0.30)",
-          padding: 12,
-          overflow: "visible",   // ✅ statt hidden
+          height: 88,             // ✅ "dünn" (kannst du 80–96 spielen)
+          width: "100%",
+          borderRadius: 16,
+          background: `
+            radial-gradient(140% 160% at 15% 10%, rgba(235,215,175,0.88), rgba(215,185,135,0.82) 55%, rgba(165,125,75,0.75)),
+            radial-gradient(120% 120% at 85% 85%, rgba(255,255,255,0.10), transparent 60%),
+            linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.26))
+          `,
+          boxShadow:
+            "inset 0 0 0 1px rgba(0,0,0,0.20), inset 0 18px 40px rgba(0,0,0,0.18), 0 16px 40px rgba(0,0,0,0.40)",
+          position: "relative",
+          overflow: "hidden",
           display: "grid",
-          placeItems: "stretch",
+          placeItems: "center",
+          padding: "14px 16px",
         }}
       >
-        {/* PAPER inset: füllt den Slot, aber mit eigenen Rundungen */}
+        {/* Papier-Flecken */}
         <div
           style={{
-            width: "100%",
-            height: "100%",
-            minHeight: 0,
-            borderRadius: 16,               // ✅ klare Rundung sichtbar
+            position: "absolute",
+            inset: 0,
             background: `
-              radial-gradient(140% 160% at 15% 10%, rgba(235,215,175,0.88), rgba(215,185,135,0.82) 55%, rgba(165,125,75,0.75)),
-              radial-gradient(120% 120% at 85% 85%, rgba(255,255,255,0.10), transparent 60%),
-              linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.26))
+              radial-gradient(circle at 22% 36%, rgba(90,60,25,0.14), transparent 42%),
+              radial-gradient(circle at 70% 30%, rgba(90,60,25,0.10), transparent 38%),
+              radial-gradient(circle at 58% 76%, rgba(255,255,255,0.08), transparent 46%)
             `,
-            boxShadow:
-              "inset 0 0 0 1px rgba(0,0,0,0.20), inset 0 20px 45px rgba(0,0,0,0.24), 0 16px 40px rgba(0,0,0,0.35)",
-            position: "relative",
-            overflow: "hidden",
-            display: "grid",
-            placeItems: "center",
-            padding: "16px 16px",
+            opacity: 0.65,
+            pointerEvents: "none",
           }}
-        >
-          {/* Papier-Flecken */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: `
-                radial-gradient(circle at 22% 36%, rgba(90,60,25,0.14), transparent 42%),
-                radial-gradient(circle at 70% 30%, rgba(90,60,25,0.10), transparent 38%),
-                radial-gradient(circle at 58% 76%, rgba(255,255,255,0.08), transparent 46%)
-              `,
-              opacity: 0.65,
-              pointerEvents: "none",
-            }}
-          />
+        />
 
-          {/* Innere Goldlinie */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 12,
-              borderRadius: 14,
-              border: "1px solid rgba(202,162,74,0.40)",
-              boxShadow: "inset 0 0 0 1px rgba(242,210,122,0.14)",
-              pointerEvents: "none",
-            }}
-          />
+        {/* Innere Goldlinie */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 10,
+            borderRadius: 12,
+            border: "1px solid rgba(202,162,74,0.40)",
+            boxShadow: "inset 0 0 0 1px rgba(242,210,122,0.14)",
+            pointerEvents: "none",
+          }}
+        />
 
-          {/* Wert */}
+        {/* Wert */}
+        <div style={{ display: "flex", alignItems: "baseline", gap: 10, position: "relative" }}>
           <div
             style={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: 10,
-              position: "relative",
+              color: GOLD,
+              fontWeight: 900,
+              fontSize: 44,
+              letterSpacing: 0.6,
+              lineHeight: 1,
+              textShadow: "0 1px 0 rgba(0,0,0,0.38), 0 0 20px rgba(242,210,122,0.28)",
             }}
           >
-            <div
-              style={{
-                color: GOLD,
-                fontWeight: 900,
-                fontSize: 52,
-                letterSpacing: 0.6,
-                lineHeight: 1,
-                textShadow:
-                  "0 1px 0 rgba(0,0,0,0.38), 0 0 20px rgba(242,210,122,0.28)",
-              }}
-            >
-              {value}
-            </div>
-
-            <div
-              style={{
-                color: GOLD,
-                fontWeight: 900,
-                fontSize: 19,
-                letterSpacing: 1.4,
-                transform: "translateY(-7px)",
-                textShadow:
-                  "0 1px 0 rgba(0,0,0,0.32), 0 0 14px rgba(242,210,122,0.22)",
-                opacity: 0.95,
-              }}
-            >
-              HP
-            </div>
+            {value}
           </div>
 
-          {/* Siegel */}
           <div
             style={{
-              position: "absolute",
-              bottom: 14,
-              right: 14,
-              color: "rgba(60,40,18,0.55)",
-              fontSize: 11,
+              color: GOLD,
               fontWeight: 900,
-              letterSpacing: 1.6,
-              textTransform: "uppercase",
-              transform: "rotate(-6deg)",
-              border: "1px solid rgba(60,40,18,0.25)",
-              borderRadius: 999,
-              padding: "3px 8px",
-              background: "rgba(255,255,255,0.10)",
+              fontSize: 18,
+              letterSpacing: 1.4,
+              transform: "translateY(-6px)",
+              textShadow: "0 1px 0 rgba(0,0,0,0.32), 0 0 14px rgba(242,210,122,0.22)",
+              opacity: 0.95,
             }}
           >
-            SCORE
+            HP
           </div>
         </div>
+
+        {/* Siegel */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 10,
+            right: 12,
+            color: "rgba(60,40,18,0.55)",
+            fontSize: 11,
+            fontWeight: 900,
+            letterSpacing: 1.6,
+            textTransform: "uppercase",
+            transform: "rotate(-6deg)",
+            border: "1px solid rgba(60,40,18,0.25)",
+            borderRadius: 999,
+            padding: "3px 8px",
+            background: "rgba(255,255,255,0.10)",
+          }}
+        >
+          SCORE
+        </div>
       </div>
-    );
-  };
-  
-
-
-
-
-  
+    </div>
+  );
+};
 
   return (
     <div style={styles.page}>
