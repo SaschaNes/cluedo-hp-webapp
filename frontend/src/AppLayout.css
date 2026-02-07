@@ -47,7 +47,7 @@ body {
   min-width: 0;
 }
 
-/* Left of board: stack cards vertically (Hilfskarten over Dunkles Deck) */
+/* Left of board: stack cards vertically (Hilfskarten deck over Dunkles Deck) */
 .leftTools {
   min-width: 0;
   overflow: hidden;
@@ -57,7 +57,7 @@ body {
 
 .leftToolsRow {
   display: grid;
-  grid-template-columns: 1fr; /* ✅ vertical */
+  grid-template-columns: 1fr; /* vertical */
   gap: 14px;
   min-width: 0;
 }
@@ -75,9 +75,9 @@ body {
 .diceOverlay {
   position: absolute;
   bottom: 14px;
-  right: 18px; /* "leicht rechts" */
+  right: 18px;
   width: 220px;
-  pointer-events: none; /* placeholder only */
+  pointer-events: none;
   opacity: 0.95;
 }
 
@@ -113,14 +113,24 @@ body {
   padding-top: 4px;
 }
 
-/* Bottom: Player HUD (User | Secret | Points) */
+/* Bottom: Player HUD (User | (Secret + My Help) | Points) */
 .playerHud {
   min-height: 0;
   overflow: hidden;
   display: grid;
-  grid-template-columns: 1.1fr 1.4fr 1.1fr;
+  grid-template-columns: 1.1fr 1.6fr 1.1fr;
   gap: 14px;
   min-width: 0;
+}
+
+/* Middle cell becomes a 2-column grid */
+.playerHudMiddle {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 0.8fr; /* Geheimkarten | Meine Hilfkarte(n) */
+  gap: 14px;
 }
 
 /* RIGHT COLUMN */

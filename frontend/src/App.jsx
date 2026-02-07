@@ -309,10 +309,10 @@ export default function App() {
 
           {/* Main: Tools | Board | Player Rail */}
           <div className="mainRow">
-            {/* Left of board: Hilfskarten + Dunkles Deck side-by-side */}
+            {/* Left of board: Hilfskarten-Deck + Dunkles Deck (Board decks) */}
             <div className="leftTools">
               <div className="leftToolsRow">
-                <PlaceholderCard title="Hilfskarten" hint="(placeholder)" />
+                <PlaceholderCard title="Hilfskarten (Deck)" hint="(placeholder)" />
                 <PlaceholderCard title="Dunkles Deck" hint="(placeholder)" />
               </div>
             </div>
@@ -376,10 +376,19 @@ export default function App() {
             </div>
           </div>
 
-          {/* Bottom: Player HUD (left user card, mid secret, right points) */}
+          {/* Bottom: Player HUD
+              Left: user card
+              Middle: secret cards + player's help-card slot next to it
+              Right: points
+          */}
           <div className="playerHud">
             <PlaceholderCard title="Spielerkarte (User)" hint="(placeholder)" />
-            <PlaceholderCard title="Meine Geheimkarten" hint="(placeholder)" />
+
+            <div className="playerHudMiddle">
+              <PlaceholderCard title="Meine Geheimkarten" hint="(placeholder)" />
+              <PlaceholderCard title="Meine Hilfkarte(n)" hint="(placeholder)" />
+            </div>
+
             <PlaceholderCard title="Hogwarts Points" hint="(placeholder)" />
           </div>
         </section>
