@@ -424,127 +424,141 @@ export default function App() {
   };
 
   const HogwartsPointsCard = ({ value = 0 }) => {
-    return (
+  const GOLD = "#f2d27a";     // echtes Gold, unabhängig vom Theme
+  const GOLD2 = "#caa24a";    // dunkleres Gold für Rand
+
+  return (
+    <div
+      style={{
+        borderRadius: 18,
+        border: `1px solid ${stylesTokens.panelBorder}`,
+        background: stylesTokens.panelBg,
+        boxShadow: "0 14px 40px rgba(0,0,0,0.45)",
+        backdropFilter: "blur(10px)",
+        overflow: "hidden",
+        position: "relative",
+        minWidth: 0,
+        padding: 14,
+        display: "grid",
+        gridTemplateRows: "auto 1fr",
+        gap: 10,
+      }}
+    >
+      {/* Header */}
+      <div style={{ fontWeight: 900, fontSize: 12.5, color: stylesTokens.textDim, opacity: 0.95 }}>
+        Hogwarts Points
+      </div>
+
+      {/* Medallion / parchment inset */}
       <div
         style={{
-          borderRadius: 18,
+          borderRadius: 16,
           border: `1px solid ${stylesTokens.panelBorder}`,
-          boxShadow: "0 14px 40px rgba(0,0,0,0.45)",
-          overflow: "hidden",
+          background: `
+            radial-gradient(120% 140% at 20% 15%, rgba(255,245,220,0.95), rgba(245,225,185,0.88) 55%, rgba(210,170,110,0.78)),
+            radial-gradient(90% 120% at 85% 80%, rgba(255,255,255,0.18), transparent 55%),
+            linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.06))
+          `,
+          boxShadow:
+            "inset 0 0 0 1px rgba(0,0,0,0.22), inset 0 18px 50px rgba(0,0,0,0.12), 0 18px 50px rgba(0,0,0,0.35)",
           position: "relative",
-          minWidth: 0,
-          background: stylesTokens.panelBg,
-          backdropFilter: "blur(10px)",
+          overflow: "hidden",
+          display: "grid",
+          placeItems: "center",
+          padding: 12,
         }}
       >
-        {/* Pergament-Hintergrund */}
+        {/* paper speckles */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background: `
-              radial-gradient(120% 120% at 20% 10%, rgba(255, 232, 190, 0.22), transparent 55%),
-              radial-gradient(120% 120% at 90% 80%, rgba(255, 210, 150, 0.18), transparent 55%),
-              linear-gradient(180deg, rgba(80, 55, 30, 0.32), rgba(20, 15, 10, 0.08))
+              radial-gradient(circle at 18% 38%, rgba(120,70,20,0.10), transparent 42%),
+              radial-gradient(circle at 72% 28%, rgba(120,70,20,0.08), transparent 40%),
+              radial-gradient(circle at 60% 78%, rgba(255,255,255,0.12), transparent 46%)
             `,
-            opacity: 1,
+            opacity: 0.55,
             pointerEvents: "none",
           }}
         />
 
-        {/* Papier-Textur / Flecken */}
+        {/* gold frame line */}
         <div
           style={{
             position: "absolute",
-            inset: 0,
-            background: `
-              radial-gradient(circle at 18% 38%, rgba(255, 220, 170, 0.10), transparent 42%),
-              radial-gradient(circle at 72% 28%, rgba(255, 200, 140, 0.08), transparent 40%),
-              radial-gradient(circle at 60% 78%, rgba(255, 240, 210, 0.06), transparent 46%)
-            `,
-            mixBlendMode: "overlay",
+            inset: 10,
+            borderRadius: 12,
+            border: `1px solid rgba(202,162,74,0.55)`,
+            boxShadow: `inset 0 0 0 1px rgba(242,210,122,0.18)`,
             pointerEvents: "none",
           }}
         />
 
-        {/* goldene Linie */}
+        {/* value */}
         <div
           style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            top: 0,
-            height: 1,
-            background: stylesTokens.goldLine,
-            opacity: 0.45,
-            pointerEvents: "none",
+            display: "flex",
+            alignItems: "baseline",
+            gap: 10,
+            position: "relative",
           }}
-        />
-
-        <div style={{ position: "relative", padding: 14, height: "100%", display: "grid", gridTemplateRows: "auto 1fr" }}>
-          <div style={{ fontWeight: 900, fontSize: 12.5, color: stylesTokens.textDim, opacity: 0.95 }}>
-            Hogwarts Points
+        >
+          <div
+            style={{
+              color: GOLD,
+              fontWeight: 900,
+              fontSize: 46,
+              letterSpacing: 0.5,
+              lineHeight: 1,
+              textShadow:
+                "0 1px 0 rgba(0,0,0,0.25), 0 0 18px rgba(242,210,122,0.22)",
+            }}
+          >
+            {value}
           </div>
 
           <div
             style={{
-              display: "flex",
-              alignItems: "baseline",
-              justifyContent: "center",
-              gap: 10,
-              marginTop: 8,
+              color: GOLD,
+              fontWeight: 900,
+              fontSize: 18,
+              letterSpacing: 1.3,
+              transform: "translateY(-6px)",
+              textShadow:
+                "0 1px 0 rgba(0,0,0,0.22), 0 0 14px rgba(242,210,122,0.18)",
+              opacity: 0.95,
             }}
           >
-            <div
-              style={{
-                color: stylesTokens.textGold,
-                fontWeight: 900,
-                fontSize: 44,
-                letterSpacing: 0.5,
-                textShadow: "0 0 18px rgba(255, 215, 120, 0.18)",
-                lineHeight: 1,
-              }}
-            >
-              {value}
-            </div>
-
-            <div
-              style={{
-                color: stylesTokens.textGold,
-                fontWeight: 900,
-                fontSize: 18,
-                letterSpacing: 1.2,
-                opacity: 0.95,
-                transform: "translateY(-4px)",
-                textShadow: "0 0 14px rgba(255, 215, 120, 0.16)",
-              }}
-            >
-              HP
-            </div>
-          </div>
-
-          <div
-            style={{
-              marginTop: 10,
-              display: "flex",
-              justifyContent: "center",
-              gap: 8,
-              opacity: 0.85,
-              color: stylesTokens.textDim,
-              fontSize: 11.5,
-            }}
-          >
-            <span style={{ border: `1px solid ${stylesTokens.panelBorder}`, borderRadius: 999, padding: "4px 8px", background: "rgba(0,0,0,0.12)" }}>
-              + / −
-            </span>
-            <span style={{ border: `1px solid ${stylesTokens.panelBorder}`, borderRadius: 999, padding: "4px 8px", background: "rgba(0,0,0,0.12)" }}>
-              Hauswertung
-            </span>
+            HP
           </div>
         </div>
+
+        {/* small stamp */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 10,
+            right: 12,
+            color: "rgba(40,25,10,0.45)",
+            fontSize: 11,
+            fontWeight: 900,
+            letterSpacing: 1.6,
+            textTransform: "uppercase",
+            transform: "rotate(-6deg)",
+            border: `1px solid rgba(40,25,10,0.18)`,
+            borderRadius: 999,
+            padding: "3px 8px",
+            background: "rgba(255,255,255,0.10)",
+          }}
+        >
+          Score
+        </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
+
   
 
   return (
