@@ -424,147 +424,127 @@ export default function App() {
   };
 
   const HogwartsPointsCard = ({ value = 0 }) => {
-  const GOLD = "#f2d27a";
-  const GOLD2 = "#caa24a";
+    const GOLD = "#f2d27a";
 
-  return (
-    <div
-      style={{
-        borderRadius: 18,
-        border: "1px solid rgba(255,255,255,0.06)",
-        background: "transparent",          // 🔥 außen quasi unsichtbar
-        boxShadow: "none",
-        backdropFilter: "none",
-        overflow: "visible",
-        minWidth: 0,
-        padding: 6,
-        display: "grid",
-        gridTemplateRows: "auto 1fr",
-        gap: 8,
-      }}
-    >
-      {/* Header */}
+    return (
       <div
         style={{
-          fontWeight: 900,
-          fontSize: 12.5,
-          color: stylesTokens.textDim,
-          opacity: 0.9,
-          paddingLeft: 6,
+          background: "transparent",
+          border: "none",
+          boxShadow: "none",
+          padding: 4,
+          minWidth: 0,
         }}
       >
-        Hogwarts Points
-      </div>
-
-      {/* Pergament */}
-      <div
-        style={{
-          borderRadius: 16,
-          border: "1px solid rgba(180,140,70,0.45)",
-          background: `
-            radial-gradient(140% 160% at 15% 10%, rgba(245,225,185,0.88), rgba(225,195,145,0.82) 55%, rgba(175,135,85,0.75)),
-            radial-gradient(120% 120% at 85% 85%, rgba(255,255,255,0.10), transparent 60%),
-            linear-gradient(180deg, rgba(0,0,0,0.12), rgba(0,0,0,0.22))
-          `,
-          boxShadow:
-            "inset 0 0 0 1px rgba(0,0,0,0.18), inset 0 20px 50px rgba(0,0,0,0.22), 0 18px 40px rgba(0,0,0,0.35)",
-          position: "relative",
-          overflow: "hidden",
-          display: "grid",
-          placeItems: "center",
-          padding: "16px 14px",
-        }}
-      >
-        {/* Papier-Flecken / Grain */}
+        {/* Pergament */}
         <div
           style={{
-            position: "absolute",
-            inset: 0,
+            borderRadius: 18,
             background: `
-              radial-gradient(circle at 22% 36%, rgba(90,60,25,0.14), transparent 42%),
-              radial-gradient(circle at 70% 30%, rgba(90,60,25,0.10), transparent 38%),
-              radial-gradient(circle at 58% 76%, rgba(255,255,255,0.08), transparent 46%)
+              radial-gradient(140% 160% at 15% 10%, rgba(235,215,175,0.88), rgba(215,185,135,0.82) 55%, rgba(165,125,75,0.75)),
+              radial-gradient(120% 120% at 85% 85%, rgba(255,255,255,0.10), transparent 60%),
+              linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.26))
             `,
-            opacity: 0.65,
-            pointerEvents: "none",
-          }}
-        />
-
-        {/* Goldene Innenlinie */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 10,
-            borderRadius: 12,
-            border: `1px solid rgba(202,162,74,0.45)`,
-            boxShadow: "inset 0 0 0 1px rgba(242,210,122,0.16)",
-            pointerEvents: "none",
-          }}
-        />
-
-        {/* Wert */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            gap: 10,
+            boxShadow:
+              "inset 0 0 0 1px rgba(0,0,0,0.20), inset 0 20px 45px rgba(0,0,0,0.24), 0 20px 50px rgba(0,0,0,0.45)",
             position: "relative",
+            overflow: "hidden",
+            display: "grid",
+            placeItems: "center",
+            padding: "22px 18px",
           }}
         >
+          {/* Papier-Flecken */}
           <div
             style={{
-              color: GOLD,
-              fontWeight: 900,
-              fontSize: 44,
-              letterSpacing: 0.5,
-              lineHeight: 1,
-              textShadow:
-                "0 1px 0 rgba(0,0,0,0.35), 0 0 18px rgba(242,210,122,0.25)",
+              position: "absolute",
+              inset: 0,
+              background: `
+                radial-gradient(circle at 22% 36%, rgba(90,60,25,0.14), transparent 42%),
+                radial-gradient(circle at 70% 30%, rgba(90,60,25,0.10), transparent 38%),
+                radial-gradient(circle at 58% 76%, rgba(255,255,255,0.08), transparent 46%)
+              `,
+              opacity: 0.65,
+              pointerEvents: "none",
             }}
-          >
-            {value}
-          </div>
+          />
 
+          {/* Innere Goldlinie */}
           <div
             style={{
-              color: GOLD,
-              fontWeight: 900,
-              fontSize: 17,
-              letterSpacing: 1.2,
-              transform: "translateY(-5px)",
-              textShadow:
-                "0 1px 0 rgba(0,0,0,0.32), 0 0 14px rgba(242,210,122,0.20)",
-              opacity: 0.95,
+              position: "absolute",
+              inset: 10,
+              borderRadius: 14,
+              border: "1px solid rgba(202,162,74,0.40)",
+              boxShadow: "inset 0 0 0 1px rgba(242,210,122,0.14)",
+              pointerEvents: "none",
+            }}
+          />
+
+          {/* Wert */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: 10,
+              position: "relative",
             }}
           >
-            HP
-          </div>
-        </div>
+            <div
+              style={{
+                color: GOLD,
+                fontWeight: 900,
+                fontSize: 46,
+                letterSpacing: 0.6,
+                lineHeight: 1,
+                textShadow:
+                  "0 1px 0 rgba(0,0,0,0.38), 0 0 20px rgba(242,210,122,0.28)",
+              }}
+            >
+              {value}
+            </div>
 
-        {/* Siegel */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 10,
-            right: 12,
-            color: "rgba(60,40,18,0.55)",
-            fontSize: 11,
-            fontWeight: 900,
-            letterSpacing: 1.5,
-            textTransform: "uppercase",
-            transform: "rotate(-6deg)",
-            border: "1px solid rgba(60,40,18,0.25)",
-            borderRadius: 999,
-            padding: "3px 8px",
-            background: "rgba(255,255,255,0.10)",
-          }}
-        >
-          Score
+            <div
+              style={{
+                color: GOLD,
+                fontWeight: 900,
+                fontSize: 18,
+                letterSpacing: 1.4,
+                transform: "translateY(-6px)",
+                textShadow:
+                  "0 1px 0 rgba(0,0,0,0.32), 0 0 14px rgba(242,210,122,0.22)",
+                opacity: 0.95,
+              }}
+            >
+              HP
+            </div>
+          </div>
+
+          {/* Siegel */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: 12,
+              right: 14,
+              color: "rgba(60,40,18,0.55)",
+              fontSize: 11,
+              fontWeight: 900,
+              letterSpacing: 1.6,
+              textTransform: "uppercase",
+              transform: "rotate(-6deg)",
+              border: "1px solid rgba(60,40,18,0.25)",
+              borderRadius: 999,
+              padding: "3px 8px",
+              background: "rgba(255,255,255,0.10)",
+            }}
+          >
+            SCORE
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
+  
 
 
   
