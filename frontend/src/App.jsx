@@ -427,36 +427,42 @@ export default function App() {
     const GOLD = "#f2d27a";
 
     return (
+      // SLOT: gleiche "Card"-Geometrie wie deine Placeholders (Spacing/Radius)
       <div
         style={{
-          height: "100%",           // 🔥 füllt HUD-Zelle
+          height: "100%",
           minHeight: 0,
-          background: "transparent",
-          border: "none",
-          boxShadow: "none",
-          padding: 0,
+          minWidth: 0,
+          borderRadius: 18,
+          border: `1px solid ${stylesTokens.panelBorder}`,
+          background: "rgba(0,0,0,0.10)",   // sehr dezent, quasi unsichtbar
+          backdropFilter: "blur(8px)",
+          boxShadow: "0 12px 30px rgba(0,0,0,0.30)",
+          padding: 12,                      // ✅ Abstand wie andere Elemente
+          overflow: "hidden",
           display: "grid",
-          placeItems: "center",     // zentriert Pergament in voller Höhe
+          placeItems: "stretch",
         }}
       >
+        {/* PAPER inset: füllt den Slot, aber mit eigenen Rundungen */}
         <div
           style={{
             width: "100%",
-            height: "100%",         // 🔥 Pergament darf in die Höhe gehen
+            height: "100%",
             minHeight: 0,
-            borderRadius: 18,
+            borderRadius: 16,               // ✅ klare Rundung sichtbar
             background: `
               radial-gradient(140% 160% at 15% 10%, rgba(235,215,175,0.88), rgba(215,185,135,0.82) 55%, rgba(165,125,75,0.75)),
               radial-gradient(120% 120% at 85% 85%, rgba(255,255,255,0.10), transparent 60%),
               linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.26))
             `,
             boxShadow:
-              "inset 0 0 0 1px rgba(0,0,0,0.20), inset 0 20px 45px rgba(0,0,0,0.24), 0 20px 50px rgba(0,0,0,0.45)",
+              "inset 0 0 0 1px rgba(0,0,0,0.20), inset 0 20px 45px rgba(0,0,0,0.24), 0 16px 40px rgba(0,0,0,0.35)",
             position: "relative",
             overflow: "hidden",
             display: "grid",
             placeItems: "center",
-            padding: "18px 18px",
+            padding: "16px 16px",
           }}
         >
           {/* Papier-Flecken */}
@@ -499,7 +505,7 @@ export default function App() {
               style={{
                 color: GOLD,
                 fontWeight: 900,
-                fontSize: 52,        // etwas größer, weil mehr Platz
+                fontSize: 52,
                 letterSpacing: 0.6,
                 lineHeight: 1,
                 textShadow:
@@ -550,6 +556,7 @@ export default function App() {
     );
   };
   
+
 
 
 

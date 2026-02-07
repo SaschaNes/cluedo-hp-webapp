@@ -130,8 +130,7 @@ body {
 
 /* HUD */
 .playerHud {
-  height: 100%;
-  min-height: 0;
+  align-items: stretch;
   overflow: hidden;
   display: grid;
   grid-template-columns: 1.1fr 1.7fr 1.1fr;
