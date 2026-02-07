@@ -429,16 +429,21 @@ export default function App() {
     return (
       <div
         style={{
+          height: "100%",           // 🔥 füllt HUD-Zelle
+          minHeight: 0,
           background: "transparent",
           border: "none",
           boxShadow: "none",
-          padding: 4,
-          minWidth: 0,
+          padding: 0,
+          display: "grid",
+          placeItems: "center",     // zentriert Pergament in voller Höhe
         }}
       >
-        {/* Pergament */}
         <div
           style={{
+            width: "100%",
+            height: "100%",         // 🔥 Pergament darf in die Höhe gehen
+            minHeight: 0,
             borderRadius: 18,
             background: `
               radial-gradient(140% 160% at 15% 10%, rgba(235,215,175,0.88), rgba(215,185,135,0.82) 55%, rgba(165,125,75,0.75)),
@@ -451,7 +456,7 @@ export default function App() {
             overflow: "hidden",
             display: "grid",
             placeItems: "center",
-            padding: "22px 18px",
+            padding: "18px 18px",
           }}
         >
           {/* Papier-Flecken */}
@@ -473,7 +478,7 @@ export default function App() {
           <div
             style={{
               position: "absolute",
-              inset: 10,
+              inset: 12,
               borderRadius: 14,
               border: "1px solid rgba(202,162,74,0.40)",
               boxShadow: "inset 0 0 0 1px rgba(242,210,122,0.14)",
@@ -494,7 +499,7 @@ export default function App() {
               style={{
                 color: GOLD,
                 fontWeight: 900,
-                fontSize: 46,
+                fontSize: 52,        // etwas größer, weil mehr Platz
                 letterSpacing: 0.6,
                 lineHeight: 1,
                 textShadow:
@@ -508,9 +513,9 @@ export default function App() {
               style={{
                 color: GOLD,
                 fontWeight: 900,
-                fontSize: 18,
+                fontSize: 19,
                 letterSpacing: 1.4,
-                transform: "translateY(-6px)",
+                transform: "translateY(-7px)",
                 textShadow:
                   "0 1px 0 rgba(0,0,0,0.32), 0 0 14px rgba(242,210,122,0.22)",
                 opacity: 0.95,
@@ -524,7 +529,7 @@ export default function App() {
           <div
             style={{
               position: "absolute",
-              bottom: 12,
+              bottom: 14,
               right: 14,
               color: "rgba(60,40,18,0.55)",
               fontSize: 11,
@@ -545,6 +550,7 @@ export default function App() {
     );
   };
   
+
 
 
   

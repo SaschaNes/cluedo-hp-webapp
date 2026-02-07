@@ -130,6 +130,7 @@ body {
 
 /* HUD */
 .playerHud {
+  height: 100%;
   min-height: 0;
   overflow: hidden;
   display: grid;
@@ -139,6 +140,7 @@ body {
 }
 
 .playerHudMiddle {
+  height: 100%;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
