@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import WinnerCelebration from "./components/WinnerCelebration";
 
 import { api } from "./api/client";
 import { cycleTag } from "./utils/cycleTag";
@@ -11,19 +9,9 @@ import { styles } from "./styles/styles";
 import { applyTheme, DEFAULT_THEME_KEY } from "./styles/themes";
 import { stylesTokens } from "./styles/theme";
 
-import AdminPanel from "./components/AdminPanel";
 import LoginPage from "./components/LoginPage";
-import TopBar from "./components/TopBar";
-import PasswordModal from "./components/PasswordModal";
-import ChipModal from "./components/ChipModal";
-import HelpModal from "./components/HelpModal";
-import GamePickerCard from "./components/GamePickerCard";
 import SheetSection from "./components/SheetSection";
-import DesignModal from "./components/DesignModal";
-import WinnerCard from "./components/WinnerCard";
-import WinnerBadge from "./components/WinnerBadge";
-import NewGameModal from "./components/NewGameModal";
-import StatsModal from "./components/StatsModal";
+import ChipModal from "./components/ChipModal";
 
 export default function App() {
   useHpGlobalStyles();
@@ -34,87 +22,30 @@ export default function App() {
   const [loginPassword, setLoginPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
 
-  // Game/Sheet state
+  // Game/Sheet state (minimal)
   const [games, setGames] = useState([]);
   const [gameId, setGameId] = useState(null);
   const [sheet, setSheet] = useState(null);
   const [pulseId, setPulseId] = useState(null);
 
-  // Game meta
-  const [gameMeta, setGameMeta] = useState(null); // {code, host_user_id, winner_email, winner_user_id}
-  const [members, setMembers] = useState([]);
-
-  // Winner selection (host only)
-  const [winnerUserId, setWinnerUserId] = useState("");
-
-  // Modals
-  const [helpOpen, setHelpOpen] = useState(false);
+  // Chip modal
   const [chipOpen, setChipOpen] = useState(false);
   const [chipEntry, setChipEntry] = useState(null);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  const [pwOpen, setPwOpen] = useState(false);
-  const [pw1, setPw1] = useState("");
-  const [pw2, setPw2] = useState("");
-  const [pwMsg, setPwMsg] = useState("");
-  const [pwSaving, setPwSaving] = useState(false);
-
-  // Theme
-  const [designOpen, setDesignOpen] = useState(false);
-  const [themeKey, setThemeKey] = useState(DEFAULT_THEME_KEY);
-
-  // New Game Modal
-  const [newGameOpen, setNewGameOpen] = useState(false);
-
-  // ===== Stats Modal =====
-  const [statsOpen, setStatsOpen] = useState(false);
-  const [stats, setStats] = useState(null);
-  const [statsLoading, setStatsLoading] = useState(false);
-  const [statsError, setStatsError] = useState("");
-
-  // ===== Join Snack (bottom toast) =====
-  const [snack, setSnack] = useState("");
-  const snackTimerRef = useRef(null);
-
-  // track members to detect joins
-  const lastMemberIdsRef = useRef(new Set());
-  const membersBaselineRef = useRef(false);
-
-  // ===== Winner Celebration =====
-  const [celebrateOpen, setCelebrateOpen] = useState(false);
-  const [celebrateName, setCelebrateName] = useState("");
-
-  // baseline per game: beim ersten Meta-Load NICHT feiern
-  const winnerBaselineRef = useRef(false);
-  const lastWinnerIdRef = useRef(null);
-
-  const showSnack = (msg) => {
-    setSnack(msg);
-    if (snackTimerRef.current) clearTimeout(snackTimerRef.current);
-    snackTimerRef.current = setTimeout(() => setSnack(""), 1800);
-  };
-
-  const vibrate = (pattern) => {
-    try {
-      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-        navigator.vibrate(pattern);
-      }
-    } catch {
-      // ignore
-    }
-  };
+  // Live refresh (optional)
+  const aliveRef = useRef(true);
 
   const load = async () => {
     const m = await api("/auth/me");
     setMe(m);
 
     const tk = m?.theme_key || DEFAULT_THEME_KEY;
-    setThemeKey(tk);
     applyTheme(tk);
 
     const gs = await api("/games");
     setGames(gs);
 
+    // Auto-pick first game (kein UI dafür)
     if (gs[0] && !gameId) setGameId(gs[0].id);
   };
 
@@ -124,110 +55,46 @@ export default function App() {
     setSheet(sh);
   };
 
-  const loadGameMeta = async () => {
-    if (!gameId) return;
-
-    const meta = await api(`/games/${gameId}`);
-    setGameMeta(meta);
-    setWinnerUserId(meta?.winner_user_id || "");
-
-    const mem = await api(`/games/${gameId}/members`);
-    setMembers(mem);
-
-    // ✅ detect new members (join notifications for everyone)
-    try {
-      const prev = lastMemberIdsRef.current;
-      const nowIds = new Set((mem || []).map((m) => String(m.id)));
-
-      if (!membersBaselineRef.current) {
-        // first load for this game -> set baseline, no notification
-        membersBaselineRef.current = true;
-        lastMemberIdsRef.current = nowIds;
-        return;
-      }
-
-      const added = (mem || []).filter((m) => !prev.has(String(m.id)));
-
-      if (added.length > 0) {
-        const names = added
-          .map((m) => ((m.display_name || "").trim() || (m.email || "").trim() || "Jemand"))
-          .slice(0, 3);
-
-        const msg =
-          added.length === 1
-            ? `✨ ${names[0]} ist beigetreten`
-            : `✨ ${names.join(", ")} ${added.length > 3 ? `(+${added.length - 3}) ` : ""}sind beigetreten`;
-
-        showSnack(msg);
-        vibrate(25); // dezent & kurz
-      }
-
-      lastMemberIdsRef.current = nowIds;
-    } catch {
-      // ignore snack errors
-    }
-  };
-
-  // Dropdown outside click
-  useEffect(() => {
-    const onDown = (e) => {
-      const root = e.target?.closest?.("[data-user-menu]");
-      if (!root) setUserMenuOpen(false);
-    };
-    if (userMenuOpen) document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
-  }, [userMenuOpen]);
-
   // initial load
   useEffect(() => {
+    aliveRef.current = true;
     (async () => {
       try {
         await load();
-      } catch {}
+      } catch {
+        // ignore
+      }
     })();
+    return () => {
+      aliveRef.current = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // on game change
   useEffect(() => {
-    // reset join detection baseline when switching games
-    membersBaselineRef.current = false;
-    lastMemberIdsRef.current = new Set();
-
-    // reset winner celebration baseline when switching games
-    winnerBaselineRef.current = false;
-    lastWinnerIdRef.current = null;
-    setCelebrateOpen(false);
-    setCelebrateName("");
-
     (async () => {
       if (!gameId) return;
       try {
         await reloadSheet();
-        await loadGameMeta();
-      } catch {}
+      } catch {
+        // ignore
+      }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId]);
 
-  // ✅ Live refresh (Members/Meta) – damit neue Joiner ohne Reload sichtbar sind
-  // Für 5–6 Spieler reicht 2.5s völlig, ist "live genug" und schont Backend.
+  // Live refresh (nur Sheet)
   useEffect(() => {
     if (!me || !gameId) return;
 
     let alive = true;
-
     const tick = async () => {
       try {
-        await loadGameMeta(); // refresh members + winner meta
-      } catch {
-        // ignore
-      }
+        await reloadSheet();
+      } catch {}
     };
 
-    // sofort einmal ziehen
     tick();
-
     const id = setInterval(() => {
       if (!alive) return;
       tick();
@@ -237,37 +104,7 @@ export default function App() {
       alive = false;
       clearInterval(id);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me?.id, gameId]);
-
-  useEffect(() => {
-    // wid kann auch "" sein (kein Sieger)
-    const wid = gameMeta?.winner_user_id ? String(gameMeta.winner_user_id) : "";
-
-    // Baseline beim ersten Meta-Load setzen – egal ob Winner existiert oder nicht
-    if (!winnerBaselineRef.current) {
-      winnerBaselineRef.current = true;
-      lastWinnerIdRef.current = wid; // kann "" sein
-      return;
-    }
-
-    // Nur reagieren, wenn sich wid ändert
-    if (lastWinnerIdRef.current !== wid) {
-      lastWinnerIdRef.current = wid;
-
-      // wenn wid leer wird (reset), nicht feiern
-      if (!wid) return;
-
-      const name =
-        (gameMeta?.winner_display_name || "").trim() ||
-        (gameMeta?.winner_email || "").trim() ||
-        "Jemand";
-
-      setCelebrateName(name);
-      setCelebrateOpen(true);
-    }
-  }, [gameMeta?.winner_user_id, gameMeta?.winner_display_name, gameMeta?.winner_email]);
-
 
   // ===== Auth actions =====
   const doLogin = async () => {
@@ -278,167 +115,7 @@ export default function App() {
     await load();
   };
 
-  const doLogout = async () => {
-    await api("/auth/logout", { method: "POST" });
-    setMe(null);
-    setGames([]);
-    setGameId(null);
-    setSheet(null);
-    setGameMeta(null);
-    setMembers([]);
-    setWinnerUserId("");
-
-    // reset winner celebration on logout
-    winnerBaselineRef.current = false;
-    lastWinnerIdRef.current = null;
-    setCelebrateOpen(false);
-    setCelebrateName("");
-  };
-
-  // ===== Password =====
-  const openPwModal = () => {
-    setPwMsg("");
-    setPw1("");
-    setPw2("");
-    setPwOpen(true);
-    setUserMenuOpen(false);
-  };
-
-  const closePwModal = () => {
-    setPwOpen(false);
-    setPwMsg("");
-    setPw1("");
-    setPw2("");
-  };
-
-  const savePassword = async () => {
-    setPwMsg("");
-
-    if (!pw1 || pw1.length < 8) return setPwMsg("❌ Passwort muss mindestens 8 Zeichen haben.");
-    if (pw1 !== pw2) return setPwMsg("❌ Passwörter stimmen nicht überein.");
-
-    setPwSaving(true);
-    try {
-      await api("/auth/password", {
-        method: "PATCH",
-        body: JSON.stringify({ password: pw1 }),
-      });
-      setPwMsg("✅ Passwort gespeichert.");
-      setTimeout(() => closePwModal(), 650);
-    } catch (e) {
-      setPwMsg("❌ Fehler: " + (e?.message || "unknown"));
-    } finally {
-      setPwSaving(false);
-    }
-  };
-
-  // ===== Theme =====
-  const openDesignModal = () => {
-    setDesignOpen(true);
-    setUserMenuOpen(false);
-  };
-
-  const selectTheme = async (key) => {
-    setThemeKey(key);
-    applyTheme(key);
-
-    // ✅ sofort für nächsten Start merken (verhindert Flash)
-    try {
-      localStorage.setItem(`hpTheme:${(me?.email || "guest").toLowerCase()}`, key);
-      localStorage.setItem("hpTheme:guest", key); // fallback, falls noch nicht eingeloggt
-    } catch {
-      // ignore
-    }
-
-    try {
-      await api("/auth/theme", {
-        method: "PATCH",
-        body: JSON.stringify({ theme_key: key }),
-      });
-    } catch {
-      // theme locally already applied; ignore backend error
-    }
-  };
-  
-
-  // ===== Stats (always fresh on open) =====
-  const openStatsModal = async () => {
-    setUserMenuOpen(false);
-    setStatsOpen(true);
-    setStatsError("");
-    setStatsLoading(true);
-
-    try {
-      const s = await api("/auth/me/stats");
-      setStats(s);
-    } catch (e) {
-      setStats(null);
-      setStatsError("❌ Fehler: " + (e?.message || "unknown"));
-    } finally {
-      setStatsLoading(false);
-    }
-  };
-
-  const closeStatsModal = () => {
-    setStatsOpen(false);
-    setStatsError("");
-  };
-
-  // ===== New game flow =====
-  const createGame = async () => {
-    // ✅ alten Game-State komplett loswerden, damit nix am alten Spiel "hängen bleibt"
-    setSheet(null);
-    setGameMeta(null);
-    setMembers([]);
-    setWinnerUserId("");
-    setPulseId(null);
-
-    // auch Chip-Modal-State resetten
-    setChipOpen(false);
-    setChipEntry(null);
-
-    // reset winner celebration baseline for the new game
-    winnerBaselineRef.current = false;
-    lastWinnerIdRef.current = null;
-    setCelebrateOpen(false);
-    setCelebrateName("");
-
-    const g = await api("/games", {
-      method: "POST",
-      body: JSON.stringify({ name: "Spiel " + new Date().toLocaleString() }),
-    });
-
-    const gs = await api("/games");
-    setGames(gs);
-
-    // ✅ auf neues Game wechseln (triggert reloadSheet/loadGameMeta via effect)
-    setGameId(g.id);
-
-    return g; // includes code
-  };
-
-  const joinGame = async (code) => {
-    const res = await api("/games/join", {
-      method: "POST",
-      body: JSON.stringify({ code }),
-    });
-
-    const gs = await api("/games");
-    setGames(gs);
-    setGameId(res.id);
-  };
-
-  // ===== Winner =====
-  const saveWinner = async () => {
-    if (!gameId) return;
-    await api(`/games/${gameId}/winner`, {
-      method: "PATCH",
-      body: JSON.stringify({ winner_user_id: winnerUserId || null }),
-    });
-    await loadGameMeta();
-  };
-
-  // ===== Sheet actions =====
+  // ===== Sheet actions (wie bisher) =====
   const cycleStatus = async (entry) => {
     let next = 0;
     if (entry.status === 0) next = 2;
@@ -521,11 +198,9 @@ export default function App() {
     if (!t) return "—";
 
     if (t === "s") {
-      // Prefer backend chip, fallback localStorage
       const chip = entry.chip || getChipLS(gameId, entry.entry_id);
       return chip ? `s.${chip}` : "s";
     }
-
     return t; // i oder m
   };
 
@@ -552,157 +227,167 @@ export default function App() {
       ]
     : [];
 
-  const isHost = !!(me?.id && gameMeta?.host_user_id && me.id === gameMeta.host_user_id);
+  const PlaceholderCard = ({ title, hint }) => (
+    <div
+      style={{
+        borderRadius: 18,
+        border: `1px solid ${stylesTokens.panelBorder}`,
+        background: stylesTokens.panelBg,
+        boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
+        backdropFilter: "blur(8px)",
+        padding: 12,
+        overflow: "hidden",
+      }}
+    >
+      <div style={{ fontWeight: 900, color: stylesTokens.textMain, fontSize: 13 }}>
+        {title}
+      </div>
+      <div style={{ marginTop: 6, color: stylesTokens.textDim, fontSize: 12, opacity: 0.95 }}>
+        {hint}
+      </div>
+      <div
+        style={{
+          marginTop: 10,
+          height: 64,
+          borderRadius: 14,
+          border: `1px dashed ${stylesTokens.panelBorder}`,
+          opacity: 0.8,
+        }}
+      />
+    </div>
+  );
 
   return (
     <div style={styles.page}>
-      {/* Winner Celebration Overlay */}
-      <WinnerCelebration
-        open={celebrateOpen}
-        winnerName={celebrateName}
-        onClose={() => setCelebrateOpen(false)}
-      />
-
       <div style={styles.bgFixed} aria-hidden="true">
         <div style={styles.bgMap} />
       </div>
 
-      <div style={styles.shell}>
-        <TopBar
-          me={me}
-          userMenuOpen={userMenuOpen}
-          setUserMenuOpen={setUserMenuOpen}
-          openPwModal={openPwModal}
-          openDesignModal={openDesignModal}
-          openStatsModal={openStatsModal}
-          doLogout={doLogout}
-          onOpenNewGame={() => setNewGameOpen(true)}
-        />
+      {/* Layout: Links Game/Board, Rechts Notizen */}
+      <div
+        style={{
+          ...styles.shell,
+          display: "grid",
+          gridTemplateColumns: "1fr min(420px, 36vw)",
+          gap: 14,
+          alignItems: "start",
+        }}
+      >
+        {/* LEFT: Game Area (Placeholders) */}
+        <div style={{ display: "grid", gap: 14 }}>
+          {/* Top bar placeholders (User + Settings) */}
+          <div style={{ display: "flex", gap: 10, justifyContent: "space-between" }}>
+            <PlaceholderCard title="User Dropdown" hint="(placeholder)" />
+            <PlaceholderCard title="Einstellungen" hint="(placeholder)" />
+          </div>
 
-        {me.role === "admin" && <AdminPanel />}
-
-        <GamePickerCard
-          games={games}
-          gameId={gameId}
-          setGameId={setGameId}
-          onOpenHelp={() => setHelpOpen(true)}
-          members={members}
-          me={me}
-          hostUserId={gameMeta?.host_user_id || ""}
-        />
-
-        {/* Sieger Badge: zwischen Spiel und Verdächtigte Person */}
-        <WinnerBadge
-          winner={{
-            display_name: gameMeta?.winner_display_name || "",
-            email: gameMeta?.winner_email || "",
-          }}
-        />
-
-        <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
-
-        <div style={{ marginTop: 14, display: "grid", gap: 14 }}>
-          {sections.map((sec) => (
-            <SheetSection
-              key={sec.key}
-              title={sec.title}
-              entries={sec.entries}
-              pulseId={pulseId}
-              onCycleStatus={cycleStatus}
-              onToggleTag={toggleTag}
-              displayTag={displayTag}
+          {/* Center Board */}
+          <div
+            style={{
+              borderRadius: 22,
+              border: `1px solid ${stylesTokens.panelBorder}`,
+              background: stylesTokens.panelBg,
+              boxShadow: "0 20px 70px rgba(0,0,0,0.45)",
+              backdropFilter: "blur(10px)",
+              padding: 12,
+              position: "relative",
+              overflow: "hidden",
+              minHeight: 420,
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: `linear-gradient(90deg, transparent, ${stylesTokens.goldLine}, transparent)`,
+                opacity: 0.25,
+                pointerEvents: "none",
+              }}
             />
-          ))}
+            <div style={{ position: "relative" }}>
+              <div style={{ fontWeight: 900, color: stylesTokens.textMain, fontSize: 14 }}>
+                3D Board / Game View
+              </div>
+              <div style={{ marginTop: 6, color: stylesTokens.textDim, fontSize: 12 }}>
+                Platzhalter – hier kommt später das Board + Figuren rein.
+              </div>
+
+              <div
+                style={{
+                  marginTop: 10,
+                  height: 360,
+                  borderRadius: 18,
+                  border: `1px dashed ${stylesTokens.panelBorder}`,
+                  opacity: 0.85,
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Bottom row placeholders */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1.1fr 0.8fr 1.1fr",
+              gap: 14,
+            }}
+          >
+            <PlaceholderCard title="Meine Geheimkarten" hint="(placeholder)" />
+            <PlaceholderCard title="Würfel + Hogwarts Points" hint="(placeholder)" />
+            <PlaceholderCard title="Spielerkarte / Turn" hint="(placeholder)" />
+          </div>
+
+          {/* Extra: Hilfskarten / Deck */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <PlaceholderCard title="Dunkles Deck" hint="(placeholder)" />
+            <PlaceholderCard title="Hilfskarten" hint="(placeholder)" />
+          </div>
         </div>
 
-        {/* Host-only Winner Auswahl */}
-        <WinnerCard
-          isHost={isHost}
-          members={members}
-          winnerUserId={winnerUserId}
-          setWinnerUserId={setWinnerUserId}
-          onSave={saveWinner}
-        />
+        {/* RIGHT: Notes Panel */}
+        <div
+          style={{
+            position: "sticky",
+            top: 12,
+            alignSelf: "start",
+            borderRadius: 22,
+            border: `1px solid ${stylesTokens.panelBorder}`,
+            background: stylesTokens.panelBg,
+            boxShadow: "0 22px 90px rgba(0,0,0,0.55)",
+            backdropFilter: "blur(10px)",
+            padding: 12,
+            maxHeight: "calc(100dvh - 24px)",
+            overflow: "auto",
+          }}
+        >
+          <div style={{ fontWeight: 900, color: stylesTokens.textMain, fontSize: 14 }}>
+            Notizen
+          </div>
+          <div style={{ marginTop: 6, color: stylesTokens.textDim, fontSize: 12 }}>
+            Nur die 3 Tabellen (Verdächtige / Gegenstände / Orte).
+          </div>
 
-        <div style={{ height: 24 }} />
+          <div style={{ marginTop: 12, display: "grid", gap: 14 }}>
+            {sections.map((sec) => (
+              <SheetSection
+                key={sec.key}
+                title={sec.title}
+                entries={sec.entries}
+                pulseId={pulseId}
+                onCycleStatus={cycleStatus}
+                onToggleTag={toggleTag}
+                displayTag={displayTag}
+              />
+            ))}
+          </div>
+        </div>
       </div>
-
-      <PasswordModal
-        pwOpen={pwOpen}
-        closePwModal={closePwModal}
-        pw1={pw1}
-        setPw1={setPw1}
-        pw2={pw2}
-        setPw2={setPw2}
-        pwMsg={pwMsg}
-        pwSaving={pwSaving}
-        savePassword={savePassword}
-      />
-
-      <DesignModal
-        open={designOpen}
-        onClose={() => setDesignOpen(false)}
-        themeKey={themeKey}
-        onSelect={(k) => {
-          selectTheme(k);
-          setDesignOpen(false);
-        }}
-      />
-
-      <NewGameModal
-        open={newGameOpen}
-        onClose={() => setNewGameOpen(false)}
-        onCreate={createGame}
-        onJoin={joinGame}
-        currentCode={gameMeta?.code || ""}
-        gameFinished={!!gameMeta?.winner_user_id}
-        hasGame={!!gameId}
-        currentMembers={members}
-      />
 
       <ChipModal
         chipOpen={chipOpen}
         closeChipModalToDash={closeChipModalToDash}
         chooseChip={chooseChip}
       />
-
-      <StatsModal
-        open={statsOpen}
-        onClose={closeStatsModal}
-        me={me}
-        stats={stats}
-        loading={statsLoading}
-        error={statsError}
-      />
-
-      {/* Bottom snack for joins */}
-      {snack &&
-        createPortal(
-          <div
-            style={{
-              position: "fixed",
-              left: "50%",
-              bottom: 14,
-              transform: "translateX(-50%)",
-              maxWidth: "92vw",
-              padding: "10px 12px",
-              borderRadius: 14,
-              border: `1px solid ${stylesTokens.panelBorder}`,
-              background: stylesTokens.panelBg,
-              color: stylesTokens.textMain,
-              boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
-              backdropFilter: "blur(6px)",
-              fontWeight: 900,
-              fontSize: 13,
-              textAlign: "center",
-              zIndex: 2147483647,
-              pointerEvents: "none",
-            }}
-          >
-            {snack}
-          </div>,
-          document.body
-        )}
     </div>
   );
 }
