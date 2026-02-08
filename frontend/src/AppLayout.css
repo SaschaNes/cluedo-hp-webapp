@@ -262,6 +262,10 @@ body {
 /* Prevent clipping */
 .diceRow3d { overflow: visible; }
 
+.dieCube.snap {
+  transition: none !important;
+}
+
 /* one face */
 .dieFace {
   position: absolute;
