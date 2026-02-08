@@ -79,10 +79,11 @@ body {
 /* Dice overlay: under board slightly right */
 .diceOverlay {
   position: absolute;
+  overflow: visible;
   bottom: 14px;
   right: 18px;
   width: 220px;
-  pointer-events: none;
+  pointer-events: auto;
   opacity: 0.98;
 }
 
@@ -186,6 +187,10 @@ body {
   transform: translateY(-3px) rotateX(8deg) rotateY(-10deg);
 }
 
+.diceRow3d {
+  overflow: visible;
+}
+
 /* Cube container inside the button */
 .dieCubeWrap {
   width: 44px;
@@ -209,9 +214,10 @@ body {
 @keyframes cubeRoll {
   0%   { transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); }
   100% {
+    /* WICHTIG: NUR Vielfache von 360°, damit Ende = gleiche Orientierung */
     transform:
       rotateX(calc(var(--rx, 0deg) + 720deg))
-      rotateY(calc(var(--ry, 0deg) + 540deg));
+      rotateY(calc(var(--ry, 0deg) + 720deg));
   }
 }
 

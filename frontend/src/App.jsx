@@ -544,10 +544,28 @@ export default function App() {
   // ✅ 3 Würfel: 2x d6 + 1x Spezial (Häuser + Hilfkarte + Dunkles Deck)
 
   const DicePanel = ({ onRoll }) => {
+    const LS_KEY = "hp_cluedo_dice_v1";
     const [d1, setD1] = useState(4);
     const [d2, setD2] = useState(2);
     const [special, setSpecial] = useState("gryffindor");
     const [rolling, setRolling] = useState(false);
+
+    useEffect(() => {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed?.d1) setD1(parsed.d1);
+        if (parsed?.d2) setD2(parsed.d2);
+        if (parsed?.special) setSpecial(parsed.special);
+      } catch {}
+    }, []);
+
+    useEffect(() => {
+      try {
+        localStorage.setItem(LS_KEY, JSON.stringify({ d1, d2, special }));
+      } catch {}
+    }, [d1, d2, special]);
 
     const specialFaces = ["gryffindor", "slytherin", "ravenclaw", "hufflepuff", "help", "dark"];
     const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -650,7 +668,7 @@ export default function App() {
             "radial-gradient(120% 120% at 20% 10%, rgba(255,255,255,0.12), rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.62))",
           boxShadow: "0 18px 50px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.06)",
           position: "relative",
-          overflow: "hidden",
+          overflow: "visible", // ✅ WICHTIG für Fix 4
           display: "grid",
           placeItems: "center",
           cursor: rolling ? "default" : "pointer",
@@ -659,7 +677,6 @@ export default function App() {
           outline: "none",
         }}
         disabled={rolling}
-        title={rolling ? "Rolling…" : "Roll"}
       >
         {/* inner ring */}
         <div
@@ -670,6 +687,7 @@ export default function App() {
             border: `1px solid ${ringColor}`,
             opacity: 0.85,
             pointerEvents: "none",
+            zIndex: 1,
           }}
         />
 
@@ -683,6 +701,7 @@ export default function App() {
             opacity: 0.9,
             pointerEvents: "none",
             mixBlendMode: "screen",
+            zIndex: 1,
           }}
         />
 
@@ -695,13 +714,18 @@ export default function App() {
               "linear-gradient(120deg, rgba(255,255,255,0.10) 0%, transparent 38%, transparent 70%, rgba(255,255,255,0.06) 100%)",
             opacity: 0.8,
             pointerEvents: "none",
+            zIndex: 1,
           }}
         />
 
-        {children}
+        {/* 👇 Cube kommt IMMER darüber */}
+        <div style={{ position: "relative", zIndex: 2 }}>
+          {children}
+        </div>
       </button>
     );
   };
+  
 
   /* map value->cube rotation so that value face is FRONT
      Face layout:
@@ -755,7 +779,7 @@ export default function App() {
 
     return (
       <DieShell ringColor="rgba(242,210,122,0.18)" rolling={rolling} onClick={onClick}>
-        <div className="dieCubeWrap">
+        <div className="dieCubeWrap" style={{ zIndex: 2 }}>
           <div
             className={`dieCube ${rolling ? "rolling" : ""}`}
             style={{ "--rx": rot.rx, "--ry": rot.ry }}
