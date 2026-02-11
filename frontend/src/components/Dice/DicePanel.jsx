@@ -1,7 +1,7 @@
 // frontend/src/components/Dice/DicePanel.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { stylesTokens } from "../../styles/theme";
-import { cubeRotationForD6, DieD6, HouseDie } from "./Dice/Dice3D.jsx";
+import { cubeRotationForD6, DieD6, HouseDie } from "./Dice3D.jsx";
 
 export default function DicePanel({ onRoll }) {
   const LS_KEY = "hp_cluedo_dice_v1";
