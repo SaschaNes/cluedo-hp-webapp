@@ -15,7 +15,6 @@ export default function DicePanel({ onRoll }) {
   const [as, setAs] = useState({ x: 0, y: 0 });
 
   const [rolling, setRolling] = useState(false);
-  const [snap, setSnap] = useState(false);
 
   const specialFaces = ["gryffindor", "slytherin", "ravenclaw", "hufflepuff", "help", "dark"];
   const order = ["gryffindor", "slytherin", "ravenclaw", "hufflepuff", "help", "dark"];
@@ -23,7 +22,6 @@ export default function DicePanel({ onRoll }) {
 
   // roll bookkeeping
   const pendingRef = useRef(null);
-  const rollIdRef = useRef(0);
   const doneForRollRef = useRef({ d1: false, d2: false, s: false });
 
   // restore last
@@ -88,7 +86,6 @@ export default function DicePanel({ onRoll }) {
 
     pendingRef.current = { nd1, nd2, ns };
 
-    rollIdRef.current += 1;
     doneForRollRef.current = { d1: false, d2: false, s: false };
 
     setRolling(true);
@@ -112,21 +109,6 @@ export default function DicePanel({ onRoll }) {
     setD1(p.nd1);
     setD2(p.nd2);
     setSpecial(p.ns);
-
-    // ✅ Winkel auf kleine Basis normalisieren (ohne Transition)
-    const r1 = cubeRotationForD6(p.nd1);
-    const r2 = cubeRotationForD6(p.nd2);
-    const rs = cubeRotationForD6(Math.max(0, order.indexOf(p.ns)) + 1);
-
-    setSnap(true);
-    setA1({ x: r1.rx, y: r1.ry });
-    setA2({ x: r2.rx, y: r2.ry });
-    setAs({ x: rs.rx, y: rs.ry });
-
-    // Snap nur 1 Frame aktiv lassen
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => setSnap(false));
-    });
 
     pendingRef.current = null;
 
