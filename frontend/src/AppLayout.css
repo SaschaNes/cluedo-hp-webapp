@@ -188,59 +188,75 @@ body {
 }
 
 .dieCubeWrap {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   position: relative;
   transform-style: preserve-3d;
+  perspective: 720px;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.42));
 }
 
 .dieCube {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
-
-  /* absolute angles (numbers are set in JS) */
   transform: rotateX(calc(var(--rx, 0) * 1deg)) rotateY(calc(var(--ry, 0) * 1deg));
-
-  /* default: snappy */
-  transition: transform 260ms cubic-bezier(0.22, 1.0, 0.25, 1);
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.25, 1);
 }
 
 .dieCube.rolling {
-  /* roll duration */
-  transition: transform 820ms cubic-bezier(0.18, 0.88, 0.22, 1);
+  transition: transform 900ms cubic-bezier(0.18, 0.88, 0.22, 1);
 }
 
-/* Faces: remove hard borders / inner rings */
 .dieFace {
   position: absolute;
   inset: 0;
-  border-radius: 12px;
-  border: none; /* ✅ no face border */
-  background:
-    radial-gradient(120% 120% at 25% 18%, rgba(255,255,255,0.14), rgba(0,0,0,0.40) 60%, rgba(0,0,0,0.72));
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.05), /* very subtle */
-    inset 0 14px 24px rgba(255,255,255,0.04);
+  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   display: grid;
   place-items: center;
   backface-visibility: hidden;
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.35),
+    inset 0 -7px 14px rgba(0, 0, 0, 0.32),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
-/* face positions */
-.dieFace.front  { transform: rotateY(  0deg) translateZ(22px); }
-.dieFace.back   { transform: rotateY(180deg) translateZ(22px); }
-.dieFace.right  { transform: rotateY( 90deg) translateZ(22px); }
-.dieFace.left   { transform: rotateY(-90deg) translateZ(22px); }
-.dieFace.top    { transform: rotateX( 90deg) translateZ(22px); }
-.dieFace.bottom { transform: rotateX(-90deg) translateZ(22px); }
+.dieFace.front {
+  transform: rotateY(0deg) translateZ(24px);
+  background: linear-gradient(150deg, rgba(248, 250, 255, 0.96), rgba(199, 214, 232, 0.92));
+}
 
-/* pips */
+.dieFace.back {
+  transform: rotateY(180deg) translateZ(24px);
+  background: linear-gradient(165deg, rgba(176, 191, 209, 0.94), rgba(113, 130, 152, 0.94));
+}
+
+.dieFace.right {
+  transform: rotateY(90deg) translateZ(24px);
+  background: linear-gradient(165deg, rgba(214, 226, 241, 0.94), rgba(145, 161, 182, 0.92));
+}
+
+.dieFace.left {
+  transform: rotateY(-90deg) translateZ(24px);
+  background: linear-gradient(165deg, rgba(185, 201, 221, 0.95), rgba(120, 137, 158, 0.92));
+}
+
+.dieFace.top {
+  transform: rotateX(90deg) translateZ(24px);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.97), rgba(214, 226, 242, 0.95));
+}
+
+.dieFace.bottom {
+  transform: rotateX(-90deg) translateZ(24px);
+  background: linear-gradient(165deg, rgba(145, 164, 187, 0.94), rgba(86, 103, 125, 0.95));
+}
+
 .pipGrid {
-  width: 70%;
-  height: 70%;
+  width: 68%;
+  height: 68%;
   position: relative;
 }
 
@@ -249,76 +265,22 @@ body {
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: rgba(245,245,245,0.92);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.35), inset 0 1px 2px rgba(0,0,0,0.20);
+  background: rgba(26, 31, 39, 0.95);
+  box-shadow: 0 1px 2px rgba(255, 255, 255, 0.2), inset 0 -1px 2px rgba(255, 255, 255, 0.08);
 }
 
 .specialIcon {
   font-size: 20px;
   line-height: 1;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.55));
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.4));
 }
 
-/* Prevent clipping */
-.diceRow3d { overflow: visible; }
+.diceRow3d {
+  overflow: visible;
+}
 
 .dieCube.snap {
   transition: none !important;
-}
-
-/* one face */
-.dieFace {
-  position: absolute;
-  inset: 0;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background:
-    radial-gradient(120% 120% at 25% 18%, rgba(255,255,255,0.14), rgba(0,0,0,0.40) 60%, rgba(0,0,0,0.72));
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.06),
-    inset 0 12px 20px rgba(255,255,255,0.05);
-  display: grid;
-  place-items: center;
-  backface-visibility: hidden;
-}
-
-/* face positions */
-.dieFace.front  { transform: rotateY(  0deg) translateZ(22px); }
-.dieFace.back   { transform: rotateY(180deg) translateZ(22px); }
-.dieFace.right  { transform: rotateY( 90deg) translateZ(22px); }
-.dieFace.left   { transform: rotateY(-90deg) translateZ(22px); }
-.dieFace.top    { transform: rotateX( 90deg) translateZ(22px); }
-.dieFace.bottom { transform: rotateX(-90deg) translateZ(22px); }
-
-/* pips */
-.pipGrid {
-  width: 70%;
-  height: 70%;
-  position: relative;
-}
-
-.pip {
-  position: absolute;
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: rgba(245,245,245,0.92);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.35), inset 0 1px 2px rgba(0,0,0,0.20);
-}
-
-/* special icon */
-.specialIcon {
-  font-size: 20px;
-  line-height: 1;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.55));
-}
-
-/* optional: subtle face ring tint via CSS var */
-.dieFace {
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.06),
-    inset 0 0 0 2px var(--ring, rgba(255,255,255,0.00)),
-    inset 0 12px 20px rgba(255,255,255,0.05);
 }
 
 /* Roll animation */

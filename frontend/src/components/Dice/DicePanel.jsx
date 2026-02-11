@@ -157,31 +157,20 @@ export default function DicePanel({ onRoll }) {
 
   return (
     <div style={{ pointerEvents: "auto" }}>
-      <div style={{ display: "grid", gap: 8 }}>
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-          <div style={{ color: stylesTokens.textMain, fontWeight: 900, fontSize: 13 }}>Würfel</div>
-          <div style={{ color: stylesTokens.textDim, fontWeight: 900, fontSize: 11.5, letterSpacing: 0.7, opacity: 0.75 }}>
-            {rolling ? "ROLL…" : "READY"}
-          </div>
-        </div>
-
-        <div
-          className="diceRow3d"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 10,
-            alignItems: "center",
-            justifyItems: "center",
-            overflow: "visible",
-          }}
-        >
-          <DieD6 rolling={rolling} onClick={rollAll} ax={a1.x} ay={a1.y} onDone={onDoneD1} />
-          <DieD6 rolling={rolling} onClick={rollAll} ax={a2.x} ay={a2.y} onDone={onDoneD2} />
-          <HouseDie face={special} rolling={rolling} onClick={rollAll} ax={as.x} ay={as.y} onDone={onDoneS} />
-        </div>
-
-        <div style={{ color: stylesTokens.textDim, fontSize: 12, opacity: 0.95 }}>Klicken zum Rollen</div>
+      <div
+        className="diceRow3d"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 10,
+          alignItems: "center",
+          justifyItems: "center",
+          overflow: "visible",
+        }}
+      >
+        <DieD6 rolling={rolling} onClick={rollAll} ax={a1.x} ay={a1.y} onDone={onDoneD1} />
+        <DieD6 rolling={rolling} onClick={rollAll} ax={a2.x} ay={a2.y} onDone={onDoneD2} />
+        <HouseDie face={special} rolling={rolling} onClick={rollAll} ax={as.x} ay={as.y} onDone={onDoneS} />
       </div>
     </div>
   );
