@@ -1,7 +1,6 @@
 // frontend/src/components/Dice/DicePanel.jsx
 import React, { useEffect, useRef, useState } from "react";
-import { stylesTokens } from "../../styles/theme";
-import { cubeRotationForD6, DieD6, HouseDie } from "./Dice/Dice3D.jsx";
+import { cubeRotationForD6, DieD6, HouseDie } from "./Dice3D.jsx";
 
 export default function DicePanel({ onRoll }) {
   const LS_KEY = "hp_cluedo_dice_v1";
@@ -15,7 +14,6 @@ export default function DicePanel({ onRoll }) {
   const [as, setAs] = useState({ x: 0, y: 0 });
 
   const [rolling, setRolling] = useState(false);
-  const [snap, setSnap] = useState(false);
 
   const specialFaces = ["gryffindor", "slytherin", "ravenclaw", "hufflepuff", "help", "dark"];
   const order = ["gryffindor", "slytherin", "ravenclaw", "hufflepuff", "help", "dark"];
@@ -23,7 +21,6 @@ export default function DicePanel({ onRoll }) {
 
   // roll bookkeeping
   const pendingRef = useRef(null);
-  const rollIdRef = useRef(0);
   const doneForRollRef = useRef({ d1: false, d2: false, s: false });
 
   // restore last
@@ -88,7 +85,6 @@ export default function DicePanel({ onRoll }) {
 
     pendingRef.current = { nd1, nd2, ns };
 
-    rollIdRef.current += 1;
     doneForRollRef.current = { d1: false, d2: false, s: false };
 
     setRolling(true);
@@ -112,21 +108,6 @@ export default function DicePanel({ onRoll }) {
     setD1(p.nd1);
     setD2(p.nd2);
     setSpecial(p.ns);
-
-    // ✅ Winkel auf kleine Basis normalisieren (ohne Transition)
-    const r1 = cubeRotationForD6(p.nd1);
-    const r2 = cubeRotationForD6(p.nd2);
-    const rs = cubeRotationForD6(Math.max(0, order.indexOf(p.ns)) + 1);
-
-    setSnap(true);
-    setA1({ x: r1.rx, y: r1.ry });
-    setA2({ x: r2.rx, y: r2.ry });
-    setAs({ x: rs.rx, y: rs.ry });
-
-    // Snap nur 1 Frame aktiv lassen
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => setSnap(false));
-    });
 
     pendingRef.current = null;
 
@@ -157,31 +138,20 @@ export default function DicePanel({ onRoll }) {
 
   return (
     <div style={{ pointerEvents: "auto" }}>
-      <div style={{ display: "grid", gap: 8 }}>
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-          <div style={{ color: stylesTokens.textMain, fontWeight: 900, fontSize: 13 }}>Würfel</div>
-          <div style={{ color: stylesTokens.textDim, fontWeight: 900, fontSize: 11.5, letterSpacing: 0.7, opacity: 0.75 }}>
-            {rolling ? "ROLL…" : "READY"}
-          </div>
-        </div>
-
-        <div
-          className="diceRow3d"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 10,
-            alignItems: "center",
-            justifyItems: "center",
-            overflow: "visible",
-          }}
-        >
-          <DieD6 rolling={rolling} onClick={rollAll} ax={a1.x} ay={a1.y} onDone={onDoneD1} />
-          <DieD6 rolling={rolling} onClick={rollAll} ax={a2.x} ay={a2.y} onDone={onDoneD2} />
-          <HouseDie face={special} rolling={rolling} onClick={rollAll} ax={as.x} ay={as.y} onDone={onDoneS} />
-        </div>
-
-        <div style={{ color: stylesTokens.textDim, fontSize: 12, opacity: 0.95 }}>Klicken zum Rollen</div>
+      <div
+        className="diceRow3d"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 10,
+          alignItems: "center",
+          justifyItems: "center",
+          overflow: "visible",
+        }}
+      >
+        <DieD6 rolling={rolling} onClick={rollAll} ax={a1.x} ay={a1.y} onDone={onDoneD1} />
+        <DieD6 rolling={rolling} onClick={rollAll} ax={a2.x} ay={a2.y} onDone={onDoneD2} />
+        <HouseDie face={special} rolling={rolling} onClick={rollAll} ax={as.x} ay={as.y} onDone={onDoneS} />
       </div>
     </div>
   );
